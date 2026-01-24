@@ -1,0 +1,19 @@
+{
+    "name": "cyber-canvas-electron",
+    "version": "1.0.0",
+    "description": "AI-Powered Web Design Generator - Electron Edition",
+    "main": "main.js",
+    "scripts": {
+        "start": "electron .",
+        "build": "electron-builder"
+    },
+    "author": "kalirootcode",
+    "license": "MIT",
+    "devDependencies": {
+        "electron": "^28.0.0",
+        "electron-builder": "^24.9.1"
+    },
+    "dependencies": {
+        "puppeteer": "^24.36.0"
+    }
+}

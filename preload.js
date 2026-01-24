@@ -1,0 +1,12 @@
+const { contextBridge, ipcRenderer } = require('electron');
+
+contextBridge.exposeInMainWorld('cyberCanvas', {
+    // Exportar imagen
+    exportImage: (options) => ipcRenderer.invoke('export-image', options),
+
+    // Exportar video
+    exportVideo: (options) => ipcRenderer.invoke('export-video', options),
+
+    // Llamar a AI
+    callAI: (options) => ipcRenderer.invoke('call-ai', options)
+});

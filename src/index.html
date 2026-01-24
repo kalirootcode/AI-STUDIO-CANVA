@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cyber-Canvas AI Studio</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.css">
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/theme/material-darker.min.css">
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-left">
+            <img src="../assets/logo.png" alt="Logo" class="logo">
+            <div class="brand">
+                <span class="brand-name">CYBER<span class="accent">-CANVAS</span></span>
+                <span class="brand-subtitle">AI STUDIO</span>
+            </div>
+        </div>
+        <div class="header-right">
+            <div class="api-input-group">
+                <span class="api-icon">🔑</span>
+                <input type="password" id="apiKey" placeholder="GROQ API KEY" class="api-input">
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Editor Panel -->
+        <section class="panel editor-panel">
+            <div class="panel-header">
+                <span class="panel-icon">&lt;/&gt;</span>
+                <span class="panel-title">EDITOR</span>
+                <button id="clearBtn" class="btn-icon" title="Limpiar">✕</button>
+            </div>
+            <div class="panel-content">
+                <textarea id="editor"></textarea>
+            </div>
+        </section>
+
+        <!-- Preview Panel -->
+        <section class="panel preview-panel">
+            <div class="panel-header">
+                <span class="panel-icon">👁</span>
+                <span class="panel-title">PREVIEW</span>
+                <span id="previewSize" class="size-badge">1920 × 1080</span>
+            </div>
+            <div class="panel-content preview-container">
+                <iframe id="previewFrame" class="preview-frame"></iframe>
+                <div id="previewPlaceholder" class="preview-placeholder">
+                    <span class="placeholder-icon">🖼️</span>
+                    <span class="placeholder-text">Escribe código o usa AI para generar</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Controls Panel -->
+        <section class="panel controls-panel">
+            <div class="panel-header">
+                <span class="panel-icon">⚙️</span>
+                <span class="panel-title">CONTROLES</span>
+            </div>
+            <div class="panel-content controls-content">
+                <!-- Aspect Ratio -->
+                <div class="control-group">
+                    <label class="control-label">📐 ASPECTO</label>
+                    <select id="aspectRatio" class="select-input">
+                        <option value="1920x1080">16:9 Desktop → 1920×1080</option>
+                        <option value="1080x1920">9:16 Story/Reels → 1080×1920</option>
+                        <option value="1080x1080">1:1 Square → 1080×1080</option>
+                        <option value="1080x1350">4:5 Portrait → 1080×1350</option>
+                    </select>
+                </div>
+
+                <!-- Format -->
+                <div class="control-group">
+                    <label class="control-label">📁 FORMATO</label>
+                    <select id="format" class="select-input">
+                        <option value="PNG">PNG</option>
+                        <option value="JPG">JPG</option>
+                        <option value="WEBP">WEBP</option>
+                        <option value="MP4">MP4 (Video)</option>
+                    </select>
+                </div>
+
+                <!-- Preview Button -->
+                <button id="previewBtn" class="btn btn-secondary">
+                    <span>👁</span> PREVIEW
+                </button>
+
+                <div class="divider"></div>
+
+                <!-- AI Instruction -->
+                <div class="control-group">
+                    <label class="control-label">🤖 INSTRUCCIÓN AI</label>
+                    <textarea id="aiInstruction" class="textarea-input"
+                        placeholder="Describe tu diseño...">Crea un diseño moderno y elegante</textarea>
+                </div>
+
+                <!-- Action Buttons -->
+                <button id="adaptBtn" class="btn btn-primary">
+                    <span>✨</span> ADAPTAR CON AI
+                </button>
+
+                <button id="exportBtn" class="btn btn-accent">
+                    <span>📸</span> EXPORTAR
+                </button>
+
+                <!-- Progress -->
+                <div id="progressContainer" class="progress-container hidden">
+                    <div class="progress-bar">
+                        <div id="progressFill" class="progress-fill"></div>
+                    </div>
+                    <span id="progressText" class="progress-text">Procesando...</span>
+                </div>
+
+                <!-- Status -->
+                <div id="status" class="status"></div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/htmlmixed/htmlmixed.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/xml/xml.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/css/css.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/javascript/javascript.min.js"></script>
+    <script src="renderer.js"></script>
+</body>
+
+</html>
