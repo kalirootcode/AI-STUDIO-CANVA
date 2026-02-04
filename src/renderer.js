@@ -1,3 +1,4 @@
+
 // ═══════════════════════════════════════════════════════════════════════════
 // CYBER-CANVAS AI STUDIO - Renderer
 // ═══════════════════════════════════════════════════════════════════════════
@@ -13,6 +14,8 @@ const ASPECT_RATIOS = {
 // State
 let editor;
 let isProcessing = false;
+let templateEngine = null;
+let selectedTemplateId = null;
 
 // Sample HTML code (empty - user pastes their own)
 const SAMPLE_HTML = ``;
@@ -24,6 +27,7 @@ const SAMPLE_HTML = ``;
 document.addEventListener('DOMContentLoaded', () => {
     initEditor();
     initEventListeners();
+    initTemplates();
     updatePreviewSize();
 });
 
@@ -80,6 +84,9 @@ function initEventListeners() {
 
     // Export button
     document.getElementById('exportBtn').addEventListener('click', exportContent);
+
+    // Generate with AI button
+    document.getElementById('generateBtn').addEventListener('click', generateWithAI);
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -140,69 +147,97 @@ function updatePreview() {
 
     hidePlaceholder(true);
 
-    // Get aspect ratio
+    // Get selected aspect ratio from dropdown
     const select = document.getElementById('aspectRatio');
     const ratio = ASPECT_RATIOS[select.value];
+    const targetWidth = ratio.width;
+    const targetHeight = ratio.height;
 
-    // Get iframe display size
+    // Get container available space
     const container = document.querySelector('.preview-container');
     const containerRect = container.getBoundingClientRect();
     const availWidth = containerRect.width - 40;
     const availHeight = containerRect.height - 40;
-    const aspectRatio = ratio.width / ratio.height;
 
-    let iframeWidth, iframeHeight;
+    // Calculate display size maintaining aspect ratio
+    const aspectRatio = targetWidth / targetHeight;
+    let displayWidth, displayHeight;
+
     if (availWidth / availHeight > aspectRatio) {
-        iframeHeight = availHeight;
-        iframeWidth = iframeHeight * aspectRatio;
+        displayHeight = availHeight;
+        displayWidth = displayHeight * aspectRatio;
     } else {
-        iframeWidth = availWidth;
-        iframeHeight = iframeWidth / aspectRatio;
+        displayWidth = availWidth;
+        displayHeight = displayWidth / aspectRatio;
     }
 
-    // Set iframe size
-    frame.style.width = `${Math.floor(iframeWidth)}px`;
-    frame.style.height = `${Math.floor(iframeHeight)}px`;
+    // Set iframe to display size
+    frame.style.width = `${Math.floor(displayWidth)}px`;
+    frame.style.height = `${Math.floor(displayHeight)}px`;
+    frame.style.position = '';
+    frame.style.left = '';
+    frame.style.top = '';
+    frame.style.transform = '';
+    frame.style.transformOrigin = '';
 
-    // Calculate scale to fit original content into iframe
-    const scale = iframeWidth / ratio.width;
+    // Detect original content size from code
+    let contentWidth = 540;  // Default
+    let contentHeight = 960;
 
-    // Wrap content with scaling transform
-    const wrappedHTML = `
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <style>
-        html {
-            margin: 0;
-            padding: 0;
-            width: ${ratio.width}px;
-            height: ${ratio.height}px;
-            overflow: hidden;
-            background: #000000;
-            transform: scale(${scale});
-            transform-origin: top left;
+    const maxWidthMatch = code.match(/max-width:\s*(\d+)px/);
+    const maxHeightMatch = code.match(/max-height:\s*(\d+)px/);
+
+    if (maxWidthMatch) contentWidth = parseInt(maxWidthMatch[1]);
+    if (maxHeightMatch) contentHeight = parseInt(maxHeightMatch[1]);
+
+    // Calculate zoom factor to fit content in display area
+    const zoomFactor = Math.min(displayWidth / contentWidth, displayHeight / contentHeight);
+
+    // Styles with zoom to scale content to fit
+    const previewStyles = `
+<style id="preview-styles">
+    html {
+        zoom: ${zoomFactor} !important;
+        -moz-transform: scale(${zoomFactor}) !important;
+        -moz-transform-origin: 0 0 !important;
+    }
+    html, body {
+        margin: 0 !important;
+        padding: 0 !important;
+        overflow: hidden !important;
+        background: #000 !important;
+    }
+    body {
+        display: flex !important;
+        justify-content: center !important;
+        align-items: center !important;
+        min-height: 100vh !important;
+    }
+    .poster-container,
+    body > div:first-child {
+        width: ${contentWidth}px !important;
+        height: ${contentHeight}px !important;
+        max-width: ${contentWidth}px !important;
+        max-height: ${contentHeight}px !important;
+    }
+    ::-webkit-scrollbar { display: none !important; }
+</style>`;
+
+    let finalHTML;
+    if (code.includes('<!DOCTYPE') || code.includes('<html')) {
+        if (code.includes('</body>')) {
+            finalHTML = code.replace('</body>', previewStyles + '</body>');
+        } else {
+            finalHTML = code + previewStyles;
         }
-        body {
-            margin: 0;
-            padding: 0;
-            width: ${ratio.width}px;
-            height: ${ratio.height}px;
-            overflow: hidden;
-            background: #000000;
-        }
-    </style>
-</head>
-<body>
-${code}
-</body>
-</html>`;
+    } else {
+        finalHTML = `<!DOCTYPE html><html><head><meta charset="UTF-8"></head><body>${code}${previewStyles}</body></html>`;
+    }
 
     // Write to iframe
     const doc = frame.contentDocument || frame.contentWindow.document;
     doc.open();
-    doc.write(wrappedHTML);
+    doc.write(finalHTML);
     doc.close();
 }
 
@@ -406,4 +441,147 @@ function showStatus(message, type) {
     setTimeout(() => {
         status.className = 'status';
     }, 5000);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// TEMPLATES SYSTEM
+// ═══════════════════════════════════════════════════════════════════════════
+
+async function initTemplates() {
+    templateEngine = new TemplateEngine();
+    await templateEngine.loadTemplates();
+    renderTemplatesGallery();
+
+    // Select first template by default
+    const templates = templateEngine.getTemplates();
+    if (templates.length > 0) {
+        selectTemplate(templates[0].id);
+    }
+}
+
+function renderTemplatesGallery() {
+    const gallery = document.getElementById('templatesGallery');
+    const templates = templateEngine.getTemplates();
+
+    gallery.innerHTML = templates.map(t => `
+        <div class="template-card ${selectedTemplateId === t.id ? 'selected' : ''}" 
+             data-id="${t.id}" 
+             onclick="selectTemplate('${t.id}')">
+            <div class="icon">${t.icon}</div>
+            <div class="name">${t.name}</div>
+        </div>
+    `).join('');
+}
+
+function selectTemplate(templateId) {
+    selectedTemplateId = templateId;
+    templateEngine.selectTemplate(templateId);
+
+    // Update UI
+    document.querySelectorAll('.template-card').forEach(card => {
+        card.classList.toggle('selected', card.dataset.id === templateId);
+    });
+
+    showStatus(`Template: ${templateEngine.currentTemplate?.name}`, 'success');
+}
+
+async function generateWithAI() {
+    const theme = document.getElementById('themeInput').value.trim();
+    const apiKey = document.getElementById('apiKey').value.trim();
+
+    if (!selectedTemplateId) {
+        showStatus('Selecciona un template primero', 'error');
+        return;
+    }
+
+    if (!theme) {
+        showStatus('Escribe un tema para generar contenido', 'error');
+        return;
+    }
+
+    if (!apiKey) {
+        showStatus('Ingresa tu API Key de Groq', 'error');
+        return;
+    }
+
+    try {
+        isProcessing = true;
+        document.getElementById('generateBtn').disabled = true;
+        showProgress(10, 'Generando contenido con IA...');
+
+        // Build prompt
+        const prompt = templateEngine.buildPrompt(theme, selectedTemplateId);
+
+        showProgress(30, 'Conectando con Groq...');
+
+        // Call Groq API
+        const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${apiKey}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                model: 'llama-3.1-70b-versatile',
+                messages: [
+                    {
+                        role: 'system',
+                        content: 'Eres un diseñador de contenido visual profesional. Respondes SOLO en JSON válido, sin explicaciones adicionales.'
+                    },
+                    {
+                        role: 'user',
+                        content: prompt
+                    }
+                ],
+                temperature: 0.7,
+                max_tokens: 1000
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error(`API Error: ${response.status}`);
+        }
+
+        const data = await response.json();
+        const aiResponse = data.choices[0].message.content;
+
+        showProgress(70, 'Procesando respuesta...');
+
+        // Parse JSON from AI response
+        let content;
+        try {
+            // Extract JSON from response (in case there's extra text)
+            const jsonMatch = aiResponse.match(/\{[\s\S]*\}/);
+            if (jsonMatch) {
+                content = JSON.parse(jsonMatch[0]);
+            } else {
+                throw new Error('No JSON found in response');
+            }
+        } catch (e) {
+            throw new Error('Error parsing AI response: ' + e.message);
+        }
+
+        showProgress(90, 'Renderizando template...');
+
+        // Render template with content
+        const html = templateEngine.renderTemplate(selectedTemplateId, content);
+
+        // Set editor content
+        editor.setValue(html);
+
+        showProgress(100, '¡Completado!');
+        hideProgress();
+        showStatus('✨ Contenido generado exitosamente', 'success');
+
+        // Update preview
+        setTimeout(updatePreview, 100);
+
+    } catch (error) {
+        console.error('Generation error:', error);
+        showStatus(`Error: ${error.message}`, 'error');
+        hideProgress();
+    } finally {
+        isProcessing = false;
+        document.getElementById('generateBtn').disabled = false;
+    }
 }

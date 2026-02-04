@@ -43,36 +43,131 @@ app.on('activate', () => {
     }
 });
 
-// IPC: Exportar imagen
+// IPC: Exportar imagen (ALTA CALIDAD + SVG)
 ipcMain.handle('export-image', async (event, { html, width, height, format }) => {
     const puppeteer = require('puppeteer');
 
     try {
         const browser = await puppeteer.launch({
             headless: 'new',
-            args: ['--no-sandbox', '--disable-setuid-sandbox']
+            args: ['--no-sandbox', '--disable-setuid-sandbox', '--font-render-hinting=none']
         });
 
         const page = await browser.newPage();
-        await page.setViewport({ width, height, deviceScaleFactor: 1 });
-        await page.setContent(html, { waitUntil: 'networkidle0' });
-        await new Promise(resolve => setTimeout(resolve, 1000));
 
-        // Crear directorio de salida
-        const outputDir = path.join(require('os').homedir(), 'Pictures', 'CyberCanvas');
-        if (!fs.existsSync(outputDir)) {
-            fs.mkdirSync(outputDir, { recursive: true });
+        // Usar deviceScaleFactor 2 para imágenes 2x más nítidas (retina)
+        await page.setViewport({
+            width,
+            height,
+            deviceScaleFactor: 2
+        });
+
+        // Detect content size from the HTML
+        let contentWidth = 540;  // Default
+        let contentHeight = 960;
+
+        const maxWidthMatch = html.match(/max-width:\s*(\d+)px/);
+        const maxHeightMatch = html.match(/max-height:\s*(\d+)px/);
+
+        if (maxWidthMatch) contentWidth = parseInt(maxWidthMatch[1]);
+        if (maxHeightMatch) contentHeight = parseInt(maxHeightMatch[1]);
+
+        // Calculate scale to fill the target viewport
+        const scaleFactor = Math.min(width / contentWidth, height / contentHeight);
+
+        // Extract just the body content from user's HTML
+        let bodyContent = html;
+        if (html.includes('<body')) {
+            const bodyMatch = html.match(/<body[^>]*>([\s\S]*)<\/body>/i);
+            if (bodyMatch) bodyContent = bodyMatch[1];
         }
 
-        const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
-        const filename = `cybercanvas_${width}x${height}_${timestamp}.${format.toLowerCase()}`;
-        const outputPath = path.join(outputDir, filename);
+        // Create export HTML with proper scaling
+        const scaledHTML = `
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body {
+            width: ${width}px;
+            height: ${height}px;
+            overflow: hidden;
+            background: #000000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .export-container {
+            transform: scale(${scaleFactor});
+            transform-origin: center center;
+            width: ${contentWidth}px;
+            height: ${contentHeight}px;
+            position: relative;
+        }
+        .poster-container,
+        .export-container > div:first-child {
+            width: ${contentWidth}px !important;
+            height: ${contentHeight}px !important;
+            max-width: none !important;
+            max-height: none !important;
+            position: absolute !important;
+            top: 0 !important;
+            left: 0 !important;
+        }
+    </style>
+    ${html.includes('<style') ? html.match(/<style[^>]*>[\s\S]*?<\/style>/gi)?.join('') || '' : ''}
+</head>
+<body>
+    <div class="export-container">
+        ${bodyContent}
+    </div>
+</body>
+</html>`;
 
-        await page.screenshot({
-            path: outputPath,
-            type: format.toLowerCase() === 'jpg' ? 'jpeg' : format.toLowerCase(),
-            quality: format.toLowerCase() === 'png' ? undefined : 95
+        await page.setContent(scaledHTML, { waitUntil: 'networkidle0' });
+        await new Promise(resolve => setTimeout(resolve, 2000));
+
+        // Mostrar diálogo para elegir nombre y ubicación
+        const ext = format.toLowerCase();
+        const defaultName = `cybercanvas_${width}x${height}`;
+
+        const { canceled, filePath } = await dialog.showSaveDialog(mainWindow, {
+            title: 'Guardar imagen',
+            defaultPath: path.join(require('os').homedir(), 'Pictures', 'CyberCanvas', `${defaultName}.${ext}`),
+            filters: [
+                { name: format.toUpperCase(), extensions: [ext] }
+            ]
         });
+
+        if (canceled || !filePath) {
+            await browser.close();
+            return { success: false, error: 'Exportación cancelada' };
+        }
+
+        const outputPath = filePath;
+
+        if (ext === 'svg') {
+            // Exportar SVG extrayendo el HTML como SVG usando foreignObject
+            const svgContent = `<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}">
+    <foreignObject width="100%" height="100%">
+        <html xmlns="http://www.w3.org/1999/xhtml">
+            ${html}
+        </html>
+    </foreignObject>
+</svg>`;
+            fs.writeFileSync(outputPath, svgContent);
+        } else {
+            // Screenshot de alta calidad
+            await page.screenshot({
+                path: outputPath,
+                type: ext === 'jpg' ? 'jpeg' : ext,
+                quality: ext === 'png' ? undefined : 100,
+                omitBackground: false
+            });
+        }
 
         await browser.close();
 
@@ -82,26 +177,28 @@ ipcMain.handle('export-image', async (event, { html, width, height, format }) =>
     }
 });
 
-// IPC: Exportar video (PROFESIONAL)
+// IPC: Exportar video (FRAME-BY-FRAME HD)
 ipcMain.handle('export-video', async (event, { html, width, height, duration }) => {
-    const puppeteer = require('puppeteer');
+    const { chromium } = require('playwright');
     const { execSync } = require('child_process');
 
     try {
         const tempDir = path.join(require('os').tmpdir(), `cybercanvas_${Date.now()}`);
-        fs.mkdirSync(tempDir, { recursive: true });
+        const framesDir = path.join(tempDir, 'frames');
+        fs.mkdirSync(framesDir, { recursive: true });
 
-        // Preparar HTML con fondo negro garantizado
+        // HTML optimizado
         const professionalHTML = `
 <!DOCTYPE html>
 <html>
 <head>
+    <meta charset="UTF-8">
     <style>
         html, body {
             margin: 0;
             padding: 0;
-            width: 100vw;
-            height: 100vh;
+            width: ${width}px;
+            height: ${height}px;
             overflow: hidden;
             background-color: #000000 !important;
         }
@@ -112,62 +209,54 @@ ipcMain.handle('export-video', async (event, { html, width, height, duration }) 
     </style>
 </head>
 <body>
-    ${html.includes('<body') ? html.replace(/<body[^>]*>/i, '<body>') : html}
+${html}
 </body>
 </html>`;
 
-        const browser = await puppeteer.launch({
-            headless: 'new',
+        const htmlPath = path.join(tempDir, 'content.html');
+        fs.writeFileSync(htmlPath, professionalHTML);
+
+        // Lanzar navegador SIN grabación de video nativa
+        const browser = await chromium.launch({
+            headless: true,
             args: [
                 '--no-sandbox',
                 '--disable-setuid-sandbox',
                 '--disable-dev-shm-usage',
-                '--disable-gpu-vsync',
-                '--disable-frame-rate-limit'
+                '--disable-background-timer-throttling',
+                '--disable-backgrounding-occluded-windows',
+                '--disable-renderer-backgrounding',
+                '--disable-gpu'
             ]
         });
 
-        const page = await browser.newPage();
-
-        // Viewport exacto
-        await page.setViewport({
-            width,
-            height,
-            deviceScaleFactor: 1
+        const context = await browser.newContext({
+            viewport: { width, height }
         });
 
-        // Background negro
-        await page.evaluateOnNewDocument(() => {
-            document.documentElement.style.background = '#000000';
-            document.body.style.background = '#000000';
-        });
+        const page = await context.newPage();
+        await page.goto(`file://${htmlPath}`, { waitUntil: 'networkidle' });
 
-        await page.setContent(professionalHTML, { waitUntil: 'networkidle0' });
+        // Esperar carga completa
+        await page.waitForTimeout(2000);
 
-        // Esperar fuentes e imágenes
-        await new Promise(resolve => setTimeout(resolve, 2000));
-
-        // Capturar frames en alta calidad (60fps)
-        const fps = 60;
+        // Capturar frames (30fps para calidad óptima)
+        const fps = 30;
         const totalFrames = duration * fps;
-        const frameInterval = 1000 / fps; // ms por frame
+        const frameInterval = 1000 / fps;
 
         for (let i = 0; i < totalFrames; i++) {
-            const framePath = path.join(tempDir, `frame_${String(i).padStart(6, '0')}.png`);
-
+            const framePath = path.join(framesDir, `frame_${String(i).padStart(5, '0')}.png`);
             await page.screenshot({
                 path: framePath,
-                type: 'png',
-                omitBackground: false // Incluir fondo negro
+                type: 'png'
             });
-
-            // Esperar frame exacto
-            await new Promise(resolve => setTimeout(resolve, frameInterval));
+            await page.waitForTimeout(frameInterval);
         }
 
         await browser.close();
 
-        // Crear video con FFmpeg (CALIDAD PROFESIONAL)
+        // Crear video HD con FFmpeg
         const outputDir = path.join(require('os').homedir(), 'Videos', 'CyberCanvas');
         if (!fs.existsSync(outputDir)) {
             fs.mkdirSync(outputDir, { recursive: true });
@@ -176,29 +265,33 @@ ipcMain.handle('export-video', async (event, { html, width, height, duration }) 
         const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
         const outputPath = path.join(outputDir, `cybercanvas_${width}x${height}_${timestamp}.mp4`);
 
-        // FFmpeg con máxima calidad
+        // FFmpeg: PNG frames → MP4 HD con colores vibrantes
         const ffmpegCmd = [
             'ffmpeg',
             '-y',
             `-framerate ${fps}`,
-            `-i "${tempDir}/frame_%06d.png"`,
+            `-i "${framesDir}/frame_%05d.png"`,
+            // Filtro para mejorar color y nitidez
+            '-vf "eq=saturation=1.1:contrast=1.05,unsharp=3:3:0.5"',
             '-c:v libx264',
-            '-preset slow',          // Mejor compresión
-            '-crf 15',               // Calidad casi sin pérdida (0-51, menor=mejor)
+            '-preset slow',
+            '-crf 12',                    // Más calidad (menor = mejor)
             '-pix_fmt yuv420p',
-            '-profile:v high',       // Perfil alto
+            '-profile:v high',
             '-level:v 4.2',
-            `-b:v 20M`,              // Bitrate 20 Mbps
-            `-maxrate 25M`,
-            `-bufsize 30M`,
-            '-tune animation',       // Optimizado para animaciones
-            '-movflags +faststart',  // Streaming
+            '-b:v 25M',                   // Bitrate alto
+            '-maxrate 30M',
+            '-bufsize 40M',
+            '-colorspace bt709',          // Preservar colores
+            '-color_primaries bt709',
+            '-color_trc bt709',
+            '-movflags +faststart',
             `"${outputPath}"`
         ].join(' ');
 
         execSync(ffmpegCmd, { stdio: 'ignore' });
 
-        // Limpiar temp
+        // Limpiar
         fs.rmSync(tempDir, { recursive: true, force: true });
 
         return { success: true, path: outputPath };

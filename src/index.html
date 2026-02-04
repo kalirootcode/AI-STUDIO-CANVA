@@ -69,12 +69,34 @@
                 <span class="panel-title">CONTROLES</span>
             </div>
             <div class="panel-content controls-content">
+                <!-- Templates Gallery -->
+                <div class="control-group">
+                    <label class="control-label">📦 TEMPLATES</label>
+                    <div id="templatesGallery" class="templates-gallery">
+                        <!-- Templates se cargan dinámicamente -->
+                    </div>
+                </div>
+
+                <!-- Theme Input -->
+                <div class="control-group">
+                    <label class="control-label">🎯 TEMA</label>
+                    <textarea id="themeInput" class="textarea-input theme-input"
+                        placeholder="Ej: Técnicas de Growth Hacking para startups..."></textarea>
+                </div>
+
+                <!-- Generate Button -->
+                <button id="generateBtn" class="btn btn-ai">
+                    <span>🤖</span> GENERAR CON IA
+                </button>
+
+                <div class="divider"></div>
+
                 <!-- Aspect Ratio -->
                 <div class="control-group">
                     <label class="control-label">📐 ASPECTO</label>
                     <select id="aspectRatio" class="select-input">
                         <option value="1920x1080">16:9 Desktop → 1920×1080</option>
-                        <option value="1080x1920">9:16 Story/Reels → 1080×1920</option>
+                        <option value="1080x1920" selected>9:16 Story/Reels → 1080×1920</option>
                         <option value="1080x1080">1:1 Square → 1080×1080</option>
                         <option value="1080x1350">4:5 Portrait → 1080×1350</option>
                     </select>
@@ -84,7 +106,7 @@
                 <div class="control-group">
                     <label class="control-label">📁 FORMATO</label>
                     <select id="format" class="select-input">
-                        <option value="PNG">PNG</option>
+                        <option value="PNG">PNG (Alta Calidad)</option>
                         <option value="JPG">JPG</option>
                         <option value="WEBP">WEBP</option>
                         <option value="MP4">MP4 (Video)</option>
@@ -98,11 +120,11 @@
 
                 <div class="divider"></div>
 
-                <!-- AI Instruction -->
+                <!-- AI Instruction (para ajustes manuales) -->
                 <div class="control-group">
-                    <label class="control-label">🤖 INSTRUCCIÓN AI</label>
+                    <label class="control-label">✏️ AJUSTAR AI</label>
                     <textarea id="aiInstruction" class="textarea-input"
-                        placeholder="Describe tu diseño...">Crea un diseño moderno y elegante</textarea>
+                        placeholder="Instrucciones adicionales...">Crea un diseño moderno y elegante</textarea>
                 </div>
 
                 <!-- Action Buttons -->
@@ -134,6 +156,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/xml/xml.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/css/css.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/javascript/javascript.min.js"></script>
+    <script src="services/TemplateEngine.js"></script>
     <script src="renderer.js"></script>
 </body>
 

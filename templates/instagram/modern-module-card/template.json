@@ -1,0 +1,50 @@
+{
+    "id": "modern-module-card",
+    "name": "Módulo con Cards",
+    "category": "instagram",
+    "aspectRatio": "9:16",
+    "description": "Template para módulos educativos con título grande y 3 tarjetas de contenido",
+    "preview": "preview.png",
+    "slots": {
+        "CATEGORIA": {
+            "type": "text",
+            "description": "Texto de categoría (ej: MÓDULO 4)",
+            "maxLength": 20
+        },
+        "TITULO": {
+            "type": "text",
+            "description": "Palabra principal grande (ej: MANIPULA)",
+            "maxLength": 15
+        },
+        "SUBTITULO": {
+            "type": "text",
+            "description": "Continuación del título (ej: CIÓN)",
+            "maxLength": 10
+        },
+        "CARDS": {
+            "type": "array",
+            "count": 3,
+            "itemSchema": {
+                "icono": "Material Icons name",
+                "nombre": "Nombre corto (max 15 chars)",
+                "descripcion": "Descripción breve (max 30 chars)"
+            }
+        },
+        "BRAND_NAME": {
+            "type": "text",
+            "description": "Nombre de marca",
+            "default": "CYBER-CANVAS"
+        },
+        "BRAND_LOGO": {
+            "type": "image",
+            "description": "URL del logo",
+            "optional": true
+        }
+    },
+    "colors": {
+        "primary": "#0055ff",
+        "secondary": "#00aaff",
+        "accent": "#00ffff",
+        "background": "#000000"
+    }
+}
