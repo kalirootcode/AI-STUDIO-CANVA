@@ -1,0 +1,41 @@
+{
+    "id": "kr-clidn-09",
+    "name": "KR-CLI: Final / Follow CTA",
+    "category": "structure",
+    "description": "Slide final con recap de logros y llamado a seguir la cuenta.",
+    "fields": {
+        "TITLE": {
+            "description": "Pregunta o frase de cierre",
+            "max_chars": 30,
+            "default": "¿Te fue útil?"
+        },
+        "RECAP_ITEMS": {
+            "description": "Lo que aprendió el usuario",
+            "type": "array",
+            "count": 3,
+            "items": {
+                "ICON": "Material Icon",
+                "TEXT": "Logro del usuario"
+            }
+        },
+        "CTA_MESSAGE": {
+            "description": "Mensaje persuasivo para seguir la cuenta",
+            "max_chars": 120,
+            "default": "Síguenos para más contenido como este todos los días"
+        },
+        "HANDLE": {
+            "description": "Handle de la cuenta",
+            "max_chars": 20,
+            "default": "@kr.clidn"
+        },
+        "HASHTAGS": {
+            "description": "Hashtags relevantes",
+            "max_chars": 80,
+            "default": "#KaliLinux #CyberSecurity #HackingÉtico"
+        },
+        "SLIDE_NUMBER": {
+            "description": "Número de diapositiva",
+            "default": "08/08"
+        }
+    }
+}

@@ -1,0 +1,39 @@
+{
+    "id": "kr-clidn-27",
+    "name": "KR-CLI: Permission Matrix",
+    "category": "education",
+    "description": "Permisos Linux (rwx) explicados visualmente por grupo.",
+    "fields": {
+        "TITLE": {
+            "description": "Título",
+            "max_chars": 30,
+            "default": "Permisos Linux"
+        },
+        "FILE_EXAMPLE": {
+            "description": "Ejemplo ls -la del archivo",
+            "max_chars": 80,
+            "default": "-rwxr-xr-- 1 root www-data 4096 script.sh"
+        },
+        "PERMISSION_GROUPS": {
+            "description": "Grupos de permisos",
+            "type": "array",
+            "count": 3,
+            "items": {
+                "GROUP": "Owner/Group/Others",
+                "PERMS": "rwx/r-x/etc",
+                "ICON": "Material Icon",
+                "COLOR": "Color hex",
+                "DESC": "Descripción"
+            }
+        },
+        "EXPLANATION": {
+            "description": "Explicación general",
+            "max_chars": 200,
+            "default": "Explicación."
+        },
+        "SLIDE_NUMBER": {
+            "description": "Número",
+            "default": "05/08"
+        }
+    }
+}

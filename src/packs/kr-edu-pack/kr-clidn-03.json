@@ -1,0 +1,43 @@
+{
+    "id": "kr-clidn-03",
+    "name": "KR-CLI: Opciones Esenciales",
+    "category": "education",
+    "description": "Diapositiva para listar opciones clave (flags) de un comando.",
+    "fields": {
+        "TITLE": {
+            "description": "Título principal (ej: Las Big 4)",
+            "max_chars": 35,
+            "default": "Las 'Big 4': Opciones Esenciales"
+        },
+        "INTRO_TEXT": {
+            "description": "Breve introducción antes de las opciones",
+            "max_chars": 200,
+            "default": "Aunque ls tiene docenas de opciones, estas son las esenciales."
+        },
+        "OPTIONS": {
+            "description": "Lista de opciones/flags del comando",
+            "type": "array",
+            "count": 2,
+            "items": {
+                "FLAG": "El flag (ej: -l, -a)",
+                "NAME": "Nombre completo (ej: Long, All)",
+                "ICON": "Icono de Material Icons",
+                "DESCRIPTION": "Qué hace esta opción"
+            }
+        },
+        "TIP_TITLE": {
+            "description": "Título del consejo final",
+            "max_chars": 20,
+            "default": "Truco Ninja"
+        },
+        "TIP_CONTENT": {
+            "description": "Contenido del consejo",
+            "max_chars": 220,
+            "default": "En Linux puedes combinar opciones: ls -lah"
+        },
+        "SLIDE_NUMBER": {
+            "description": "Número de diapositiva",
+            "default": "03/10"
+        }
+    }
+}

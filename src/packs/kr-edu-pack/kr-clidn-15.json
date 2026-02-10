@@ -1,0 +1,41 @@
+{
+    "id": "kr-clidn-15",
+    "name": "KR-CLI: Concepto",
+    "category": "education",
+    "description": "Define un término técnico con puntos clave y ejemplo.",
+    "fields": {
+        "TERM": {
+            "description": "Término o concepto",
+            "max_chars": 20,
+            "default": "TCP/IP"
+        },
+        "CATEGORY": {
+            "description": "Categoría (Redes, Seguridad, etc.)",
+            "max_chars": 20,
+            "default": "Redes"
+        },
+        "DEFINITION": {
+            "description": "Definición del concepto",
+            "max_chars": 220,
+            "default": "Definición."
+        },
+        "KEY_POINTS": {
+            "description": "Puntos clave",
+            "type": "array",
+            "count": 3,
+            "items": {
+                "ICON": "Material Icon",
+                "TEXT": "Punto"
+            }
+        },
+        "EXAMPLE": {
+            "description": "Ejemplo práctico",
+            "max_chars": 180,
+            "default": "Ejemplo práctico."
+        },
+        "SLIDE_NUMBER": {
+            "description": "Número de diapositiva",
+            "default": "04/08"
+        }
+    }
+}

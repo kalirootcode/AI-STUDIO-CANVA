@@ -1,0 +1,36 @@
+{
+    "id": "kr-clidn-28",
+    "name": "KR-CLI: Cheat Sheet",
+    "category": "education",
+    "description": "Grid compacto de múltiples comandos rápidos.",
+    "fields": {
+        "TITLE": {
+            "description": "Título",
+            "max_chars": 30,
+            "default": "Cheat Sheet"
+        },
+        "CATEGORY": {
+            "description": "Categoría",
+            "max_chars": 25,
+            "default": "Comandos Esenciales"
+        },
+        "COMMANDS": {
+            "description": "Comandos del grid",
+            "type": "array",
+            "count": 8,
+            "items": {
+                "CMD": "Comando",
+                "DESC": "Descripción"
+            }
+        },
+        "NOTE": {
+            "description": "Nota al pie",
+            "max_chars": 120,
+            "default": "Guarda esta referencia."
+        },
+        "SLIDE_NUMBER": {
+            "description": "Número",
+            "default": "05/08"
+        }
+    }
+}

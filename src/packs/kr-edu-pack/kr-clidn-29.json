@@ -1,0 +1,47 @@
+{
+    "id": "kr-clidn-29",
+    "name": "KR-CLI: Error / Solution",
+    "category": "education",
+    "description": "Error común con significado y solución. Enseña debugging.",
+    "fields": {
+        "TITLE": {
+            "description": "Título del error",
+            "max_chars": 35,
+            "default": "Error Común"
+        },
+        "ERROR_CMD": {
+            "description": "Comando que causa error",
+            "max_chars": 60,
+            "default": "$ apt install nmap"
+        },
+        "ERROR_OUTPUT": {
+            "description": "Mensaje de error",
+            "max_chars": 150,
+            "default": "E: Could not open lock file"
+        },
+        "ERROR_MEANING": {
+            "description": "Qué significa el error",
+            "max_chars": 200,
+            "default": "Explicación del error."
+        },
+        "SOLUTION_CMD": {
+            "description": "Comando que soluciona",
+            "max_chars": 60,
+            "default": "$ sudo apt install nmap"
+        },
+        "SOLUTION_OUTPUT": {
+            "description": "Output exitoso",
+            "max_chars": 120,
+            "default": "Instalación exitosa."
+        },
+        "WHY_IT_WORKS": {
+            "description": "Por qué funciona la solución",
+            "max_chars": 200,
+            "default": "Explicación."
+        },
+        "SLIDE_NUMBER": {
+            "description": "Número",
+            "default": "05/08"
+        }
+    }
+}

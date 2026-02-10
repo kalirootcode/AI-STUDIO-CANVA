@@ -1,0 +1,46 @@
+{
+    "id": "kr-clidn-31",
+    "name": "KR-CLI: Script Editor",
+    "category": "education",
+    "description": "Editor de código profesional tipo IDE con líneas numeradas y syntax highlighting.",
+    "fields": {
+        "TITLE": {
+            "description": "Título del script",
+            "max_chars": 40,
+            "default": "Script de Escaneo"
+        },
+        "FILENAME": {
+            "description": "Nombre del archivo",
+            "max_chars": 30,
+            "default": "scan.sh"
+        },
+        "LANGUAGE": {
+            "description": "Lenguaje (bash, python, etc.)",
+            "max_chars": 15,
+            "default": "bash"
+        },
+        "DESCRIPTION": {
+            "description": "Descripción del script",
+            "max_chars": 150,
+            "default": "Script que automatiza tareas."
+        },
+        "CODE_LINES": {
+            "description": "Líneas de código",
+            "type": "array",
+            "count": 10,
+            "items": {
+                "TEXT": "Contenido de la línea",
+                "TYPE": "comment/variable/command/string/keyword/blank"
+            }
+        },
+        "EXPLANATION": {
+            "description": "Explicación detallada del script",
+            "max_chars": 200,
+            "default": "Explicación del script."
+        },
+        "SLIDE_NUMBER": {
+            "description": "Número de diapositiva",
+            "default": "04/08"
+        }
+    }
+}

@@ -1,0 +1,47 @@
+{
+    "id": "kr-clidn-13",
+    "name": "KR-CLI: Step by Step",
+    "category": "education",
+    "description": "Un paso numerado con comando, resultado y nota. Diseñada para repetirse.",
+    "fields": {
+        "STEP_NUMBER": {
+            "description": "Número del paso",
+            "max_chars": 3,
+            "default": "01"
+        },
+        "TOTAL_STEPS": {
+            "description": "Total de pasos",
+            "max_chars": 3,
+            "default": "05"
+        },
+        "TITLE": {
+            "description": "Título del paso",
+            "max_chars": 25,
+            "default": "Instalación"
+        },
+        "DESCRIPTION": {
+            "description": "Descripción del paso",
+            "max_chars": 200,
+            "default": "Descripción del paso."
+        },
+        "COMMAND": {
+            "description": "Comando a ejecutar",
+            "max_chars": 180,
+            "default": "$ sudo apt install nmap"
+        },
+        "EXPECTED_RESULT": {
+            "description": "Resultado esperado",
+            "max_chars": 180,
+            "default": "El paquete se instalará."
+        },
+        "NOTE": {
+            "description": "Nota importante",
+            "max_chars": 220,
+            "default": "Asegúrate de tener conexión."
+        },
+        "SLIDE_NUMBER": {
+            "description": "Número de diapositiva",
+            "default": "03/07"
+        }
+    }
+}

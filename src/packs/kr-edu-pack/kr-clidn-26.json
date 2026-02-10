@@ -1,0 +1,33 @@
+{
+    "id": "kr-clidn-26",
+    "name": "KR-CLI: Network Diagram",
+    "category": "education",
+    "description": "Diagrama visual de topología de red con nodos.",
+    "fields": {
+        "TITLE": {
+            "description": "Título",
+            "max_chars": 35,
+            "default": "Topología de Red"
+        },
+        "NODES": {
+            "description": "Nodos de red",
+            "type": "array",
+            "count": 4,
+            "items": {
+                "ICON": "Material Icon",
+                "NAME": "Nombre",
+                "IP": "Dirección IP",
+                "STATUS": "active/target"
+            }
+        },
+        "DESCRIPTION": {
+            "description": "Descripción de la topología",
+            "max_chars": 200,
+            "default": "Explicación."
+        },
+        "SLIDE_NUMBER": {
+            "description": "Número",
+            "default": "04/08"
+        }
+    }
+}

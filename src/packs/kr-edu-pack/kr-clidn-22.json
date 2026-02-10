@@ -1,0 +1,38 @@
+{
+    "id": "kr-clidn-22",
+    "name": "KR-CLI: Directory Tree",
+    "category": "education",
+    "description": "Estructura visual de directorios Linux con iconos.",
+    "fields": {
+        "TITLE": {
+            "description": "Título de la estructura",
+            "max_chars": 40,
+            "default": "Estructura de Directorios"
+        },
+        "ROOT_PATH": {
+            "description": "Ruta raíz",
+            "max_chars": 30,
+            "default": "/home/user"
+        },
+        "TREE_ITEMS": {
+            "description": "Items del árbol",
+            "type": "array",
+            "count": 6,
+            "items": {
+                "DEPTH": "Nivel (0-2)",
+                "TYPE": "folder/file",
+                "NAME": "Nombre",
+                "DETAIL": "Descripción"
+            }
+        },
+        "DESCRIPTION": {
+            "description": "Descripción educativa",
+            "max_chars": 200,
+            "default": "Explicación."
+        },
+        "SLIDE_NUMBER": {
+            "description": "Número",
+            "default": "04/08"
+        }
+    }
+}

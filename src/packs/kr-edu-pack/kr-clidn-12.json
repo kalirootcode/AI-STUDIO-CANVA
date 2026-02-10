@@ -1,0 +1,56 @@
+{
+    "id": "kr-clidn-12",
+    "name": "KR-CLI: Comparación (VS)",
+    "category": "education",
+    "description": "Dos cosas lado a lado para comparar herramientas, comandos o conceptos.",
+    "fields": {
+        "TITLE": {
+            "description": "Título de la comparación",
+            "max_chars": 35,
+            "default": "Comparación"
+        },
+        "LEFT_NAME": {
+            "description": "Nombre lado izquierdo",
+            "max_chars": 20,
+            "default": "Opción A"
+        },
+        "LEFT_ICON": {
+            "description": "Material Icon lado izquierdo",
+            "default": "code"
+        },
+        "LEFT_ITEMS": {
+            "description": "Items lado izquierdo",
+            "type": "array",
+            "count": 3,
+            "items": {
+                "TEXT": "Característica"
+            }
+        },
+        "RIGHT_NAME": {
+            "description": "Nombre lado derecho",
+            "max_chars": 20,
+            "default": "Opción B"
+        },
+        "RIGHT_ICON": {
+            "description": "Material Icon lado derecho",
+            "default": "terminal"
+        },
+        "RIGHT_ITEMS": {
+            "description": "Items lado derecho",
+            "type": "array",
+            "count": 3,
+            "items": {
+                "TEXT": "Característica"
+            }
+        },
+        "VERDICT": {
+            "description": "Veredicto o conclusión",
+            "max_chars": 180,
+            "default": "Ambas son herramientas complementarias."
+        },
+        "SLIDE_NUMBER": {
+            "description": "Número de diapositiva",
+            "default": "04/08"
+        }
+    }
+}

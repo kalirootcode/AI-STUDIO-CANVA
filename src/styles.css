@@ -580,8 +580,58 @@ body {
     transform: translateY(0);
 }
 
-.btn-ai:disabled {
-    background: var(--bg-hover);
-    box-shadow: none;
+/* ═══════════════════════════════════════════════════════════════════════════
+   PACKS & CAROUSEL UI
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.count-badge {
+    display: inline-block;
+    background: rgba(124, 58, 237, 0.2);
+    color: #a855f7;
+    font-size: 9px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    margin-top: 6px;
+    font-weight: 600;
+}
+
+.slide-nav {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-right: auto;
+    margin-left: 20px;
+}
+
+.nav-btn {
+    background: var(--bg-input);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.2s;
+}
+
+.nav-btn:hover:not(:disabled) {
+    background: var(--accent-primary);
+    color: #000;
+    border-color: var(--accent-primary);
+}
+
+.nav-btn:disabled {
+    opacity: 0.3;
     cursor: not-allowed;
+}
+
+.nav-counter {
+    font-size: 11px;
+    color: var(--text-secondary);
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 600;
 }

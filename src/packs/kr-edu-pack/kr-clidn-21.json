@@ -1,0 +1,31 @@
+{
+    "id": "kr-clidn-21",
+    "name": "KR-CLI: Pro Terminal",
+    "category": "education",
+    "description": "Terminal profesional realista con output colorizado y explicación.",
+    "fields": {
+        "TITLE": {
+            "description": "Título de la sesión terminal",
+            "max_chars": 40,
+            "default": "Terminal en Acción"
+        },
+        "TERMINAL_LINES": {
+            "description": "Líneas de terminal con tipo",
+            "type": "array",
+            "count": 8,
+            "items": {
+                "TYPE": "prompt/output/highlight/success/warning/error",
+                "TEXT": "Contenido de la línea"
+            }
+        },
+        "EXPLANATION": {
+            "description": "Explicación detallada del output",
+            "max_chars": 200,
+            "default": "Explicación del resultado."
+        },
+        "SLIDE_NUMBER": {
+            "description": "Número de diapositiva",
+            "default": "04/08"
+        }
+    }
+}

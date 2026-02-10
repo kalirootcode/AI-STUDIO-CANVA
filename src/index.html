@@ -12,6 +12,23 @@
     <link rel="stylesheet"
         href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/theme/material-darker.min.css">
     <link rel="stylesheet" href="styles.css">
+    <style>
+        .provider-select {
+            background: #1a1a1a;
+            color: #fff;
+            border: 1px solid #333;
+            padding: 8px;
+            border-radius: 6px;
+            margin-right: 8px;
+            font-family: 'Inter', sans-serif;
+            font-size: 14px;
+        }
+
+        .provider-select:focus {
+            border-color: #00D4FF;
+            outline: none;
+        }
+    </style>
 </head>
 
 <body>
@@ -26,7 +43,11 @@
         </div>
         <div class="header-right">
             <div class="api-input-group">
-                <span class="api-icon">🔑</span>
+                <select id="aiProvider" class="provider-select"
+                    onchange="document.getElementById('apiKey').placeholder = this.value === 'gemini' ? 'GEMINI API KEY' : 'GROQ API KEY'">
+                    <option value="groq">GROQ (Llama 3)</option>
+                    <option value="gemini">GEMINI (Pro 1.5)</option>
+                </select>
                 <input type="password" id="apiKey" placeholder="GROQ API KEY" class="api-input">
             </div>
         </div>
@@ -113,24 +134,7 @@
                     </select>
                 </div>
 
-                <!-- Preview Button -->
-                <button id="previewBtn" class="btn btn-secondary">
-                    <span>👁</span> PREVIEW
-                </button>
-
                 <div class="divider"></div>
-
-                <!-- AI Instruction (para ajustes manuales) -->
-                <div class="control-group">
-                    <label class="control-label">✏️ AJUSTAR AI</label>
-                    <textarea id="aiInstruction" class="textarea-input"
-                        placeholder="Instrucciones adicionales...">Crea un diseño moderno y elegante</textarea>
-                </div>
-
-                <!-- Action Buttons -->
-                <button id="adaptBtn" class="btn btn-primary">
-                    <span>✨</span> ADAPTAR CON AI
-                </button>
 
                 <button id="exportBtn" class="btn btn-accent">
                     <span>📸</span> EXPORTAR
@@ -156,7 +160,9 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/xml/xml.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/css/css.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/javascript/javascript.min.js"></script>
+    <script type="module" src="services/IconSystem.js"></script>
     <script src="services/TemplateEngine.js"></script>
+    <script src="services/CarouselEngine.js"></script>
     <script src="renderer.js"></script>
 </body>
 

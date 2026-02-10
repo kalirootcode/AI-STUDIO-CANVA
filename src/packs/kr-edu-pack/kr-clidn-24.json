@@ -1,0 +1,53 @@
+{
+    "id": "kr-clidn-24",
+    "name": "KR-CLI: Before/After",
+    "category": "education",
+    "description": "Antes y después con transformación de comando.",
+    "fields": {
+        "TITLE": {
+            "description": "Título",
+            "max_chars": 35,
+            "default": "Antes y Después"
+        },
+        "BEFORE_TITLE": {
+            "description": "Label antes",
+            "max_chars": 15,
+            "default": "ANTES"
+        },
+        "BEFORE_LINES": {
+            "description": "Líneas antes",
+            "type": "array",
+            "count": 2,
+            "items": {
+                "TEXT": "Línea"
+            }
+        },
+        "AFTER_TITLE": {
+            "description": "Label después",
+            "max_chars": 15,
+            "default": "DESPUÉS"
+        },
+        "AFTER_LINES": {
+            "description": "Líneas después",
+            "type": "array",
+            "count": 3,
+            "items": {
+                "TEXT": "Línea"
+            }
+        },
+        "COMMAND": {
+            "description": "Comando que transforma",
+            "max_chars": 50,
+            "default": "comando"
+        },
+        "EXPLANATION": {
+            "description": "Por qué funciona",
+            "max_chars": 200,
+            "default": "Explicación."
+        },
+        "SLIDE_NUMBER": {
+            "description": "Número",
+            "default": "04/08"
+        }
+    }
+}

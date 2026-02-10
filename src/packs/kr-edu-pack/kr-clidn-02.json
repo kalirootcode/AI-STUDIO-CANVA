@@ -1,0 +1,37 @@
+{
+    "id": "kr-clidn-02",
+    "name": "KR-CLI: Anatomía de Comando",
+    "category": "education",
+    "description": "Diapositiva para desglosar la estructura de un comando (Anatomía).",
+    "fields": {
+        "TITLE": {
+            "description": "Título de la sección (ej: La Anatomía del Comando)",
+            "max_chars": 25,
+            "default": "La Anatomía del Comando"
+        },
+        "COMMAND_STRUCTURE": {
+            "description": "La sintaxis del comando (ej: ls [opciones] [ruta])",
+            "max_chars": 30,
+            "default": "ls [opciones] [ruta]"
+        },
+        "COMPONENTS": {
+            "description": "Lista de las partes del comando (ej: comando, opciones, argumentos)",
+            "type": "array",
+            "count": 3,
+            "items": {
+                "NUMBER": "Número (1, 2, 3...)",
+                "NAME": "Nombre de la parte (ej: ls, [opciones])",
+                "DESCRIPTION": "Explicación breve de qué hace esta parte"
+            }
+        },
+        "TIP": {
+            "description": "Consejo o tip importante al final",
+            "max_chars": 200,
+            "default": "Los elementos entre corchetes [ ] son opcionales."
+        },
+        "SLIDE_NUMBER": {
+            "description": "Número de diapositiva",
+            "default": "02/10"
+        }
+    }
+}

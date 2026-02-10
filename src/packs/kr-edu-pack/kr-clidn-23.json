@@ -1,0 +1,32 @@
+{
+    "id": "kr-clidn-23",
+    "name": "KR-CLI: Process Flow",
+    "category": "education",
+    "description": "Flujo visual de cómo funciona un proceso con flechas.",
+    "fields": {
+        "TITLE": {
+            "description": "Título del flujo",
+            "max_chars": 35,
+            "default": "Cómo Funciona"
+        },
+        "FLOW_STEPS": {
+            "description": "Pasos del flujo",
+            "type": "array",
+            "count": 4,
+            "items": {
+                "ICON": "Material Icon",
+                "LABEL": "Etiqueta",
+                "DESC": "Descripción"
+            }
+        },
+        "DESCRIPTION": {
+            "description": "Explicación del flujo",
+            "max_chars": 200,
+            "default": "Cada paso del flujo."
+        },
+        "SLIDE_NUMBER": {
+            "description": "Número",
+            "default": "04/08"
+        }
+    }
+}

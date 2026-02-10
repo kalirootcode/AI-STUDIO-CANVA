@@ -1,0 +1,42 @@
+{
+    "id": "kr-clidn-25",
+    "name": "KR-CLI: Pro Tip",
+    "category": "education",
+    "description": "Tip profesional con ejemplo y explicación.",
+    "fields": {
+        "TIP_NUMBER": {
+            "description": "Número del tip",
+            "max_chars": 3,
+            "default": "01"
+        },
+        "TITLE": {
+            "description": "Título del tip",
+            "max_chars": 30,
+            "default": "Pro Tip"
+        },
+        "TIP_TEXT": {
+            "description": "Texto del tip detallado",
+            "max_chars": 200,
+            "default": "Texto del tip."
+        },
+        "EXAMPLE_CMD": {
+            "description": "Comando de ejemplo",
+            "max_chars": 60,
+            "default": "alias ll='ls -la'"
+        },
+        "WHY_TEXT": {
+            "description": "Por qué es útil",
+            "max_chars": 150,
+            "default": "Por qué es útil."
+        },
+        "CATEGORY": {
+            "description": "Categoría",
+            "max_chars": 20,
+            "default": "Productividad"
+        },
+        "SLIDE_NUMBER": {
+            "description": "Número",
+            "default": "04/08"
+        }
+    }
+}

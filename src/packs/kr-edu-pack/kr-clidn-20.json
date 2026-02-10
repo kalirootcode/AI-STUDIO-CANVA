@@ -1,0 +1,31 @@
+{
+    "id": "kr-clidn-20",
+    "name": "KR-CLI: Chapter Divider",
+    "category": "education",
+    "description": "Separador de sección para posts largos. Diseñada para repetirse.",
+    "fields": {
+        "CHAPTER_NUMBER": {
+            "description": "Número del capítulo",
+            "max_chars": 3,
+            "default": "02"
+        },
+        "CHAPTER_TITLE": {
+            "description": "Título del capítulo",
+            "max_chars": 30,
+            "default": "Sección"
+        },
+        "CHAPTER_SUBTITLE": {
+            "description": "Subtítulo del capítulo",
+            "max_chars": 180,
+            "default": "Subtítulo."
+        },
+        "ICON": {
+            "description": "Material Icon del capítulo",
+            "default": "terminal"
+        },
+        "SLIDE_NUMBER": {
+            "description": "Número de diapositiva",
+            "default": "05/16"
+        }
+    }
+}

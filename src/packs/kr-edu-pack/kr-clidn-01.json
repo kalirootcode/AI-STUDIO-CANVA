@@ -1,0 +1,31 @@
+{
+    "id": "kr-clidn-01",
+    "name": "KR-CLI: Cover / Portada",
+    "category": "structure",
+    "description": "Portada eye-catching con título gigante, subtítulo y tags.",
+    "fields": {
+        "TITLE": {
+            "description": "Título principal (nombre de herramienta o tema)",
+            "max_chars": 20,
+            "default": "NMAP"
+        },
+        "SUBTITLE": {
+            "description": "Subtítulo descriptivo detallado",
+            "max_chars": 100,
+            "default": "El escáner de redes más poderoso del mundo"
+        },
+        "TAGS": {
+            "description": "Tags descriptivos con icono",
+            "type": "array",
+            "count": 3,
+            "items": {
+                "ICON": "Material Icon",
+                "TEXT": "Descripción del tag"
+            }
+        },
+        "SLIDE_NUMBER": {
+            "description": "Número de diapositiva",
+            "default": "01/08"
+        }
+    }
+}

@@ -1,0 +1,41 @@
+{
+    "id": "kr-clidn-14",
+    "name": "KR-CLI: Code Block",
+    "category": "education",
+    "description": "Bloque de código con estilo IDE, líneas numeradas y explicación.",
+    "fields": {
+        "TITLE": {
+            "description": "Título del bloque",
+            "max_chars": 30,
+            "default": "Script"
+        },
+        "LANGUAGE": {
+            "description": "Lenguaje (bash, python, etc.)",
+            "max_chars": 15,
+            "default": "bash"
+        },
+        "DESCRIPTION": {
+            "description": "Descripción del código",
+            "max_chars": 180,
+            "default": "Descripción."
+        },
+        "CODE_LINES": {
+            "description": "Líneas de código",
+            "type": "array",
+            "count": 5,
+            "items": {
+                "LINE": "Código",
+                "COMMENT": "Comentario opcional"
+            }
+        },
+        "EXPLANATION": {
+            "description": "Explicación del código",
+            "max_chars": 200,
+            "default": "Este script realiza..."
+        },
+        "SLIDE_NUMBER": {
+            "description": "Número de diapositiva",
+            "default": "04/08"
+        }
+    }
+}

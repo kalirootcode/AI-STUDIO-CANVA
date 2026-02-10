@@ -8,5 +8,8 @@ contextBridge.exposeInMainWorld('cyberCanvas', {
     exportVideo: (options) => ipcRenderer.invoke('export-video', options),
 
     // Llamar a AI
-    callAI: (options) => ipcRenderer.invoke('call-ai', options)
+    callAI: (options) => ipcRenderer.invoke('call-ai', options),
+
+    // Cargar packs de templates
+    loadPacks: () => ipcRenderer.invoke('load-packs')
 });

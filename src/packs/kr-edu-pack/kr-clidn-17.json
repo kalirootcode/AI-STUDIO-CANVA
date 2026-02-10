@@ -1,0 +1,36 @@
+{
+    "id": "kr-clidn-17",
+    "name": "KR-CLI: Checklist",
+    "category": "education",
+    "description": "Lista de requisitos o verificaciones con checkbox.",
+    "fields": {
+        "TITLE": {
+            "description": "Título",
+            "max_chars": 30,
+            "default": "Checklist"
+        },
+        "DESCRIPTION": {
+            "description": "Descripción",
+            "max_chars": 180,
+            "default": "Verifica estos requisitos."
+        },
+        "CHECK_ITEMS": {
+            "description": "Items del checklist",
+            "type": "array",
+            "count": 4,
+            "items": {
+                "TEXT": "Item",
+                "CHECKED": "true/false"
+            }
+        },
+        "NOTE": {
+            "description": "Nota inferior",
+            "max_chars": 220,
+            "default": "Completa todos los items."
+        },
+        "SLIDE_NUMBER": {
+            "description": "Número de diapositiva",
+            "default": "02/08"
+        }
+    }
+}

@@ -1,0 +1,38 @@
+{
+    "id": "kr-clidn-30",
+    "name": "KR-CLI: Mini Tutorial",
+    "category": "education",
+    "description": "Tutorial compacto de 3 pasos en un solo slide.",
+    "fields": {
+        "TITLE": {
+            "description": "Título del tutorial",
+            "max_chars": 35,
+            "default": "Mini Tutorial"
+        },
+        "DESCRIPTION": {
+            "description": "Descripción",
+            "max_chars": 120,
+            "default": "Aprende en 3 pasos."
+        },
+        "STEPS": {
+            "description": "Los 3 pasos",
+            "type": "array",
+            "count": 3,
+            "items": {
+                "NUM": "Número",
+                "TITLE": "Título paso",
+                "CMD": "Comando",
+                "RESULT": "Resultado"
+            }
+        },
+        "FINAL_NOTE": {
+            "description": "Nota final de éxito",
+            "max_chars": 120,
+            "default": "¡Listo!"
+        },
+        "SLIDE_NUMBER": {
+            "description": "Número",
+            "default": "04/08"
+        }
+    }
+}

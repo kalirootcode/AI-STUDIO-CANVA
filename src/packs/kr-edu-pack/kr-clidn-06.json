@@ -1,0 +1,47 @@
+{
+    "id": "kr-clidn-06",
+    "name": "KR-CLI: Ejercicio Básico",
+    "category": "education",
+    "description": "Diapositiva para plantear un ejercicio práctico simple.",
+    "fields": {
+        "EXERCISE_LETTER": {
+            "description": "Letra o número del ejercicio (A, B, 1...)",
+            "max_chars": 2,
+            "default": "A"
+        },
+        "TITLE": {
+            "description": "Título del ejercicio",
+            "max_chars": 20,
+            "default": "Lo básico"
+        },
+        "INTRO_TEXT": {
+            "description": "Instrucciones iniciales",
+            "max_chars": 180,
+            "default": "Abre tu terminal en Kali y realiza este ejercicio ahora mismo."
+        },
+        "COMMAND": {
+            "description": "El comando a ejecutar",
+            "max_chars": 50,
+            "default": "$ ls"
+        },
+        "RESULT_TEXT": {
+            "description": "Descripción del resultado esperado",
+            "max_chars": 220,
+            "default": "Verás los nombres de tus carpetas (Desktop, Downloads, etc.)"
+        },
+        "NOTE_TITLE": {
+            "description": "Título de la nota inferior",
+            "max_chars": 15,
+            "default": "Nota"
+        },
+        "NOTE_CONTENT": {
+            "description": "Contenido de la nota",
+            "max_chars": 200,
+            "default": "Este comando lista el contenido de tu directorio actual."
+        },
+        "SLIDE_NUMBER": {
+            "description": "Número de diapositiva",
+            "default": "07/10"
+        }
+    }
+}

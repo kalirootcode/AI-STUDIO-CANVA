@@ -1,0 +1,61 @@
+{
+    "id": "kr-clidn-11",
+    "name": "KR-CLI: Command Card",
+    "category": "education",
+    "description": "Tarjeta individual de un comando con ejemplo, sintaxis y flags clave. Diseñada para repetirse.",
+    "fields": {
+        "COMMAND_NAME": {
+            "description": "Nombre del comando",
+            "max_chars": 15,
+            "default": "ls"
+        },
+        "COMMAND_NUMBER": {
+            "description": "Número del comando en la serie",
+            "max_chars": 3,
+            "default": "01"
+        },
+        "TOTAL_COMMANDS": {
+            "description": "Total de comandos",
+            "max_chars": 3,
+            "default": "30"
+        },
+        "CATEGORY": {
+            "description": "Categoría (Navegación, Red, etc.)",
+            "max_chars": 20,
+            "default": "Navegación"
+        },
+        "SYNTAX": {
+            "description": "Sintaxis del comando",
+            "max_chars": 40,
+            "default": "ls [opciones] [ruta]"
+        },
+        "DESCRIPTION": {
+            "description": "Qué hace el comando",
+            "max_chars": 220,
+            "default": "Lista el contenido de un directorio."
+        },
+        "EXAMPLE_CMD": {
+            "description": "Ejemplo de uso",
+            "max_chars": 50,
+            "default": "$ ls -la /home"
+        },
+        "EXAMPLE_OUTPUT": {
+            "description": "Output del ejemplo",
+            "max_chars": 180,
+            "default": "drwxr-xr-x 5 user user 4096 ..."
+        },
+        "KEY_FLAGS": {
+            "description": "Flags principales",
+            "type": "array",
+            "count": 3,
+            "items": {
+                "FLAG": "Flag",
+                "DESC": "Descripción"
+            }
+        },
+        "SLIDE_NUMBER": {
+            "description": "Número de diapositiva",
+            "default": "03/32"
+        }
+    }
+}

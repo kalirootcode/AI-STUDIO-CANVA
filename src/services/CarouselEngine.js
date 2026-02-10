@@ -1,0 +1,752 @@
+// ═══════════════════════════════════════════════════════════════════════════
+// CYBER-CANVAS PRO - Carousel Engine v3.0 (Dynamic AI Selection)
+// Motor inteligente: la IA selecciona y REPITE templates según el contenido
+// Sin límite de slides — genera posts tipo libro
+// ═══════════════════════════════════════════════════════════════════════════
+
+class CarouselEngine {
+    constructor(templateEngine) {
+        this.templateEngine = templateEngine;
+        this.packs = [];
+    }
+
+    setPacks(packsMeta) {
+        this.packs = packsMeta;
+        console.log(`CarouselEngine: ${this.packs.length} packs registrados.`);
+    }
+
+    getPacks() { return this.packs; }
+    getPackById(id) { return this.packs.find(p => p.id === id); }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // CATÁLOGO COMPLETO — 20 TEMPLATES
+    // ═══════════════════════════════════════════════════════════════════════
+
+    getTemplateCatalog() {
+        return {
+
+            // ────────────── ESTRUCTURA (Cover, TOC, Divider, Summary) ──────────────
+
+            'kr-clidn-01': {
+                purpose: 'PORTADA/COVER. Primer slide SIEMPRE. Eye-catching.',
+                when: 'Para presentar el tema principal.',
+                repeatable: false,
+                json_example: {
+                    TITLE: "NMAP",
+                    SUBTITLE: "El escáner de redes más poderoso del mundo",
+                    TAGS: [
+                        { ICON: "radar", TEXT: "Escaneo de puertos" },
+                        { ICON: "security", TEXT: "Detección de vulnerabilidades" },
+                        { ICON: "dns", TEXT: "Descubrimiento de redes" }
+                    ],
+                    SLIDE_NUMBER: "01/08"
+                },
+                rules: [
+                    "TITLE: máx 20 chars, nombre de herramienta o tema",
+                    "SUBTITLE: máx 100 chars, descripción atractiva",
+                    "TAGS: exacto 3 tags descriptivos"
+                ]
+            },
+            'kr-clidn-09': {
+                purpose: 'FOLLOW CTA. Último slide SIEMPRE. Persuasivo.',
+                when: 'Cerrar el carrusel y persuadir a seguir la cuenta.',
+                repeatable: false,
+                json_example: {
+                    TITLE: "¿Te fue útil?",
+                    RECAP_ITEMS: [
+                        { ICON: "check_circle", TEXT: "Dominas los comandos básicos de Linux" },
+                        { ICON: "check_circle", TEXT: "Sabes usar el terminal como un pro" },
+                        { ICON: "check_circle", TEXT: "Estás listo para el siguiente nivel" }
+                    ],
+                    CTA_MESSAGE: "Síguenos para más contenido como este todos los días",
+                    HANDLE: "@kr.clidn",
+                    HASHTAGS: "#KaliLinux #CyberSecurity #HackingÉtico",
+                    SLIDE_NUMBER: "08/08"
+                },
+                rules: [
+                    "RECAP_ITEMS: exacto 3 logros del usuario",
+                    "CTA_MESSAGE: persuasivo, máx 120 chars",
+                    "HANDLE: siempre @kr.clidn",
+                    "HASHTAGS: máx 80 chars"
+                ]
+            },
+            'kr-clidn-19': {
+                purpose: 'TABLE OF CONTENTS / ÍNDICE. Para posts largos (10+ slides).',
+                when: 'El post tiene 10+ slides — agregar DESPUÉS de la portada.',
+                repeatable: false,
+                json_example: {
+                    TITLE: "Contenido",
+                    SUBTITLE: "Lo que aprenderás en este post",
+                    ITEMS: [
+                        { NUMBER: "01", TEXT: "Navegación básica", RANGE: "03-10" },
+                        { NUMBER: "02", TEXT: "Archivos y permisos", RANGE: "11-20" },
+                        { NUMBER: "03", TEXT: "Red y procesos", RANGE: "21-28" },
+                        { NUMBER: "04", TEXT: "Resumen", RANGE: "29-32" }
+                    ],
+                    TOTAL_SLIDES: "32",
+                    SLIDE_NUMBER: "02/32"
+                },
+                rules: [
+                    "ITEMS: entre 3 y 6 secciones",
+                    "RANGE: formato slide-slide"
+                ]
+            },
+            'kr-clidn-20': {
+                purpose: 'CHAPTER DIVIDER. Separador de sección.',
+                when: 'Separar secciones en posts largos. Usar antes de cada nueva sección.',
+                repeatable: true,
+                json_example: {
+                    CHAPTER_NUMBER: "02",
+                    CHAPTER_TITLE: "Archivos",
+                    CHAPTER_SUBTITLE: "Gestión de archivos y directorios",
+                    ICON: "folder",
+                    SLIDE_NUMBER: "11/32"
+                },
+                rules: [
+                    "CHAPTER_TITLE: máx 30 chars",
+                    "ICON: Material Icon relevante a la sección"
+                ]
+            },
+
+            // ────────────── CONTENIDO PRINCIPAL (Repeatable) ──────────────
+
+            'kr-clidn-11': {
+                purpose: 'COMMAND CARD. UN comando educativo completo.',
+                when: 'Explicar un comando individual. REPETIR para cada comando.',
+                repeatable: true,
+                json_example: {
+                    COMMAND_NAME: "ls",
+                    COMMAND_NUMBER: "01",
+                    TOTAL_COMMANDS: "30",
+                    CATEGORY: "Navegación",
+                    SYNTAX: "ls [opciones] [ruta]",
+                    DESCRIPTION: "Lista el contenido de un directorio.",
+                    EXAMPLE_CMD: "$ ls -la /home",
+                    EXAMPLE_OUTPUT: "drwxr-xr-x 5 user user 4096 ...",
+                    KEY_FLAGS: [
+                        { FLAG: "-l", DESC: "Formato largo detallado" },
+                        { FLAG: "-a", DESC: "Incluye archivos ocultos" },
+                        { FLAG: "-h", DESC: "Tamaños legibles (KB, MB)" }
+                    ],
+                    SLIDE_NUMBER: "03/32"
+                },
+                rules: [
+                    "COMMAND_NAME: máx 15 chars",
+                    "CATEGORY: máx 20 chars",
+                    "SYNTAX: máx 40 chars",
+                    "DESCRIPTION: máx 80 chars",
+                    "EXAMPLE_CMD: máx 50 chars, con $",
+                    "KEY_FLAGS: exacto 3 flags"
+                ]
+            },
+            'kr-clidn-02': {
+                purpose: 'ANATOMÍA/SINTAXIS de un comando.',
+                when: 'Explicar la estructura o componentes de algo.',
+                repeatable: true,
+                json_example: {
+                    TITLE: "La Anatomía de nmap",
+                    COMMAND_STRUCTURE: "nmap [opciones] objetivo",
+                    COMPONENTS: [
+                        { NUMBER: "1", NAME: "nmap", DESCRIPTION: "El binario del escáner" },
+                        { NUMBER: "2", NAME: "[opciones]", DESCRIPTION: "Flags que modifican el escaneo" },
+                        { NUMBER: "3", NAME: "objetivo", DESCRIPTION: "IP, rango o dominio" }
+                    ],
+                    TIP: "Los elementos entre [ ] son opcionales.",
+                    SLIDE_NUMBER: "02/08"
+                },
+                rules: ["COMPONENTS: exacto 3", "TIP: máx 100 chars"]
+            },
+            'kr-clidn-03': {
+                purpose: 'FEATURE CARDS. Opciones o flags.',
+                when: 'Listar 2 opciones/flags/características.',
+                repeatable: true,
+                json_example: {
+                    TITLE: "Opciones Esenciales",
+                    INTRO_TEXT: "Las opciones más importantes.",
+                    OPTIONS: [
+                        { FLAG: "-sS", NAME: "SYN Scan", ICON: "bolt", DESCRIPTION: "Escaneo sigiloso half-open" },
+                        { FLAG: "-sV", NAME: "Version", ICON: "info", DESCRIPTION: "Detecta versión de servicios" }
+                    ],
+                    TIP_TITLE: "Pro Tip",
+                    TIP_CONTENT: "Combina: nmap -sS -sV -O objetivo",
+                    SLIDE_NUMBER: "03/08"
+                },
+                rules: ["OPTIONS: exacto 2 por slide", "Si hay más de 2, usar OTRO slide kr-clidn-03"]
+            },
+            'kr-clidn-04': {
+                purpose: 'TERMINAL OUTPUT. Salida de un comando.',
+                when: 'Mostrar e interpretar output de terminal.',
+                repeatable: true,
+                json_example: {
+                    TITLE: "Entendiendo la salida",
+                    WARNING_TEXT: "Interpretar esto es clave",
+                    OUTPUT_LINES: [
+                        { TEXT: "PORT   STATE SERVICE", HIGHLIGHT: "STATE" },
+                        { TEXT: "22/tcp open  ssh", HIGHLIGHT: "open" }
+                    ],
+                    BREAKDOWN_CARDS: [
+                        { NUMBER: "1", TITLE: "Puerto", CONTENT_HTML: "Número de puerto" }
+                    ],
+                    SLIDE_NUMBER: "04/08"
+                },
+                rules: ["OUTPUT_LINES: exacto 2", "BREAKDOWN_CARDS: exacto 1"]
+            },
+            'kr-clidn-05': {
+                purpose: 'GRID/COLUMNAS. Datos o items en grid.',
+                when: 'Hay múltiples columnas o datos a explicar.',
+                repeatable: true,
+                json_example: {
+                    TITLE: "Desglose de Columnas",
+                    INTRO_TEXT: "Cada columna tiene significado",
+                    OUTPUT_LINES: [
+                        { TEXT: "PORT STATE SERVICE" },
+                        { TEXT: "22/tcp open ssh" },
+                        { TEXT: "80/tcp open http" }
+                    ],
+                    GRID_ITEMS: [
+                        { NUMBER: "1", TITLE: "PORT", CONTENT: "Número de puerto" },
+                        { NUMBER: "2", TITLE: "STATE", CONTENT: "open/closed" },
+                        { NUMBER: "3", TITLE: "SERVICE", CONTENT: "Servicio" },
+                        { NUMBER: "4", TITLE: "VERSION", CONTENT: "Versión" },
+                        { NUMBER: "5", TITLE: "PROTO", CONTENT: "TCP/UDP" }
+                    ],
+                    SLIDE_NUMBER: "05/08"
+                },
+                rules: ["OUTPUT_LINES: exacto 3", "GRID_ITEMS: exacto 5"]
+            },
+            'kr-clidn-06': {
+                purpose: 'LAB/EJERCICIO práctico básico.',
+                when: 'Ejercicio práctico, nivel principiante.',
+                repeatable: true,
+                json_example: {
+                    EXERCISE_LETTER: "A",
+                    TITLE: "Escaneo básico",
+                    INTRO_TEXT: "Abre tu terminal y realiza este escaneo.",
+                    COMMAND: "$ nmap 192.168.1.1",
+                    RESULT_TEXT: "Verás los puertos abiertos.",
+                    NOTE_TITLE: "Nota",
+                    NOTE_CONTENT: "Solo escanea TU red.",
+                    SLIDE_NUMBER: "06/08"
+                },
+                rules: ["EXERCISE_LETTER: 1 letra", "COMMAND: máx 50 chars"]
+            },
+            'kr-clidn-07': {
+                purpose: 'WARNING/ÉTICA. Advertencia de seguridad.',
+                when: 'Ejercicio con riesgos legales/éticos.',
+                repeatable: true,
+                json_example: {
+                    EXERCISE_LETTER: "B",
+                    TITLE: "Escaneo agresivo",
+                    INTRO_TEXT: "Este escaneo es invasivo y detectable.",
+                    COMMAND: "$ nmap -A objetivo",
+                    RESULT_TEXT: "Detectará OS, versiones, scripts.",
+                    WARNING_TITLE: "⚠ Cuidado",
+                    WARNING_CONTENT: "El flag -A es ruidoso. Solo con autorización.",
+                    SLIDE_NUMBER: "07/08"
+                },
+                rules: ["WARNING_CONTENT: máx 120 chars, advertencia REAL"]
+            },
+            'kr-clidn-08': {
+                purpose: 'ESTADÍSTICA. Dato numérico impactante.',
+                when: 'Hay un porcentaje o estadística que resaltar.',
+                repeatable: true,
+                json_example: {
+                    EXERCISE_LETTER: "C",
+                    TITLE: "Detección de OS",
+                    INTRO_TEXT: "Nmap identifica el SO remoto.",
+                    COMMAND: "$ nmap -O objetivo",
+                    RESULT_TEXT: "Verás el SO con % de confianza.",
+                    PERCENTAGE: "95%",
+                    PERCENTAGE_TEXT: "Precisión con suficientes puertos",
+                    TIP_TITLE: "Recuerda",
+                    TIP_CONTENT: "Necesita 1 puerto abierto y 1 cerrado.",
+                    SLIDE_NUMBER: "08/08"
+                },
+                rules: ["PERCENTAGE: máx 5 chars (95%, 80%)"]
+            },
+            'kr-clidn-10': {
+                purpose: 'GITHUB TOOL. Herramienta de GitHub.',
+                when: 'Presentar herramienta open-source de GitHub.',
+                repeatable: true,
+                json_example: {
+                    TOOL_NAME: "Subfinder",
+                    TOOL_CATEGORY: "Recon",
+                    DESCRIPTION: "Descubre subdominios usando fuentes pasivas.",
+                    INSTALL_CMD: "$ go install github.com/projectdiscovery/subfinder@latest",
+                    USAGE_CMD: "$ subfinder -d example.com",
+                    FEATURES: [
+                        { ICON: "speed", TEXT: "Rápido y concurrente" },
+                        { ICON: "public", TEXT: "Múltiples fuentes" },
+                        { ICON: "code", TEXT: "Open source" }
+                    ],
+                    GITHUB_STARS: "9.2k",
+                    SLIDE_NUMBER: "05/08"
+                },
+                rules: ["FEATURES: exacto 3", "GITHUB_STARS: formato abreviado"]
+            },
+            'kr-clidn-12': {
+                purpose: 'COMPARACIÓN (VS). Dos cosas lado a lado.',
+                when: 'Comparar 2 herramientas, comandos o conceptos.',
+                repeatable: true,
+                json_example: {
+                    TITLE: "nmap vs masscan",
+                    LEFT_NAME: "nmap",
+                    LEFT_ICON: "radar",
+                    LEFT_ITEMS: [
+                        { TEXT: "Preciso y detallado" },
+                        { TEXT: "Scripts NSE" },
+                        { TEXT: "Detección de OS" }
+                    ],
+                    RIGHT_NAME: "masscan",
+                    RIGHT_ICON: "speed",
+                    RIGHT_ITEMS: [
+                        { TEXT: "Extremadamente rápido" },
+                        { TEXT: "Millones de IPs/seg" },
+                        { TEXT: "Formato simple" }
+                    ],
+                    VERDICT: "nmap para detalle, masscan para velocidad.",
+                    SLIDE_NUMBER: "04/08"
+                },
+                rules: ["LEFT/RIGHT_ITEMS: exacto 3 cada uno", "VERDICT: máx 100 chars"]
+            },
+            'kr-clidn-13': {
+                purpose: 'STEP BY STEP. Un paso numerado.',
+                when: 'Tutorial paso a paso. REPETIR para cada paso.',
+                repeatable: true,
+                json_example: {
+                    STEP_NUMBER: "01",
+                    TOTAL_STEPS: "05",
+                    TITLE: "Instalación",
+                    DESCRIPTION: "Instala nmap desde los repos.",
+                    COMMAND: "$ sudo apt install nmap",
+                    EXPECTED_RESULT: "El paquete se instalará.",
+                    NOTE: "Necesitas conexión a internet.",
+                    SLIDE_NUMBER: "03/07"
+                },
+                rules: ["TITLE: máx 25 chars", "COMMAND: máx 60 chars"]
+            },
+            'kr-clidn-14': {
+                purpose: 'CODE BLOCK. Script o código completo.',
+                when: 'Mostrar un bloque de código con explicación.',
+                repeatable: true,
+                json_example: {
+                    TITLE: "Script de Escaneo",
+                    LANGUAGE: "bash",
+                    DESCRIPTION: "Automatiza escaneos con nmap.",
+                    CODE_LINES: [
+                        { LINE: "#!/bin/bash", COMMENT: "" },
+                        { LINE: "TARGET=$1", COMMENT: "# IP objetivo" },
+                        { LINE: "nmap -sS -sV $TARGET", COMMENT: "# Escaneo" },
+                        { LINE: "echo 'Completado'", COMMENT: "" }
+                    ],
+                    EXPLANATION: "Este script toma una IP como argumento y ejecuta un escaneo completo.",
+                    SLIDE_NUMBER: "04/08"
+                },
+                rules: ["CODE_LINES: entre 2 y 8 líneas", "LANGUAGE: bash, python, etc."]
+            },
+            'kr-clidn-15': {
+                purpose: 'CONCEPTO/DEFINICIÓN. Término técnico.',
+                when: 'Explicar un concepto, protocolo o término.',
+                repeatable: true,
+                json_example: {
+                    TERM: "TCP/IP",
+                    CATEGORY: "Redes",
+                    DEFINITION: "Conjunto de protocolos que gobierna la comunicación en Internet.",
+                    KEY_POINTS: [
+                        { ICON: "dns", TEXT: "Base de Internet" },
+                        { ICON: "lan", TEXT: "4 capas: Enlace, Red, Transporte, App" },
+                        { ICON: "router", TEXT: "IP identifica, TCP garantiza entrega" }
+                    ],
+                    EXAMPLE: "Cuando navegas, TCP/IP maneja cada paquete.",
+                    SLIDE_NUMBER: "04/08"
+                },
+                rules: ["TERM: máx 20 chars", "KEY_POINTS: exacto 3"]
+            },
+            'kr-clidn-16': {
+                purpose: 'DO vs DON\'T. Buenas vs malas prácticas.',
+                when: 'Enseñar ética o buenas prácticas.',
+                repeatable: true,
+                json_example: {
+                    TITLE: "Buenas Prácticas",
+                    DO_ITEMS: [
+                        { TEXT: "Pide autorización antes" },
+                        { TEXT: "Documenta hallazgos" }
+                    ],
+                    DONT_ITEMS: [
+                        { TEXT: "Escanear sin permiso" },
+                        { TEXT: "Compartir vulns públicamente" }
+                    ],
+                    BOTTOM_TIP: "La ética diferencia a un hacker de un criminal.",
+                    SLIDE_NUMBER: "05/08"
+                },
+                rules: ["DO_ITEMS: exacto 2", "DONT_ITEMS: exacto 2"]
+            },
+            'kr-clidn-17': {
+                purpose: 'CHECKLIST. Requisitos o verificaciones.',
+                when: 'Lista de prerrequisitos o verificaciones.',
+                repeatable: false,
+                json_example: {
+                    TITLE: "Antes de empezar",
+                    DESCRIPTION: "Verifica estos requisitos.",
+                    CHECK_ITEMS: [
+                        { TEXT: "Kali Linux instalado", CHECKED: true },
+                        { TEXT: "Terminal abierta", CHECKED: true },
+                        { TEXT: "Conexión a red", CHECKED: false },
+                        { TEXT: "Permisos root", CHECKED: false }
+                    ],
+                    NOTE: "Todos deben completarse.",
+                    SLIDE_NUMBER: "02/08"
+                },
+                rules: ["CHECK_ITEMS: entre 3 y 5 items", "CHECKED: true o false"]
+            },
+            'kr-clidn-18': {
+                purpose: 'QUOTE/FACT. Cita o dato impactante.',
+                when: 'Dato estadístico, cita o fact interesante.',
+                repeatable: false,
+                json_example: {
+                    QUOTE_TEXT: "\"La seguridad no es un producto, es un proceso.\"",
+                    QUOTE_AUTHOR: "Bruce Schneier",
+                    CONTEXT: "Criptógrafo y experto en seguridad.",
+                    EXTRA_FACT: "El 95% de brechas son por error humano.",
+                    SLIDE_NUMBER: "04/08"
+                },
+                rules: ["QUOTE_TEXT: máx 120 chars, con comillas", "EXTRA_FACT: máx 100 chars"]
+            },
+            'kr-clidn-21': {
+                purpose: 'PRO TERMINAL. Terminal realista con output colorizado.',
+                when: 'Mostrar sesión de terminal con múltiples líneas y colores.',
+                repeatable: true,
+                json_example: {
+                    TITLE: "Escaneo de Puertos",
+                    TERMINAL_LINES: [
+                        { TYPE: "prompt", TEXT: "$ nmap -sS -sV 192.168.1.1" },
+                        { TYPE: "output", TEXT: "Starting Nmap 7.94" },
+                        { TYPE: "highlight", TEXT: "PORT     STATE SERVICE  VERSION" },
+                        { TYPE: "success", TEXT: "22/tcp   open  ssh      OpenSSH 8.9" },
+                        { TYPE: "warning", TEXT: "443/tcp  open  ssl      VULNERABLE" }
+                    ],
+                    EXPLANATION: "Este escaneo SYN detecta puertos abiertos y versiones de servicios.",
+                    SLIDE_NUMBER: "04/08"
+                },
+                rules: ["TERMINAL_LINES: 4-8 líneas", "TYPE: prompt/output/highlight/success/warning/error"]
+            },
+            'kr-clidn-22': {
+                purpose: 'DIRECTORY TREE. Estructura visual de carpetas/archivos.',
+                when: 'Explicar jerarquía de directorios Linux.',
+                repeatable: true,
+                json_example: {
+                    TITLE: "Estructura de /etc",
+                    ROOT_PATH: "/etc",
+                    TREE_ITEMS: [
+                        { DEPTH: 0, TYPE: "folder", NAME: "etc/", DETAIL: "Configuraciones del sistema" },
+                        { DEPTH: 1, TYPE: "file", NAME: "passwd", DETAIL: "Usuarios del sistema" },
+                        { DEPTH: 1, TYPE: "folder", NAME: "ssh/", DETAIL: "Config SSH" }
+                    ],
+                    DESCRIPTION: "El directorio /etc contiene todas las configuraciones del sistema.",
+                    SLIDE_NUMBER: "04/08"
+                },
+                rules: ["TREE_ITEMS: 4-6 items", "DEPTH: 0-2", "TYPE: folder o file"]
+            },
+            'kr-clidn-23': {
+                purpose: 'PROCESS FLOW. Flujo visual de un proceso.',
+                when: 'Explicar cómo funciona algo paso a paso con flechas.',
+                repeatable: true,
+                json_example: {
+                    TITLE: "Cómo funciona un escaneo",
+                    FLOW_STEPS: [
+                        { ICON: "keyboard", LABEL: "Input", DESC: "El usuario ejecuta el comando" },
+                        { ICON: "memory", LABEL: "Proceso", DESC: "El kernel procesa la solicitud" },
+                        { ICON: "monitor", LABEL: "Output", DESC: "El resultado aparece en pantalla" }
+                    ],
+                    DESCRIPTION: "Cada comando sigue este flujo de ejecución.",
+                    SLIDE_NUMBER: "04/08"
+                },
+                rules: ["FLOW_STEPS: entre 3 y 5", "ICON: Material Icons válido"]
+            },
+            'kr-clidn-24': {
+                purpose: 'BEFORE/AFTER. Transformación de comando.',
+                when: 'Mostrar la diferencia entre básico y avanzado.',
+                repeatable: true,
+                json_example: {
+                    TITLE: "Antes y Después",
+                    BEFORE_TITLE: "ANTES",
+                    BEFORE_LINES: [{ TEXT: "$ ls" }, { TEXT: "file1.txt  file2.txt" }],
+                    AFTER_TITLE: "DESPUÉS",
+                    AFTER_LINES: [{ TEXT: "$ ls -la --color" }, { TEXT: "drwxr-xr-x 2 user user 4096 Jan 15 ./" }],
+                    COMMAND: "ls -la --color",
+                    EXPLANATION: "Al agregar flags obtienes permisos, tamaño y colores.",
+                    SLIDE_NUMBER: "04/08"
+                },
+                rules: ["BEFORE_LINES: 1-3", "AFTER_LINES: 1-4", "COMMAND: máx 50 chars"]
+            },
+            'kr-clidn-25': {
+                purpose: 'PRO TIP. Tip profesional destacado.',
+                when: 'Un consejo importante que mejora productividad.',
+                repeatable: true,
+                json_example: {
+                    TIP_NUMBER: "01",
+                    TITLE: "Usa Aliases",
+                    TIP_TEXT: "Crea alias en tu .bashrc para acelerar tu flujo de trabajo.",
+                    EXAMPLE_CMD: "alias ll='ls -la --color=auto'",
+                    WHY_TEXT: "Los alias convierten comandos largos en atajos rápidos.",
+                    CATEGORY: "Productividad",
+                    SLIDE_NUMBER: "05/08"
+                },
+                rules: ["TIP_TEXT: máx 200 chars", "EXAMPLE_CMD: máx 60 chars"]
+            },
+            'kr-clidn-26': {
+                purpose: 'NETWORK DIAGRAM. Topología de red visual.',
+                when: 'Mostrar diagrama de red con dispositivos e IPs.',
+                repeatable: true,
+                json_example: {
+                    TITLE: "Topología de Red",
+                    NODES: [
+                        { ICON: "router", NAME: "Router", IP: "192.168.1.1", STATUS: "active" },
+                        { ICON: "computer", NAME: "Kali Linux", IP: "192.168.1.100", STATUS: "active" },
+                        { ICON: "storage", NAME: "Target", IP: "192.168.1.50", STATUS: "target" }
+                    ],
+                    DESCRIPTION: "Topología típica para pruebas de penetración.",
+                    SLIDE_NUMBER: "04/08"
+                },
+                rules: ["NODES: 3-4 nodos", "STATUS: active o target"]
+            },
+            'kr-clidn-27': {
+                purpose: 'PERMISSION MATRIX. Permisos rwx explicados.',
+                when: 'Enseñar permisos de archivos Linux visualmente.',
+                repeatable: true,
+                json_example: {
+                    TITLE: "Permisos Linux",
+                    FILE_EXAMPLE: "-rwxr-xr-- 1 root www-data 4096 script.sh",
+                    PERMISSION_GROUPS: [
+                        { GROUP: "Owner", PERMS: "rwx", ICON: "person", COLOR: "#00ff88", DESC: "Control total" },
+                        { GROUP: "Group", PERMS: "r-x", ICON: "group", COLOR: "#00d4ff", DESC: "Leer y ejecutar" },
+                        { GROUP: "Others", PERMS: "r--", ICON: "public", COLOR: "#ff9500", DESC: "Solo lectura" }
+                    ],
+                    EXPLANATION: "Los permisos determinan quién puede leer (r), escribir (w) o ejecutar (x).",
+                    SLIDE_NUMBER: "05/08"
+                },
+                rules: ["PERMISSION_GROUPS: exacto 3", "PERMS: 3 chars rwx/-"]
+            },
+            'kr-clidn-28': {
+                purpose: 'CHEAT SHEET. Grid de comandos rápidos.',
+                when: 'Resumen compacto de múltiples comandos.',
+                repeatable: true,
+                json_example: {
+                    TITLE: "Cheat Sheet",
+                    CATEGORY: "Comandos Esenciales",
+                    COMMANDS: [
+                        { CMD: "pwd", DESC: "Directorio actual" },
+                        { CMD: "ls -la", DESC: "Listar detallado" },
+                        { CMD: "cd ~", DESC: "Ir al home" },
+                        { CMD: "mkdir -p", DESC: "Crear directorios" },
+                        { CMD: "rm -rf", DESC: "Eliminar recursivo" },
+                        { CMD: "cp -r", DESC: "Copiar recursivo" }
+                    ],
+                    NOTE: "Guarda esta referencia rápida.",
+                    SLIDE_NUMBER: "06/08"
+                },
+                rules: ["COMMANDS: entre 6 y 8 items", "CMD: máx 15 chars", "DESC: máx 25 chars"]
+            },
+            'kr-clidn-29': {
+                purpose: 'ERROR/SOLUTION. Error con solución.',
+                when: 'Error común que todo principiante encuentra.',
+                repeatable: true,
+                json_example: {
+                    TITLE: "Permission Denied",
+                    ERROR_CMD: "$ apt install nmap",
+                    ERROR_OUTPUT: "E: Could not open lock file - Permission denied",
+                    ERROR_MEANING: "No tienes permisos root para instalar paquetes.",
+                    SOLUTION_CMD: "$ sudo apt install nmap",
+                    SOLUTION_OUTPUT: "Reading package lists... Done.",
+                    WHY_IT_WORKS: "sudo eleva privilegios temporalmente para operaciones de sistema.",
+                    SLIDE_NUMBER: "05/08"
+                },
+                rules: ["ERROR_OUTPUT: máx 150 chars", "WHY_IT_WORKS: máx 200 chars"]
+            },
+            'kr-clidn-30': {
+                purpose: 'MINI TUTORIAL. 3 pasos compactos.',
+                when: 'Tutorial rápido que cabe en un solo slide.',
+                repeatable: true,
+                json_example: {
+                    TITLE: "Instalar Nmap",
+                    DESCRIPTION: "3 pasos para tener nmap listo.",
+                    STEPS: [
+                        { NUM: "1", TITLE: "Abre terminal", CMD: "$ Ctrl+Alt+T", RESULT: "Se abre la terminal" },
+                        { NUM: "2", TITLE: "Actualiza", CMD: "$ sudo apt update", RESULT: "Listas actualizadas" },
+                        { NUM: "3", TITLE: "Instala", CMD: "$ sudo apt install nmap", RESULT: "nmap listo" }
+                    ],
+                    FINAL_NOTE: "¡Listo! Ya puedes usar nmap.",
+                    SLIDE_NUMBER: "04/08"
+                },
+                rules: ["STEPS: exacto 3", "Cada step: NUM, TITLE, CMD, RESULT"]
+            },
+            'kr-clidn-31': {
+                purpose: 'SCRIPT EDITOR. Editor de código profesional tipo IDE.',
+                when: 'Mostrar scripts completos con líneas numeradas y syntax highlighting.',
+                repeatable: true,
+                json_example: {
+                    TITLE: "Script de Escaneo",
+                    FILENAME: "scan.sh",
+                    LANGUAGE: "bash",
+                    DESCRIPTION: "Automatiza el escaneo de puertos en un rango de IPs.",
+                    CODE_LINES: [
+                        { TEXT: "#!/bin/bash", TYPE: "comment" },
+                        { TEXT: "", TYPE: "blank" },
+                        { TEXT: "# Variables", TYPE: "comment" },
+                        { TEXT: "TARGET=$1", TYPE: "variable" },
+                        { TEXT: "nmap -sS -sV $TARGET", TYPE: "command" },
+                        { TEXT: 'echo "Done: $TARGET"', TYPE: "string" }
+                    ],
+                    EXPLANATION: "El script toma una IP como argumento y ejecuta un escaneo SYN.",
+                    SLIDE_NUMBER: "04/08"
+                },
+                rules: ["CODE_LINES: 6-12 líneas", "TYPE: comment/variable/command/string/keyword/blank"]
+            }
+        };
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // PROMPT MAESTRO v4.0 — 30 TEMPLATES, CONTENIDO EDUCATIVO PROFUNDO
+    // ═══════════════════════════════════════════════════════════════════════
+
+    buildCarouselPrompt(topic, packId) {
+        const pack = this.getPackById(packId);
+        if (!pack) throw new Error(`Pack ${packId} no encontrado`);
+
+        const catalog = this.getTemplateCatalog();
+
+        const templateDocs = Object.entries(catalog).map(([tId, entry]) => {
+            return `
+═══ "${tId}" — ${entry.repeatable ? '🔄 REPETIBLE' : '1️⃣ ÚNICO'} ═══
+PROPÓSITO: ${entry.purpose}
+CUÁNDO: ${entry.when}
+REGLAS: ${entry.rules.join(' | ')}
+EJEMPLO: ${JSON.stringify(entry.json_example, null, 2)}
+`;
+        }).join('\n');
+
+        return `
+Eres un PROFESOR EXPERTO en ciberseguridad y Linux que crea contenido educativo ULTRA-DETALLADO.
+Especialidad: carruseles tipo LIBRO DIDÁCTICO sobre cyberseguridad, Linux, hacking ético y herramientas GitHub.
+
+TU MISIÓN: Crear contenido que ENSEÑE de verdad. Cada slide es una PÁGINA DE LIBRO.
+El lector debe terminar ENTENDIENDO el tema completamente, no solo viendo un resumen.
+
+══════════════════════════════════════════════════════════════
+TEMA: "${topic}"
+══════════════════════════════════════════════════════════════
+
+PLANTILLAS DISPONIBLES (31 templates):
+${templateDocs}
+
+══════════════════════════════════════════════════════════════
+📝 CALIDAD DEL CONTENIDO — ESTO ES LO MÁS IMPORTANTE
+══════════════════════════════════════════════════════════════
+
+REGLA DE ORO: Escribe como un LIBRO DE TEXTO, no como un tweet.
+
+PARA CADA CAMPO DE TEXTO:
+- DESCRIPTION / INTRO_TEXT / DEFINITION: Escribe párrafos completos y detallados.
+  ❌ MAL: "Lista archivos"
+  ✅ BIEN: "Lista el contenido de un directorio mostrando nombres de archivos y subdirectorios. Es el comando más básico y fundamental para navegar el sistema de archivos de Linux."
+
+- EXAMPLE_OUTPUT / TERMINAL_LINES: Muestra output REALISTA y completo.
+  ❌ MAL: "drwxr-xr-x ..."
+  ✅ BIEN: "drwxr-xr-x 5 root root 4096 Jan 15 14:30 home"
+
+- FLAG DESC / KEY_FLAGS DESC: Explica QUÉ HACE y POR QUÉ es útil.
+  ❌ MAL: "Formato largo"
+  ✅ BIEN: "Muestra permisos, propietario, tamaño y fecha de cada archivo"
+
+- WARNING_CONTENT / NOTE: Da contexto REAL y específico.
+  ❌ MAL: "Ten cuidado"
+  ✅ BIEN: "Ejecutar escaneos sin autorización escrita viola el artículo 197 del Código Penal y puede conllevar hasta 4 años de prisión"
+
+- EXPLANATION / WHY_IT_WORKS: Explicaciones detalladas de POR QUÉ funciona.
+  ❌ MAL: "Funciona bien"
+  ✅ BIEN: "El prefijo sudo eleva tus privilegios temporalmente usando el mecanismo PAM del kernel, permitiendo ejecutar comandos con acceso root sin iniciar sesión como superusuario"
+
+LONGITUD IDEAL POR CAMPO:
+- Campos cortos (FLAG, COMMAND_NAME, TITLE): Concisos, técnicamente precisos  
+- Campos medios (DESCRIPTION, INTRO_TEXT): 80-150 caracteres, oraciones completas
+- Campos largos (DEFINITION, EXPLANATION, WHY_IT_WORKS): 100-200 caracteres, explicación detallada
+- Campos de ejemplo (EXAMPLE_CMD, TERMINAL_LINES): Realistas, con parámetros reales
+
+══════════════════════════════════════════════════════════════
+🎯 SELECCIÓN INTELIGENTE DE TEMPLATES
+══════════════════════════════════════════════════════════════
+
+USA LOS NUEVOS TEMPLATES CREATIVAMENTE:
+- 🖥️ kr-clidn-21 (Pro Terminal): Para mostrar sesiones REALES de terminal con output colorizado
+- 📁 kr-clidn-22 (Directory Tree): Para explicar estructura de directorios
+- 🔄 kr-clidn-23 (Process Flow): Para explicar CÓMO funciona algo internamente
+- ⚡ kr-clidn-24 (Before/After): Para mostrar la TRANSFORMACIÓN de un comando
+- 💡 kr-clidn-25 (Pro Tip): Para tips que mejoran productividad
+- 🌐 kr-clidn-26 (Network Diagram): Para topologías y redes
+- 🔒 kr-clidn-27 (Permission Matrix): Para permisos rwx
+- 📋 kr-clidn-28 (Cheat Sheet): Para resumen rápido de comandos
+- 🐛 kr-clidn-29 (Error/Solution): Para errores comunes y cómo solucionarlos
+- 📖 kr-clidn-30 (Mini Tutorial): Para tutoriales compactos de 3 pasos
+- 📝 kr-clidn-31 (Script Editor): Para mostrar scripts completos con syntax highlighting
+
+REGLA PRINCIPAL: Genera TODOS los slides que el contenido necesite.
+NO hay límite artificial. Si el tema requiere 5 slides, genera 5.
+Si requiere 35, genera 35. El contenido manda.
+
+ESTRUCTURA OBLIGATORIA — TIPO LIBRO:
+┌──────────────────────────────────────────────────────────┐
+│ 1. SIEMPRE primer slide: "kr-clidn-01" (Portada)        │
+│ 2. Si hay 10+ slides: "kr-clidn-19" (Índice) como #2    │
+│ 3. Si hay secciones: "kr-clidn-20" (Divider) al inicio  │
+│ 4. Contenido: templates que mejor encajen, REPETIDOS     │
+│ 5. SIEMPRE último slide: "kr-clidn-09" (Follow CTA)     │
+└──────────────────────────────────────────────────────────┘
+
+EJEMPLOS DE VARIEDAD:
+- "20 comandos de Linux" → cover + TOC + [command cards + pro terminals + before/afters + tips] + CTA
+- "Tutorial de Nmap" → cover + steps + pro terminal + network diagram + error/solution + cheat sheet + CTA
+- "Permisos Linux" → cover + concept + directory tree + permission matrices + before/after + CTA
+- "Herramientas GitHub" → cover + TOC + github tools + pro terminals + comparison + CTA
+
+TEMPLATES REPETIBLES (N veces):
+✅ kr-clidn-11 (Command Card), kr-clidn-13 (Step by Step)
+✅ kr-clidn-21 (Pro Terminal), kr-clidn-22 (Directory Tree)
+✅ kr-clidn-23 (Process Flow), kr-clidn-24 (Before/After)
+✅ kr-clidn-25 (Pro Tip), kr-clidn-26 (Network Diagram)
+✅ kr-clidn-27 (Permission Matrix), kr-clidn-28 (Cheat Sheet)
+✅ kr-clidn-29 (Error/Solution), kr-clidn-30 (Mini Tutorial)
+✅ kr-clidn-31 (Script Editor)
+✅ kr-clidn-03, 04, 05, 06, 07, 08, 10, 12, 14, 15, 16, 20
+
+TEMPLATES ÚNICOS (máximo 1):
+1️⃣ kr-clidn-01 (Cover), kr-clidn-19 (TOC), kr-clidn-09 (CTA)
+1️⃣ kr-clidn-17 (Checklist), kr-clidn-18 (Quote)
+
+REGLAS:
+1. SLIDE_NUMBER: "XX/YY" donde YY = total REAL
+2. Numerar secuencialmente: COMMAND_NUMBER, STEP_NUMBER, CHAPTER_NUMBER, TIP_NUMBER
+3. Cada slide = contenido ÚNICO y educativo
+4. MEZCLA templates para VARIEDAD visual — no uses el mismo template 10 veces seguidas
+5. ICON: Material Icons válidos (check, code, terminal, security, radar, etc.)
+6. El post = LIBRO: portada → índice → contenido detallado → resumen → follow
+
+══════════════════════════════════════════════════════════════
+FORMATO DE RESPUESTA
+══════════════════════════════════════════════════════════════
+
+Responde ÚNICAMENTE con un Array JSON válido.
+Sin markdown, sin backticks, sin texto extra.
+
+[
+  { "templateId": "kr-clidn-01", "content": { ... } },
+  { "templateId": "kr-clidn-19", "content": { ... } },
+  { "templateId": "kr-clidn-21", "content": { ... } },
+  ...
+  { "templateId": "kr-clidn-09", "content": { ... } }
+]
+`.trim();
+    }
+}
+
+window.CarouselEngine = CarouselEngine;
+

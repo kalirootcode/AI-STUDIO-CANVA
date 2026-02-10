@@ -1,0 +1,37 @@
+{
+    "id": "kr-clidn-19",
+    "name": "KR-CLI: Table of Contents",
+    "category": "education",
+    "description": "Índice de contenidos para posts largos tipo libro.",
+    "fields": {
+        "TITLE": {
+            "description": "Título del índice",
+            "max_chars": 25,
+            "default": "Contenido"
+        },
+        "SUBTITLE": {
+            "description": "Subtítulo",
+            "max_chars": 180,
+            "default": "Lo que aprenderás"
+        },
+        "ITEMS": {
+            "description": "Entradas del índice",
+            "type": "array",
+            "count": 4,
+            "items": {
+                "NUMBER": "Número",
+                "TEXT": "Sección",
+                "RANGE": "Rango de slides"
+            }
+        },
+        "TOTAL_SLIDES": {
+            "description": "Total de slides",
+            "max_chars": 3,
+            "default": "16"
+        },
+        "SLIDE_NUMBER": {
+            "description": "Número de diapositiva",
+            "default": "02/16"
+        }
+    }
+}

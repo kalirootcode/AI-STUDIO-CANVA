@@ -1,0 +1,51 @@
+{
+    "id": "kr-clidn-10",
+    "name": "KR-CLI: GitHub Tool",
+    "category": "education",
+    "description": "Presenta una herramienta de GitHub con instalación, uso y características.",
+    "fields": {
+        "TOOL_NAME": {
+            "description": "Nombre de la herramienta",
+            "max_chars": 20,
+            "default": "Herramienta"
+        },
+        "TOOL_CATEGORY": {
+            "description": "Categoría de la herramienta (Pentesting, OSINT, etc.)",
+            "max_chars": 20,
+            "default": "Pentesting"
+        },
+        "DESCRIPTION": {
+            "description": "Descripción breve de la herramienta",
+            "max_chars": 200,
+            "default": "Herramienta de seguridad."
+        },
+        "INSTALL_CMD": {
+            "description": "Comando de instalación",
+            "max_chars": 220,
+            "default": "$ git clone https://github.com/user/tool"
+        },
+        "USAGE_CMD": {
+            "description": "Comando de uso básico",
+            "max_chars": 220,
+            "default": "$ python3 tool.py --help"
+        },
+        "FEATURES": {
+            "description": "Características principales (recom: 3)",
+            "type": "array",
+            "count": 3,
+            "items": {
+                "ICON": "icon_name (material icons)",
+                "TEXT": "Característica"
+            }
+        },
+        "GITHUB_STARS": {
+            "description": "Cantidad de stars en GitHub",
+            "max_chars": 10,
+            "default": "1.2k"
+        },
+        "SLIDE_NUMBER": {
+            "description": "Número de diapositiva",
+            "default": "05/08"
+        }
+    }
+}

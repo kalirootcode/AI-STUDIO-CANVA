@@ -1,0 +1,41 @@
+{
+    "id": "kr-clidn-04",
+    "name": "KR-CLI: Análisis de Salida",
+    "category": "education",
+    "description": "Diapositiva para explicar la salida de un comando (ej: permisos, columnas).",
+    "fields": {
+        "TITLE": {
+            "description": "Título de la sección (ej: Entendiendo ls -l)",
+            "max_chars": 35,
+            "default": "Entendiendo la salida de ls -l"
+        },
+        "WARNING_TEXT": {
+            "description": "Texto de advertencia o importancia",
+            "max_chars": 220,
+            "default": "Entender esto es vital para la seguridad en Kali Linux"
+        },
+        "OUTPUT_LINES": {
+            "description": "Líneas de salida del comando simulado (terminal)",
+            "type": "array",
+            "count": 2,
+            "items": {
+                "TEXT": "Contenido de la línea",
+                "HIGHLIGHT": "Parte del texto a resaltar en azul (opcional)"
+            }
+        },
+        "BREAKDOWN_CARDS": {
+            "description": "Tarjetas explicativas de las partes de la salida",
+            "type": "array",
+            "count": 1,
+            "items": {
+                "NUMBER": "Número (1, 2...)",
+                "TITLE": "Título de la explicación (ej: Permisos)",
+                "CONTENT_HTML": "Contenido explicativo (soporta <br>, <span>)"
+            }
+        },
+        "SLIDE_NUMBER": {
+            "description": "Número de diapositiva",
+            "default": "04/10"
+        }
+    }
+}

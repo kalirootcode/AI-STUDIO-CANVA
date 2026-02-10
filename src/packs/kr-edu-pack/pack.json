@@ -1,0 +1,8 @@
+{
+    "id": "kr-edu-pack",
+    "name": "KR-CLI Educación",
+    "description": "31 templates profesionales con branding KR-CLIDN. Terminal, scripts, diagramas, permisos, flujos y más.",
+    "icon": "school",
+    "author": "KR-CLI Team",
+    "version": "5.0"
+}

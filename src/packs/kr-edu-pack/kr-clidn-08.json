@@ -1,0 +1,57 @@
+{
+    "id": "kr-clidn-08",
+    "name": "KR-CLI: Ejercicio con Estadística",
+    "category": "education",
+    "description": "Diapositiva de ejercicio con un bloque de estadística/porcentaje destacado.",
+    "fields": {
+        "EXERCISE_LETTER": {
+            "description": "Letra o número del ejercicio",
+            "max_chars": 2,
+            "default": "C"
+        },
+        "TITLE": {
+            "description": "Título del ejercicio",
+            "max_chars": 30,
+            "default": "El comando del profesional"
+        },
+        "INTRO_TEXT": {
+            "description": "Instrucciones iniciales",
+            "max_chars": 200,
+            "default": "Quiero que veas todo el detalle, incluyendo ocultos y tamaños legibles"
+        },
+        "COMMAND": {
+            "description": "El comando a ejecutar",
+            "max_chars": 50,
+            "default": "$ ls -lah"
+        },
+        "RESULT_TEXT": {
+            "description": "Descripción del resultado esperado",
+            "max_chars": 220,
+            "default": "Verás todos los archivos con detalles completos."
+        },
+        "PERCENTAGE": {
+            "description": "Número de porcentaje destacado",
+            "max_chars": 5,
+            "default": "80%"
+        },
+        "PERCENTAGE_TEXT": {
+            "description": "Explicación del porcentaje",
+            "max_chars": 180,
+            "default": "Esta es probablemente la forma en que usarás ls la mayor parte del tiempo"
+        },
+        "TIP_TITLE": {
+            "description": "Título de la nota inferior",
+            "max_chars": 15,
+            "default": "Recuerda"
+        },
+        "TIP_CONTENT": {
+            "description": "Contenido de la nota",
+            "max_chars": 220,
+            "default": "-l: lista detallada | -a: muestra ocultos | -h: tamaños legibles"
+        },
+        "SLIDE_NUMBER": {
+            "description": "Número de diapositiva",
+            "default": "09/10"
+        }
+    }
+}

@@ -55,11 +55,11 @@ ipcMain.handle('export-image', async (event, { html, width, height, format }) =>
 
         const page = await browser.newPage();
 
-        // Usar deviceScaleFactor 2 para imágenes 2x más nítidas (retina)
+        // Usar deviceScaleFactor 1 para exportación exacta (pixel perfect según dimensiones elegidas)
         await page.setViewport({
             width,
             height,
-            deviceScaleFactor: 2
+            deviceScaleFactor: 1
         });
 
         // Detect content size from the HTML
@@ -82,12 +82,17 @@ ipcMain.handle('export-image', async (event, { html, width, height, format }) =>
             if (bodyMatch) bodyContent = bodyMatch[1];
         }
 
+        // Extract links (fonts, icons, etc.) from user's HTML
+        const linksMatch = html.match(/<link[^>]*>/gi) || [];
+        const linksHTML = linksMatch.join('\n    ');
+
         // Create export HTML with proper scaling
         const scaledHTML = `
 <!DOCTYPE html>
 <html>
 <head>
     <meta charset="UTF-8">
+    ${linksHTML}
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         html, body {
@@ -127,7 +132,10 @@ ipcMain.handle('export-image', async (event, { html, width, height, format }) =>
 </html>`;
 
         await page.setContent(scaledHTML, { waitUntil: 'networkidle0' });
-        await new Promise(resolve => setTimeout(resolve, 2000));
+
+        // Wait for fonts to load
+        await page.evaluate(() => document.fonts.ready);
+        await new Promise(resolve => setTimeout(resolve, 3000));
 
         // Mostrar diálogo para elegir nombre y ubicación
         const ext = format.toLowerCase();
@@ -300,41 +308,219 @@ ${html}
     }
 });
 
-// IPC: Llamar a AI (Groq)
-ipcMain.handle('call-ai', async (event, { apiKey, prompt }) => {
+// IPC: Llamar a AI (Groq / Gemini)
+ipcMain.handle('call-ai', async (event, { provider, apiKey, prompt }) => {
     try {
-        const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${apiKey}`,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                model: 'llama-3.3-70b-versatile',
-                messages: [
-                    { role: 'system', content: 'You are an HTML/CSS expert. Return ONLY raw HTML code, no markdown.' },
-                    { role: 'user', content: prompt }
-                ],
-                temperature: 0.5,
-                max_tokens: 8000
-            })
-        });
+        // Sanitizar API Key (eliminar espacios y saltos de línea)
+        apiKey = apiKey ? apiKey.trim() : '';
 
-        const data = await response.json();
+        console.log(`[IPC] call-ai request: Provider=${provider}, KeyLength=${apiKey.length}, KeyStart=${apiKey.substring(0, 4)}...`);
 
-        if (data.error) {
-            return { success: false, error: data.error.message };
+        if (provider === 'gemini') {
+            // ─── GEMINI (Google Generative AI) ───
+            // Lista ampliada de modelos para maximizar compatibilidad
+            // Actualizado con modelos disponibles confirmados (v2.5, v2.0)
+            const models = [
+                'gemini-2.5-pro',
+                'gemini-2.0-flash',
+                'gemini-2.0-flash-001',
+                'gemini-1.5-pro-latest',
+                'gemini-1.5-pro',
+                'gemini-1.5-flash',
+                'gemini-pro-latest',
+                'gemini-pro'
+            ];
+
+            let lastError = null;
+
+            for (const model of models) {
+                console.log(`[IPC] Intentando Gemini con modelo: ${model}...`);
+
+                try {
+                    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(apiKey)}`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            contents: [{ parts: [{ text: prompt }] }],
+                            generationConfig: {
+                                temperature: 0.7,
+                                maxOutputTokens: 8192
+                            }
+                        })
+                    });
+
+                    if (!response.ok) {
+                        const errText = await response.text();
+                        console.warn(`[IPC] Falló ${model}: ${response.status} - ${errText}`);
+                        lastError = `Error (${model}): ${response.status}`;
+                        continue;
+                    }
+
+                    const data = await response.json();
+
+                    if (data.error) {
+                        lastError = data.error.message || JSON.stringify(data.error);
+                        continue;
+                    }
+
+                    if (!data.candidates || data.candidates.length === 0) {
+                        if (data.promptFeedback && data.promptFeedback.blockReason) {
+                            return { success: false, error: `Gemini Blocked (${model}): ${data.promptFeedback.blockReason}` };
+                        }
+                        lastError = `No candidates from ${model}`;
+                        continue;
+                    }
+
+                    const code = data.candidates[0].content.parts[0].text.trim();
+                    // Limpieza simple
+                    let cleanCode = code;
+                    if (cleanCode.startsWith('```json')) cleanCode = cleanCode.slice(7);
+                    else if (cleanCode.startsWith('```')) cleanCode = cleanCode.slice(3);
+                    if (cleanCode.endsWith('```')) cleanCode = cleanCode.slice(0, -3);
+
+                    console.log(`[IPC] Éxito con Gemini (${model})`);
+                    console.log(`[IPC] Response Preview: ${cleanCode.substring(0, 500)}...`);
+                    return { success: true, code: cleanCode.trim() };
+
+                } catch (err) {
+                    console.error(`[IPC] Excepción con ${model}:`, err);
+                    lastError = err.message;
+                }
+            }
+
+            // Si llegamos aquí, todo falló. Intentemos listar los modelos disponibles para ver qué pasa.
+            console.log("[IPC] Todos los modelos fallaron. Intentando listar modelos disponibles...");
+            try {
+                const listResp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${encodeURIComponent(apiKey)}`);
+                if (listResp.ok) {
+                    const listData = await listResp.json();
+                    if (listData.models) {
+                        const availableModels = listData.models.map(m => m.name.replace('models/', '')).join(', ');
+                        return { success: false, error: `No se pudo conectar con ningún modelo estándar. Modelos disponibles para tu Key: ${availableModels}. Error original: ${lastError}` };
+                    }
+                }
+            } catch (listErr) {
+                console.error("Error listing models:", listErr);
+            }
+
+            return { success: false, error: `Gemini Error: Ningún modelo compatible encontrado. Último error: ${lastError}` };
+
+        } else {
+            // ─── GROQ (Llama 3) ───
+            const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${apiKey}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    model: 'llama-3.3-70b-versatile',
+                    messages: [
+                        { role: 'system', content: 'You are an expert content creator and code generator. Follow instructions precisely. When asked for JSON, return ONLY valid JSON without any markdown formatting or extra text.' },
+                        { role: 'user', content: prompt }
+                    ],
+                    temperature: 0.7,
+                    max_tokens: 8000
+                })
+            });
+
+            const data = await response.json();
+
+            if (data.error) {
+                return { success: false, error: data.error.message };
+            }
+
+            let code = data.choices[0].message.content.trim();
+
+            // Limpiar markdown
+            if (code.startsWith('```json')) code = code.slice(7);
+            else if (code.startsWith('```')) code = code.slice(3);
+            if (code.endsWith('```')) code = code.slice(0, -3);
+
+            return { success: true, code: code.trim() };
         }
-
-        let code = data.choices[0].message.content.trim();
-
-        // Limpiar markdown si existe
-        if (code.startsWith('```html')) code = code.slice(7);
-        else if (code.startsWith('```')) code = code.slice(3);
-        if (code.endsWith('```')) code = code.slice(0, -3);
-
-        return { success: true, code: code.trim() };
     } catch (error) {
         return { success: false, error: error.message };
+    }
+});
+
+// IPC: Cargar Packs (nueva estructura plana)
+ipcMain.handle('load-packs', async () => {
+    try {
+        const packsDir = path.join(__dirname, 'src', 'packs');
+
+        if (!fs.existsSync(packsDir)) {
+            console.error('Directorio de packs no encontrado:', packsDir);
+            return [];
+        }
+
+        const packFolders = fs.readdirSync(packsDir, { withFileTypes: true })
+            .filter(e => e.isDirectory());
+
+        const packs = [];
+
+        for (const folder of packFolders) {
+            const packPath = path.join(packsDir, folder.name);
+            const packJsonPath = path.join(packPath, 'pack.json');
+
+            // Cada pack DEBE tener un pack.json
+            if (!fs.existsSync(packJsonPath)) {
+                console.warn(`Pack ${folder.name} no tiene pack.json, saltando.`);
+                continue;
+            }
+
+            try {
+                const packMeta = JSON.parse(fs.readFileSync(packJsonPath, 'utf8'));
+
+                // Escanear archivos .json (excepto pack.json) para encontrar templates
+                const files = fs.readdirSync(packPath);
+                const templateIds = files
+                    .filter(f => f.endsWith('.json') && f !== 'pack.json')
+                    .map(f => f.replace('.json', ''));
+
+                const templates = [];
+
+                for (const tid of templateIds) {
+                    const manifestPath = path.join(packPath, `${tid}.json`);
+                    const jsPath = path.join(packPath, `${tid}.js`);
+
+                    if (!fs.existsSync(jsPath)) {
+                        console.warn(`Template ${tid} tiene .json pero no .js, saltando.`);
+                        continue;
+                    }
+
+                    try {
+                        const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+                        const jsContent = fs.readFileSync(jsPath, 'utf8');
+
+                        templates.push({
+                            id: manifest.id || tid,
+                            manifest: manifest,
+                            code: jsContent
+                        });
+                    } catch (err) {
+                        console.error(`Error cargando template ${tid}:`, err);
+                    }
+                }
+
+                packs.push({
+                    id: packMeta.id || folder.name,
+                    name: packMeta.name || folder.name,
+                    description: packMeta.description || '',
+                    icon: packMeta.icon || 'layers',
+                    templates: templates
+                });
+
+                console.log(`Pack "${packMeta.name}" cargado con ${templates.length} templates.`);
+
+            } catch (err) {
+                console.error(`Error cargando pack ${folder.name}:`, err);
+            }
+        }
+
+        return packs;
+    } catch (error) {
+        console.error('Error loading packs:', error);
+        return [];
     }
 });

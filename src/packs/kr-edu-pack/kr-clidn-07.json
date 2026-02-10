@@ -1,0 +1,47 @@
+{
+    "id": "kr-clidn-07",
+    "name": "KR-CLI: Ejercicio con Advertencia",
+    "category": "education",
+    "description": "Diapositiva de ejercicio práctico con una nota de advertencia/importante resaltada.",
+    "fields": {
+        "EXERCISE_LETTER": {
+            "description": "Letra o número del ejercicio",
+            "max_chars": 2,
+            "default": "B"
+        },
+        "TITLE": {
+            "description": "Título del ejercicio",
+            "max_chars": 25,
+            "default": "Viendo lo invisible"
+        },
+        "INTRO_TEXT": {
+            "description": "Instrucciones iniciales",
+            "max_chars": 200,
+            "default": "En Linux, los archivos de configuración importantes suelen estar ocultos."
+        },
+        "COMMAND": {
+            "description": "El comando a ejecutar",
+            "max_chars": 50,
+            "default": "$ ls -a"
+        },
+        "RESULT_TEXT": {
+            "description": "Descripción del resultado esperado",
+            "max_chars": 200,
+            "default": "Busca archivos como .bashrc o .zshrc."
+        },
+        "WARNING_TITLE": {
+            "description": "Título de la caja de advertencia",
+            "max_chars": 15,
+            "default": "Importante"
+        },
+        "WARNING_CONTENT": {
+            "description": "Contenido de la advertencia",
+            "max_chars": 220,
+            "default": "Los archivos que comienzan con un punto . están ocultos por defecto."
+        },
+        "SLIDE_NUMBER": {
+            "description": "Número de diapositiva",
+            "default": "08/10"
+        }
+    }
+}

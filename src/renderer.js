@@ -1,7 +1,8 @@
-
 // ═══════════════════════════════════════════════════════════════════════════
 // CYBER-CANVAS AI STUDIO - Renderer
 // ═══════════════════════════════════════════════════════════════════════════
+
+console.log("renderer.js CARGADO CORRECTAMENTE");
 
 // Aspect ratios configuration
 const ASPECT_RATIOS = {
@@ -15,20 +16,324 @@ const ASPECT_RATIOS = {
 let editor;
 let isProcessing = false;
 let templateEngine = null;
-let selectedTemplateId = null;
+let carouselEngine = null; // New
+let selectedPackId = null; // Renamed from selectedTemplateId
+let generatedSlides = []; // New: Stores the array of generated slides content
+let currentSlideIndex = 0; // New: Tracks current view
 
 // Sample HTML code (empty - user pastes their own)
 const SAMPLE_HTML = ``;
 
+// ... (previous init code remains similar, but calls initCarousel)
+
 // ═══════════════════════════════════════════════════════════════════════════
-// INITIALIZATION
+// TEMPLATES & PACKS SYSTEM
 // ═══════════════════════════════════════════════════════════════════════════
 
-document.addEventListener('DOMContentLoaded', () => {
-    initEditor();
-    initEventListeners();
-    initTemplates();
-    updatePreviewSize();
+async function initTemplates() {
+    console.log("Iniciando carga de packs y templates...");
+    templateEngine = new TemplateEngine();
+
+    // Cargar packs desde el sistema de archivos (nueva estructura plana)
+    const packsMeta = await templateEngine.loadFromPacks();
+
+    // Inicializar Carousel Engine con los packs descubiertos
+    carouselEngine = new CarouselEngine(templateEngine);
+    carouselEngine.setPacks(packsMeta);
+
+    // Renderizar Galería de Packs
+    renderPacksGallery();
+
+    // Seleccionar el primer pack por defecto
+    const packs = carouselEngine.getPacks();
+    if (packs.length > 0) {
+        selectPack(packs[0].id);
+    } else {
+        showStatus('No se encontraron Packs en src/packs/', 'warning');
+    }
+}
+
+function renderPacksGallery() {
+    const gallery = document.getElementById('templatesGallery');
+    const packs = carouselEngine.getPacks();
+
+    if (packs.length === 0) {
+        gallery.innerHTML = '<div class="no-templates">No Packs found</div>';
+        return;
+    }
+
+    gallery.innerHTML = packs.map(p => `
+        <div class="template-card ${selectedPackId === p.id ? 'selected' : ''}" 
+             data-id="${p.id}" 
+             onclick="selectPack('${p.id}')">
+            <div class="icon"><i class="material-icons">${p.icon || 'layers'}</i></div>
+            <div class="info">
+                <div class="name">${p.name}</div>
+                <div class="desc">${p.description || 'Pack de plantillas'}</div>
+                <div class="count-badge">${p.templateIds.length} Slides</div>
+            </div>
+        </div>
+    `).join('');
+}
+
+function selectPack(packId) {
+    selectedPackId = packId;
+
+    // Update UI
+    document.querySelectorAll('.template-card').forEach(card => {
+        if (card.dataset.id === packId) {
+            card.classList.add('selected');
+        } else {
+            card.classList.remove('selected');
+        }
+    });
+
+    const pack = carouselEngine.getPackById(packId);
+    if (pack) {
+        showStatus(`Pack seleccionado: ${pack.name}`, 'success');
+    }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// GENERACIÓN DE CARRUSEL CON IA
+// ═══════════════════════════════════════════════════════════════════════════
+
+async function generateWithAI() {
+    console.log("Iniciando generateWithAI...");
+    const theme = document.getElementById('themeInput').value.trim();
+    const provider = document.getElementById('aiProvider').value;
+    const apiKey = document.getElementById('apiKey').value.trim();
+
+    console.log(`Estado: Pack=${selectedPackId}, Tema=${theme ? 'OK' : 'Empty'}, Provider=${provider}, APIKey=${apiKey ? 'OK' : 'Missing'}`);
+
+    if (!selectedPackId) {
+        showStatus('Selecciona un Pack primero', 'error');
+        return;
+    }
+
+    if (!theme) {
+        showStatus('Escribe un tema para generar contenido', 'error');
+        return;
+    }
+
+    if (!apiKey) {
+        showStatus(`Ingresa tu API Key de ${provider.toUpperCase()}`, 'error');
+        return;
+    }
+
+    // Validación básica de formato de Key
+    if (provider === 'gemini' && apiKey.startsWith('gsk_')) {
+        showStatus('Parece que estás usando una Key de GROQ en modo GEMINI. Cámbialo.', 'error');
+        return;
+    }
+    if (provider === 'groq' && !apiKey.startsWith('gsk_')) {
+        showStatus('La Key de GROQ suele empezar con "gsk_". Verifica tu llave.', 'warning');
+        // No bloqueamos por si acaso, solo warning
+    }
+
+    try {
+        isProcessing = true;
+        const btn = document.getElementById('generateBtn');
+        btn.disabled = true;
+        btn.innerHTML = '<span>⏳</span> DISEÑANDO CARRUSEL...';
+
+        showProgress(5, '🧠 Analizando tema y eligiendo plantillas...');
+
+        // 1. Construir prompt MAESTRO v2
+        const prompt = carouselEngine.buildCarouselPrompt(theme, selectedPackId);
+        console.log("Prompt Carrusel (tamaño):", prompt.length, "chars");
+
+        showProgress(15, `📡 Enviando a ${provider.toUpperCase()} (esto toma ~15s)...`);
+
+        // 2. Llamar a la IA
+        // Sanitizar datos para evitar error "An object could not be cloned"
+        const cleanOptions = JSON.parse(JSON.stringify({
+            provider: String(provider),
+            apiKey: String(apiKey),
+            prompt: String(prompt)
+        }));
+
+        const result = await window.cyberCanvas.callAI(cleanOptions);
+
+        if (!result.success) throw new Error(result.error);
+
+        showProgress(50, '📋 Procesando respuesta de la IA...');
+        const aiResponse = result.code;
+        console.log("Respuesta IA (tamaño):", aiResponse.length, "chars");
+
+        // 3. Parsear JSON Array (con limpieza robusta)
+        let slidesData;
+        try {
+            // Limpiar posible markdown wrapper
+            let cleanResponse = aiResponse
+                .replace(/```json\s*/gi, '')
+                .replace(/```\s*/gi, '')
+                .trim();
+
+            // Buscar el array JSON
+            const jsonMatch = cleanResponse.match(/\[[\s\S]*\]/);
+            if (jsonMatch) {
+                slidesData = JSON.parse(jsonMatch[0]);
+            } else {
+                // Fallback: tal vez la IA envolvió en un objeto
+                const objMatch = cleanResponse.match(/\{[\s\S]*\}/);
+                if (objMatch) {
+                    const parsed = JSON.parse(objMatch[0]);
+                    if (parsed.slides) slidesData = parsed.slides;
+                    else throw new Error('No se encontró array de slides');
+                } else {
+                    throw new Error('No se encontró JSON válido en la respuesta');
+                }
+            }
+        } catch (e) {
+            console.error("Error parseando JSON:", e);
+            console.log("Respuesta Raw:", aiResponse.substring(0, 500));
+            // Mostrar los primeros 100 caracteres de la respuesta en el error para debug
+            const preview = aiResponse.length > 100 ? aiResponse.substring(0, 100) + '...' : aiResponse;
+            throw new Error(`La IA no devolvió JSON válido. Respuesta recibida: "${preview}". Error: ${e.message}`);
+        }
+
+        if (!Array.isArray(slidesData) || slidesData.length === 0) {
+            throw new Error('El carrusel generado está vacío.');
+        }
+
+        console.log(`✅ ${slidesData.length} slides parseados correctamente`);
+
+        // 4. Validar y renderizar cada slide
+        generatedSlides = [];
+        const totalSlides = slidesData.length;
+
+        for (let i = 0; i < totalSlides; i++) {
+            const item = slidesData[i];
+            const pct = 50 + Math.round((i / totalSlides) * 45);
+            showProgress(pct, `🎨 Renderizando slide ${i + 1} de ${totalSlides}...`);
+
+            // Validar que el templateId existe
+            const template = templateEngine.getTemplateById(item.templateId);
+            if (!template) {
+                console.warn(`⚠ Template ${item.templateId} no encontrado, saltando slide ${i + 1}`);
+                continue;
+            }
+
+            try {
+                const html = templateEngine.renderTemplate(item.templateId, item.content);
+                if (html && html.trim()) {
+                    generatedSlides.push(html);
+                }
+            } catch (renderErr) {
+                console.error(`Error renderizando slide ${i + 1} (${item.templateId}):`, renderErr);
+            }
+        }
+
+        if (generatedSlides.length === 0) {
+            throw new Error('No se pudo renderizar ningún slide.');
+        }
+
+        // 5. Mostrar el primer slide
+        currentSlideIndex = 0;
+        updateSlideView();
+        setupNavigationControls();
+
+        showProgress(100, '¡Carrusel Completo!');
+        showStatus(`✨ ${generatedSlides.length} Slides profesionales generados`, 'success');
+
+    } catch (error) {
+        console.error('Generation error:', error);
+        showStatus(`Error: ${error.message}`, 'error');
+    } finally {
+        isProcessing = false;
+        const btn = document.getElementById('generateBtn');
+        btn.disabled = false;
+        btn.innerHTML = '<span>🤖</span> GENERAR CON IA';
+        hideProgress();
+    }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// NAVEGACIÓN DE SLIDES
+// ═══════════════════════════════════════════════════════════════════════════
+
+function updateSlideView() {
+    if (generatedSlides.length === 0) return;
+
+    // Cargar en el editor el HTML del slide actual
+    const html = generatedSlides[currentSlideIndex];
+    editor.setValue(html);
+
+    // Actualizar previsualización
+    setTimeout(updatePreview, 100);
+    updateNavUI();
+}
+
+function updateNavUI() {
+    // Buscar o crear controles de navegación en el panel de preview
+    let navContainer = document.getElementById('slideNav');
+
+    if (!navContainer) {
+        const previewHeader = document.querySelector('.preview-panel .panel-header');
+        navContainer = document.createElement('div');
+        navContainer.id = 'slideNav';
+        navContainer.className = 'slide-nav';
+        // Insertar antes del badge de tamaño
+        previewHeader.insertBefore(navContainer, document.getElementById('previewSize'));
+    }
+
+    if (generatedSlides.length > 0) {
+        navContainer.innerHTML = `
+            <button id="prevSlide" class="nav-btn" ${currentSlideIndex === 0 ? 'disabled' : ''}>❮</button>
+            <span class="nav-counter">${currentSlideIndex + 1} / ${generatedSlides.length}</span>
+            <button id="nextSlide" class="nav-btn" ${currentSlideIndex === generatedSlides.length - 1 ? 'disabled' : ''}>❯</button>
+        `;
+
+        // Re-attach listeners (simple way)
+        document.getElementById('prevSlide').onclick = prevSlide;
+        document.getElementById('nextSlide').onclick = nextSlide;
+        navContainer.style.display = 'flex';
+    } else {
+        navContainer.style.display = 'none';
+    }
+}
+
+function setupNavigationControls() {
+    // Solo para asegurar que existen, updateNavUI hace el resto
+    updateNavUI();
+}
+
+function prevSlide() {
+    if (currentSlideIndex > 0) {
+        // Guardar cambios manuales del slide actual antes de cambiar? (Opcional, por ahora no para simplificar)
+        // generatedSlides[currentSlideIndex] = editor.getValue(); 
+        currentSlideIndex--;
+        updateSlideView();
+    }
+}
+
+function nextSlide() {
+    if (currentSlideIndex < generatedSlides.length - 1) {
+        // generatedSlides[currentSlideIndex] = editor.getValue();
+        currentSlideIndex++;
+        updateSlideView();
+    }
+}
+
+document.addEventListener('DOMContentLoaded', async () => {
+    try {
+        console.log("DOM Cargado. Iniciando módulos...");
+        initEditor();
+        console.log("Editor OK");
+
+        initEventListeners();
+        console.log("Listeners OK");
+
+        await initTemplates();
+        console.log("Templates OK");
+
+        updatePreviewSize();
+        console.log("Preview OK");
+    } catch (err) {
+        console.error("FATAL ERROR IN INITIALIZATION:", err);
+        alert("Error crítico iniciando la app: " + err.message);
+    }
 });
 
 function initEditor() {
@@ -76,17 +381,22 @@ function initEventListeners() {
     // Format change
     document.getElementById('format').addEventListener('change', updateExportButton);
 
-    // Preview button
-    document.getElementById('previewBtn').addEventListener('click', updatePreview);
-
-    // Adapt AI button
-    document.getElementById('adaptBtn').addEventListener('click', adaptWithAI);
+    // Preview button and Adapt AI removed per user request
 
     // Export button
     document.getElementById('exportBtn').addEventListener('click', exportContent);
 
     // Generate with AI button
-    document.getElementById('generateBtn').addEventListener('click', generateWithAI);
+    const genBtn = document.getElementById('generateBtn');
+    if (genBtn) {
+        console.log("Botón AI encontrado y listener asignado");
+        genBtn.addEventListener('click', () => {
+            console.log("Click en Botón Generar detectado");
+            generateWithAI();
+        });
+    } else {
+        console.error("Botón AI NO encontrado en el DOM");
+    }
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -181,14 +491,19 @@ function updatePreview() {
     frame.style.transformOrigin = '';
 
     // Detect original content size from code
-    let contentWidth = 540;  // Default
-    let contentHeight = 960;
+    let contentWidth = targetWidth; // Default to selected aspect ratio width (e.g. 1080)
+    let contentHeight = targetHeight; // Default to selected aspect ratio height (e.g. 1920)
 
-    const maxWidthMatch = code.match(/max-width:\s*(\d+)px/);
-    const maxHeightMatch = code.match(/max-height:\s*(\d+)px/);
+    // Try to detect explicit dimensions in CSS
+    const widthMatch = code.match(/(?:max-width|width):\s*(\d+)px/);
+    const heightMatch = code.match(/(?:max-height|height):\s*(\d+)px/);
 
-    if (maxWidthMatch) contentWidth = parseInt(maxWidthMatch[1]);
-    if (maxHeightMatch) contentHeight = parseInt(maxHeightMatch[1]);
+    if (widthMatch) contentWidth = parseInt(widthMatch[1]);
+    if (heightMatch) contentHeight = parseInt(heightMatch[1]);
+
+    // Fallback logic specific for mobile templates if detected width is small
+    // Some templates might use max-width: 100% which isn't useful for scaling calc
+    if (contentWidth < 100) contentWidth = targetWidth;
 
     // Calculate zoom factor to fit content in display area
     const zoomFactor = Math.min(displayWidth / contentWidth, displayHeight / contentHeight);
@@ -197,29 +512,26 @@ function updatePreview() {
     const previewStyles = `
 <style id="preview-styles">
     html {
+        width: 100% !important;
+        height: 100% !important;
         zoom: ${zoomFactor} !important;
         -moz-transform: scale(${zoomFactor}) !important;
         -moz-transform-origin: 0 0 !important;
-    }
-    html, body {
-        margin: 0 !important;
-        padding: 0 !important;
         overflow: hidden !important;
-        background: #000 !important;
     }
     body {
-        display: flex !important;
-        justify-content: center !important;
-        align-items: center !important;
-        min-height: 100vh !important;
-    }
-    .poster-container,
-    body > div:first-child {
+        margin: 0 !important;
+        padding: 0 !important;
         width: ${contentWidth}px !important;
         height: ${contentHeight}px !important;
+        overflow: hidden !important;
+        background: #000 !important;
+        transform-origin: top left;
+        /* Ensure user content doesn't break out */
         max-width: ${contentWidth}px !important;
         max-height: ${contentHeight}px !important;
     }
+    /* Hide scrollbars */
     ::-webkit-scrollbar { display: none !important; }
 </style>`;
 
@@ -353,56 +665,7 @@ function detectAnimationDuration(html) {
 // AI INTEGRATION
 // ═══════════════════════════════════════════════════════════════════════════
 
-async function adaptWithAI() {
-    if (isProcessing) return;
-
-    const apiKey = document.getElementById('apiKey').value.trim();
-    if (!apiKey) {
-        showStatus('Ingresa tu API Key de Groq', 'error');
-        return;
-    }
-
-    const code = editor.getValue().trim();
-    const instruction = document.getElementById('aiInstruction').value.trim();
-    const aspectKey = document.getElementById('aspectRatio').value;
-    const { width, height } = ASPECT_RATIOS[aspectKey];
-
-    const prompt = `Adapt this HTML/CSS code for a ${width}x${height} pixel viewport.
-
-User instructions: ${instruction}
-
-CRITICAL RULES:
-1. Main container MUST use: width: 100vw; height: 100vh;
-2. Use responsive units (vw, vh, %) instead of fixed pixels
-3. Ensure all elements are visible and properly scaled
-4. Keep all animations working
-5. Return ONLY raw HTML code
-
-CODE TO ADAPT:
-${code}`;
-
-    setProcessing(true);
-    showProgress(20, 'Enviando a AI...');
-
-    try {
-        const result = await window.cyberCanvas.callAI({ apiKey, prompt });
-
-        showProgress(80, 'Procesando respuesta...');
-
-        if (result.success) {
-            editor.setValue(result.code);
-            updatePreview();
-            showStatus('✓ Código adaptado con AI', 'success');
-        } else {
-            showStatus(`Error AI: ${result.error}`, 'error');
-        }
-    } catch (error) {
-        showStatus(`Error: ${error.message}`, 'error');
-    } finally {
-        setProcessing(false);
-        hideProgress();
-    }
-}
+// AI Adaptation removed as per user request
 
 // ═══════════════════════════════════════════════════════════════════════════
 // UI HELPERS
@@ -443,145 +706,4 @@ function showStatus(message, type) {
     }, 5000);
 }
 
-// ═══════════════════════════════════════════════════════════════════════════
-// TEMPLATES SYSTEM
-// ═══════════════════════════════════════════════════════════════════════════
-
-async function initTemplates() {
-    templateEngine = new TemplateEngine();
-    await templateEngine.loadTemplates();
-    renderTemplatesGallery();
-
-    // Select first template by default
-    const templates = templateEngine.getTemplates();
-    if (templates.length > 0) {
-        selectTemplate(templates[0].id);
-    }
-}
-
-function renderTemplatesGallery() {
-    const gallery = document.getElementById('templatesGallery');
-    const templates = templateEngine.getTemplates();
-
-    gallery.innerHTML = templates.map(t => `
-        <div class="template-card ${selectedTemplateId === t.id ? 'selected' : ''}" 
-             data-id="${t.id}" 
-             onclick="selectTemplate('${t.id}')">
-            <div class="icon">${t.icon}</div>
-            <div class="name">${t.name}</div>
-        </div>
-    `).join('');
-}
-
-function selectTemplate(templateId) {
-    selectedTemplateId = templateId;
-    templateEngine.selectTemplate(templateId);
-
-    // Update UI
-    document.querySelectorAll('.template-card').forEach(card => {
-        card.classList.toggle('selected', card.dataset.id === templateId);
-    });
-
-    showStatus(`Template: ${templateEngine.currentTemplate?.name}`, 'success');
-}
-
-async function generateWithAI() {
-    const theme = document.getElementById('themeInput').value.trim();
-    const apiKey = document.getElementById('apiKey').value.trim();
-
-    if (!selectedTemplateId) {
-        showStatus('Selecciona un template primero', 'error');
-        return;
-    }
-
-    if (!theme) {
-        showStatus('Escribe un tema para generar contenido', 'error');
-        return;
-    }
-
-    if (!apiKey) {
-        showStatus('Ingresa tu API Key de Groq', 'error');
-        return;
-    }
-
-    try {
-        isProcessing = true;
-        document.getElementById('generateBtn').disabled = true;
-        showProgress(10, 'Generando contenido con IA...');
-
-        // Build prompt
-        const prompt = templateEngine.buildPrompt(theme, selectedTemplateId);
-
-        showProgress(30, 'Conectando con Groq...');
-
-        // Call Groq API
-        const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${apiKey}`,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                model: 'llama-3.1-70b-versatile',
-                messages: [
-                    {
-                        role: 'system',
-                        content: 'Eres un diseñador de contenido visual profesional. Respondes SOLO en JSON válido, sin explicaciones adicionales.'
-                    },
-                    {
-                        role: 'user',
-                        content: prompt
-                    }
-                ],
-                temperature: 0.7,
-                max_tokens: 1000
-            })
-        });
-
-        if (!response.ok) {
-            throw new Error(`API Error: ${response.status}`);
-        }
-
-        const data = await response.json();
-        const aiResponse = data.choices[0].message.content;
-
-        showProgress(70, 'Procesando respuesta...');
-
-        // Parse JSON from AI response
-        let content;
-        try {
-            // Extract JSON from response (in case there's extra text)
-            const jsonMatch = aiResponse.match(/\{[\s\S]*\}/);
-            if (jsonMatch) {
-                content = JSON.parse(jsonMatch[0]);
-            } else {
-                throw new Error('No JSON found in response');
-            }
-        } catch (e) {
-            throw new Error('Error parsing AI response: ' + e.message);
-        }
-
-        showProgress(90, 'Renderizando template...');
-
-        // Render template with content
-        const html = templateEngine.renderTemplate(selectedTemplateId, content);
-
-        // Set editor content
-        editor.setValue(html);
-
-        showProgress(100, '¡Completado!');
-        hideProgress();
-        showStatus('✨ Contenido generado exitosamente', 'success');
-
-        // Update preview
-        setTimeout(updatePreview, 100);
-
-    } catch (error) {
-        console.error('Generation error:', error);
-        showStatus(`Error: ${error.message}`, 'error');
-        hideProgress();
-    } finally {
-        isProcessing = false;
-        document.getElementById('generateBtn').disabled = false;
-    }
-}
+// End of file

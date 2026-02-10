@@ -1,0 +1,40 @@
+{
+    "id": "kr-clidn-05",
+    "name": "KR-CLI: Análisis de Columnas",
+    "category": "education",
+    "description": "Diapositiva con grilla para explicar múltiples columnas de salida.",
+    "fields": {
+        "TITLE": {
+            "description": "Título de la sección (ej: Entendiendo ls -l)",
+            "max_chars": 35,
+            "default": "Entendiendo la salida de ls -l"
+        },
+        "INTRO_TEXT": {
+            "description": "Texto introductorio",
+            "max_chars": 220,
+            "default": "Continuamos con el desglose de las columnas restantes"
+        },
+        "OUTPUT_LINES": {
+            "description": "Líneas de salida del comando simulado",
+            "type": "array",
+            "count": 3,
+            "items": {
+                "TEXT": "Contenido de la línea"
+            }
+        },
+        "GRID_ITEMS": {
+            "description": "Tarjetas explicativas en grilla (ej: Dueño, Tamaño)",
+            "type": "array",
+            "count": 5,
+            "items": {
+                "NUMBER": "Número de columna (2, 3, 4...)",
+                "TITLE": "Nombre de la columna (ej: Dueño)",
+                "CONTENT": "Explicación breve"
+            }
+        },
+        "SLIDE_NUMBER": {
+            "description": "Número de diapositiva",
+            "default": "05/10"
+        }
+    }
+}

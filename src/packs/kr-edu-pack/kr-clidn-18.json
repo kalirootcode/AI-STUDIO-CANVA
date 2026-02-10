@@ -1,0 +1,32 @@
+{
+    "id": "kr-clidn-18",
+    "name": "KR-CLI: Quote / Fact",
+    "category": "education",
+    "description": "Cita impactante o dato relevante con contexto.",
+    "fields": {
+        "QUOTE_TEXT": {
+            "description": "Texto de la cita (con comillas)",
+            "max_chars": 200,
+            "default": "\"La seguridad es un proceso.\""
+        },
+        "QUOTE_AUTHOR": {
+            "description": "Autor de la cita",
+            "max_chars": 30,
+            "default": "Bruce Schneier"
+        },
+        "CONTEXT": {
+            "description": "Contexto del autor",
+            "max_chars": 180,
+            "default": "Experto en seguridad."
+        },
+        "EXTRA_FACT": {
+            "description": "Dato adicional",
+            "max_chars": 180,
+            "default": "Dato impactante."
+        },
+        "SLIDE_NUMBER": {
+            "description": "Número de diapositiva",
+            "default": "04/08"
+        }
+    }
+}

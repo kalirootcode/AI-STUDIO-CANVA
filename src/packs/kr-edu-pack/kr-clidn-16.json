@@ -1,0 +1,38 @@
+{
+    "id": "kr-clidn-16",
+    "name": "KR-CLI: Do vs Don't",
+    "category": "education",
+    "description": "Buenas vs malas prácticas lado a lado.",
+    "fields": {
+        "TITLE": {
+            "description": "Título",
+            "max_chars": 30,
+            "default": "Buenas Prácticas"
+        },
+        "DO_ITEMS": {
+            "description": "Cosas que SÍ hacer",
+            "type": "array",
+            "count": 2,
+            "items": {
+                "TEXT": "Buena práctica"
+            }
+        },
+        "DONT_ITEMS": {
+            "description": "Cosas que NO hacer",
+            "type": "array",
+            "count": 2,
+            "items": {
+                "TEXT": "Mala práctica"
+            }
+        },
+        "BOTTOM_TIP": {
+            "description": "Consejo final",
+            "max_chars": 180,
+            "default": "La ética es fundamental."
+        },
+        "SLIDE_NUMBER": {
+            "description": "Número de diapositiva",
+            "default": "05/08"
+        }
+    }
+}
