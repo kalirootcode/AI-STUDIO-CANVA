@@ -136,9 +136,14 @@
 
                 <div class="divider"></div>
 
-                <button id="exportBtn" class="btn btn-accent">
-                    <span>📸</span> EXPORTAR
-                </button>
+                <div class="export-buttons-group" style="display: flex; gap: 10px;">
+                    <button id="exportSingleBtn" class="btn btn-secondary" style="flex: 1;">
+                        <span>🖼️</span> ACTUAL
+                    </button>
+                    <button id="exportBatchBtn" class="btn btn-accent" style="flex: 1;">
+                        <span>📦</span> TODO
+                    </button>
+                </div>
 
                 <!-- Progress -->
                 <div id="progressContainer" class="progress-container hidden">

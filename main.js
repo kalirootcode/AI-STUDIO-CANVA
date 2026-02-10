@@ -43,6 +43,44 @@ app.on('activate', () => {
     }
 });
 
+// ─── Helper: Preparar HTML para exportación (idéntico al previsualizador) ───
+function prepareExportHTML(html, width, height) {
+    // Inyectar estilos de reset directamente en el HTML del usuario
+    // Esto replica EXACTAMENTE lo que hace el previsualizador
+    const exportStyles = `
+<style id="export-reset">
+    html {
+        width: 100% !important;
+        height: 100% !important;
+        overflow: hidden !important;
+    }
+    body {
+        margin: 0 !important;
+        padding: 0 !important;
+        width: ${width}px !important;
+        height: ${height}px !important;
+        overflow: hidden !important;
+        max-width: ${width}px !important;
+        max-height: ${height}px !important;
+    }
+    ::-webkit-scrollbar { display: none !important; }
+</style>`;
+
+    // Inyectar los estilos en el HTML existente (como hace el previsualizador)
+    let finalHTML;
+    if (html.includes('<!DOCTYPE') || html.includes('<html')) {
+        if (html.includes('</body>')) {
+            finalHTML = html.replace('</body>', exportStyles + '</body>');
+        } else {
+            finalHTML = html + exportStyles;
+        }
+    } else {
+        finalHTML = `<!DOCTYPE html><html><head><meta charset="UTF-8"></head><body>${html}${exportStyles}</body></html>`;
+    }
+
+    return finalHTML;
+}
+
 // IPC: Exportar imagen (ALTA CALIDAD + SVG)
 ipcMain.handle('export-image', async (event, { html, width, height, format }) => {
     const puppeteer = require('puppeteer');
@@ -55,86 +93,19 @@ ipcMain.handle('export-image', async (event, { html, width, height, format }) =>
 
         const page = await browser.newPage();
 
-        // Usar deviceScaleFactor 1 para exportación exacta (pixel perfect según dimensiones elegidas)
+        // Viewport exacto = dimensiones del contenido (pixel perfect)
         await page.setViewport({
             width,
             height,
             deviceScaleFactor: 1
         });
 
-        // Detect content size from the HTML
-        let contentWidth = 540;  // Default
-        let contentHeight = 960;
+        // Preparar HTML (inyectar reset, idéntico al previsualizador)
+        const finalHTML = prepareExportHTML(html, width, height);
+        await page.setContent(finalHTML, { waitUntil: 'domcontentloaded', timeout: 10000 });
 
-        const maxWidthMatch = html.match(/max-width:\s*(\d+)px/);
-        const maxHeightMatch = html.match(/max-height:\s*(\d+)px/);
-
-        if (maxWidthMatch) contentWidth = parseInt(maxWidthMatch[1]);
-        if (maxHeightMatch) contentHeight = parseInt(maxHeightMatch[1]);
-
-        // Calculate scale to fill the target viewport
-        const scaleFactor = Math.min(width / contentWidth, height / contentHeight);
-
-        // Extract just the body content from user's HTML
-        let bodyContent = html;
-        if (html.includes('<body')) {
-            const bodyMatch = html.match(/<body[^>]*>([\s\S]*)<\/body>/i);
-            if (bodyMatch) bodyContent = bodyMatch[1];
-        }
-
-        // Extract links (fonts, icons, etc.) from user's HTML
-        const linksMatch = html.match(/<link[^>]*>/gi) || [];
-        const linksHTML = linksMatch.join('\n    ');
-
-        // Create export HTML with proper scaling
-        const scaledHTML = `
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    ${linksHTML}
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        html, body {
-            width: ${width}px;
-            height: ${height}px;
-            overflow: hidden;
-            background: #000000;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-        .export-container {
-            transform: scale(${scaleFactor});
-            transform-origin: center center;
-            width: ${contentWidth}px;
-            height: ${contentHeight}px;
-            position: relative;
-        }
-        .poster-container,
-        .export-container > div:first-child {
-            width: ${contentWidth}px !important;
-            height: ${contentHeight}px !important;
-            max-width: none !important;
-            max-height: none !important;
-            position: absolute !important;
-            top: 0 !important;
-            left: 0 !important;
-        }
-    </style>
-    ${html.includes('<style') ? html.match(/<style[^>]*>[\s\S]*?<\/style>/gi)?.join('') || '' : ''}
-</head>
-<body>
-    <div class="export-container">
-        ${bodyContent}
-    </div>
-</body>
-</html>`;
-
-        await page.setContent(scaledHTML, { waitUntil: 'networkidle0' });
-
-        // Wait for fonts to load
-        await page.evaluate(() => document.fonts.ready);
+        // Esperar carga de fuentes y renderizado completo
+        await page.evaluate(() => document.fonts.ready).catch(() => { });
         await new Promise(resolve => setTimeout(resolve, 3000));
 
         // Mostrar diálogo para elegir nombre y ubicación
@@ -157,7 +128,6 @@ ipcMain.handle('export-image', async (event, { html, width, height, format }) =>
         const outputPath = filePath;
 
         if (ext === 'svg') {
-            // Exportar SVG extrayendo el HTML como SVG usando foreignObject
             const svgContent = `<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}">
     <foreignObject width="100%" height="100%">
@@ -168,7 +138,6 @@ ipcMain.handle('export-image', async (event, { html, width, height, format }) =>
 </svg>`;
             fs.writeFileSync(outputPath, svgContent);
         } else {
-            // Screenshot de alta calidad
             await page.screenshot({
                 path: outputPath,
                 type: ext === 'jpg' ? 'jpeg' : ext,
@@ -178,9 +147,87 @@ ipcMain.handle('export-image', async (event, { html, width, height, format }) =>
         }
 
         await browser.close();
-
         return { success: true, path: outputPath };
     } catch (error) {
+        return { success: false, error: error.message };
+    }
+});
+
+// IPC: Exportar Batch (Lote de imágenes)
+ipcMain.handle('export-batch', async (event, { slides, width, height, format, title }) => {
+    const puppeteer = require('puppeteer');
+    const fs = require('fs');
+    const path = require('path');
+
+    try {
+        // 1. Crear carpeta automáticamente en ~/Pictures/CyberCanvas/<titulo_del_post>
+        // Sanitizar el título para uso seguro como nombre de carpeta
+        const safeTitle = (title || 'Post_Sin_Titulo')
+            .replace(/[<>:"/\\|?*]/g, '')  // Eliminar caracteres no válidos
+            .replace(/\s+/g, '_')           // Espacios → guiones bajos
+            .substring(0, 80);              // Limitar longitud
+
+        const outputDir = path.join(require('os').homedir(), 'Pictures', 'CyberCanvas', safeTitle);
+
+        // Crear carpeta (y padres) automáticamente
+        if (!fs.existsSync(outputDir)) {
+            fs.mkdirSync(outputDir, { recursive: true });
+        }
+
+        // 2. Iniciar navegador (una sola vez)
+        const browser = await puppeteer.launch({
+            headless: 'new',
+            args: ['--no-sandbox', '--disable-setuid-sandbox', '--font-render-hinting=none']
+        });
+
+        const page = await browser.newPage();
+
+        // Configuración de viewport exacta
+        await page.setViewport({
+            width,
+            height,
+            deviceScaleFactor: 1
+        });
+
+        let count = 0;
+        const total = slides.length;
+        const ext = format.toLowerCase();
+
+        console.log(`[Batch] Exportando ${total} imágenes a ${outputDir}...`);
+
+        // 3. Iterar y renderizar
+        for (let i = 0; i < total; i++) {
+            const html = slides[i];
+            const slideNum = String(i + 1).padStart(2, '0');
+            const filename = `slide_${slideNum}.${ext}`;
+            const outputPath = path.join(outputDir, filename);
+
+            // ─── Renderizado directo (idéntico al previsualizador) ───
+            const finalHTML = prepareExportHTML(html, width, height);
+
+            await page.setContent(finalHTML, { waitUntil: 'domcontentloaded', timeout: 10000 });
+
+            // Esperar carga de fuentes y renderizado completo
+            await page.evaluate(() => document.fonts.ready).catch(() => { });
+            if (i === 0) await new Promise(resolve => setTimeout(resolve, 3000)); // Primera vez: fuentes + base64
+            else await new Promise(resolve => setTimeout(resolve, 1500));  // Siguientes: más rápido
+
+            await page.screenshot({
+                path: outputPath,
+                type: ext === 'jpg' ? 'jpeg' : ext,
+                quality: ext === 'png' ? undefined : 100,
+                omitBackground: false
+            });
+
+            console.log(`[Batch] Guardado: ${filename}`);
+            count++;
+        }
+
+        await browser.close();
+        return { success: true, count, path: outputDir };
+
+    } catch (error) {
+        console.error("Batch Export Error:", error);
         return { success: false, error: error.message };
     }
 });

@@ -301,8 +301,10 @@ function setupNavigationControls() {
 
 function prevSlide() {
     if (currentSlideIndex > 0) {
-        // Guardar cambios manuales del slide actual antes de cambiar? (Opcional, por ahora no para simplificar)
-        // generatedSlides[currentSlideIndex] = editor.getValue(); 
+        // Guardar cambios manuales
+        if (generatedSlides.length > 0) {
+            generatedSlides[currentSlideIndex] = editor.getValue();
+        }
         currentSlideIndex--;
         updateSlideView();
     }
@@ -310,7 +312,10 @@ function prevSlide() {
 
 function nextSlide() {
     if (currentSlideIndex < generatedSlides.length - 1) {
-        // generatedSlides[currentSlideIndex] = editor.getValue();
+        // Guardar cambios manuales
+        if (generatedSlides.length > 0) {
+            generatedSlides[currentSlideIndex] = editor.getValue();
+        }
         currentSlideIndex++;
         updateSlideView();
     }
@@ -383,8 +388,9 @@ function initEventListeners() {
 
     // Preview button and Adapt AI removed per user request
 
-    // Export button
-    document.getElementById('exportBtn').addEventListener('click', exportContent);
+    // Export buttons
+    document.getElementById('exportSingleBtn').addEventListener('click', exportSingleContent);
+    document.getElementById('exportBatchBtn').addEventListener('click', exportBatchContent);
 
     // Generate with AI button
     const genBtn = document.getElementById('generateBtn');
@@ -572,16 +578,22 @@ function hidePlaceholder(hide) {
 
 function updateExportButton() {
     const format = document.getElementById('format').value;
-    const btn = document.getElementById('exportBtn');
+    const singleBtn = document.getElementById('exportSingleBtn');
+    const batchBtn = document.getElementById('exportBatchBtn');
 
     if (format === 'MP4') {
-        btn.innerHTML = '<span>🎬</span> EXPORTAR VIDEO';
+        singleBtn.innerHTML = '<span>🎬</span> VIDEO';
+        batchBtn.disabled = true;
+        batchBtn.title = "Exportación en lote no disponible para video";
     } else {
-        btn.innerHTML = '<span>📸</span> EXPORTAR';
+        singleBtn.innerHTML = '<span>🖼️</span> ACTUAL';
+        batchBtn.disabled = false;
+        batchBtn.title = "Exportar todos los slides como imágenes";
+        batchBtn.innerHTML = '<span>📦</span> TODO';
     }
 }
 
-async function exportContent() {
+async function exportSingleContent() {
     if (isProcessing) return;
 
     const code = editor.getValue().trim();
@@ -598,43 +610,82 @@ async function exportContent() {
 
     try {
         let result;
-
         if (format === 'MP4') {
-            showProgress(0, 'Preparando video...');
-
-            // Detect animation duration
-            const duration = detectAnimationDuration(code);
-
-            showProgress(10, `Grabando ${duration}s...`);
-
+            showProgress(0, 'Generando video HD frame-by-frame...');
             result = await window.cyberCanvas.exportVideo({
                 html: code,
                 width,
                 height,
-                duration
+                duration: 5 // Default duration
             });
-
-            showProgress(100, '¡Video listo!');
         } else {
-            showProgress(0, 'Renderizando...');
-
+            showProgress(0, 'Exportando imagen de alta calidad...');
             result = await window.cyberCanvas.exportImage({
                 html: code,
                 width,
                 height,
                 format
             });
-
-            showProgress(100, '¡Imagen lista!');
         }
 
         if (result.success) {
-            showStatus(`✓ Guardado: ${result.path.split('/').pop()}`, 'success');
+            showStatus(`Exportado: ${result.path}`, 'success');
         } else {
             showStatus(`Error: ${result.error}`, 'error');
         }
     } catch (error) {
         showStatus(`Error: ${error.message}`, 'error');
+    } finally {
+        setProcessing(false);
+        hideProgress();
+    }
+}
+
+async function exportBatchContent() {
+    if (isProcessing) return;
+
+    // Guardar cambios del slide actual antes de exportar
+    if (generatedSlides.length > 0) {
+        generatedSlides[currentSlideIndex] = editor.getValue();
+    }
+
+    if (!generatedSlides || generatedSlides.length === 0) {
+        showStatus('No hay slides generados para exportar en lote.', 'warning');
+        return;
+    }
+
+    const format = document.getElementById('format').value;
+    if (format === 'MP4') {
+        showStatus('La exportación por lote de video no está soportada.', 'warning');
+        return;
+    }
+
+    const aspectKey = document.getElementById('aspectRatio').value;
+    const { width, height } = ASPECT_RATIOS[aspectKey];
+
+    setProcessing(true);
+    showProgress(0, `Iniciando exportación de ${generatedSlides.length} slides...`);
+
+    // Obtener título del post para nombrar la carpeta
+    const themeInput = document.getElementById('themeInput');
+    const postTitle = (themeInput && themeInput.value.trim()) || 'Post_Sin_Titulo';
+
+    try {
+        const result = await window.cyberCanvas.exportBatch({
+            slides: generatedSlides,
+            width,
+            height,
+            format,
+            title: postTitle
+        });
+
+        if (result.success) {
+            showStatus(`✅ Lote exportado: ${result.count} imágenes en ${result.path}`, 'success');
+        } else {
+            showStatus(`Error en lote: ${result.error}`, 'error');
+        }
+    } catch (error) {
+        showStatus(`Error crítico: ${error.message}`, 'error');
     } finally {
         setProcessing(false);
         hideProgress();
