@@ -38,10 +38,6 @@
             "description": "Nota importante",
             "max_chars": 220,
             "default": "Asegúrate de tener conexión."
-        },
-        "SLIDE_NUMBER": {
-            "description": "Número de diapositiva",
-            "default": "03/07"
         }
     }
 }

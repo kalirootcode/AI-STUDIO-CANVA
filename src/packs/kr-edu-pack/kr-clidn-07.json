@@ -38,10 +38,6 @@
             "description": "Contenido de la advertencia",
             "max_chars": 220,
             "default": "Los archivos que comienzan con un punto . están ocultos por defecto."
-        },
-        "SLIDE_NUMBER": {
-            "description": "Número de diapositiva",
-            "default": "08/10"
         }
     }
 }

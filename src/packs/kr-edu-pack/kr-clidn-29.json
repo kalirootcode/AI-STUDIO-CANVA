@@ -38,10 +38,6 @@
             "description": "Por qué funciona la solución",
             "max_chars": 200,
             "default": "Explicación."
-        },
-        "SLIDE_NUMBER": {
-            "description": "Número",
-            "default": "05/08"
         }
     }
 }

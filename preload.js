@@ -13,6 +13,9 @@ contextBridge.exposeInMainWorld('cyberCanvas', {
     // Llamar a AI
     callAI: (options) => ipcRenderer.invoke('call-ai', options),
 
+    // Generar SEO Viral
+    generateSEO: (options) => ipcRenderer.invoke('generate-seo', options),
+
     // Cargar packs de templates
     loadPacks: () => ipcRenderer.invoke('load-packs')
 });

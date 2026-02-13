@@ -29,10 +29,6 @@
             "description": "Consejo final",
             "max_chars": 180,
             "default": "La ética es fundamental."
-        },
-        "SLIDE_NUMBER": {
-            "description": "Número de diapositiva",
-            "default": "05/08"
         }
     }
 }

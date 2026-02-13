@@ -1,41 +1,28 @@
 {
     "id": "kr-clidn-09",
-    "name": "KR-CLI: Final / Follow CTA",
+    "name": "KR-CLI: Final / CTA Social Icons",
     "category": "structure",
-    "description": "Slide final con recap de logros y llamado a seguir la cuenta.",
+    "description": "Slide final con iconos sociales estilo TikTok y texto subliminal de cierre.",
     "fields": {
         "TITLE": {
-            "description": "Pregunta o frase de cierre",
+            "description": "Pregunta o frase de cierre impactante",
             "max_chars": 30,
             "default": "¿Te fue útil?"
         },
-        "RECAP_ITEMS": {
-            "description": "Lo que aprendió el usuario",
-            "type": "array",
-            "count": 3,
-            "items": {
-                "ICON": "Material Icon",
-                "TEXT": "Logro del usuario"
-            }
-        },
         "CTA_MESSAGE": {
-            "description": "Mensaje persuasivo para seguir la cuenta",
+            "description": "Mensaje persuasivo para interactuar con el post",
             "max_chars": 120,
-            "default": "Síguenos para más contenido como este todos los días"
+            "default": "Si llegaste hasta aquí, este contenido fue para ti"
         },
-        "HANDLE": {
-            "description": "Handle de la cuenta",
-            "max_chars": 20,
-            "default": "@kr.clidn"
+        "CLOSING_TEXT": {
+            "description": "Texto subliminal de despedida que cree FOMO",
+            "max_chars": 60,
+            "default": "Esto fue solo el inicio..."
         },
         "HASHTAGS": {
             "description": "Hashtags relevantes",
             "max_chars": 80,
             "default": "#KaliLinux #CyberSecurity #HackingÉtico"
-        },
-        "SLIDE_NUMBER": {
-            "description": "Número de diapositiva",
-            "default": "08/08"
         }
     }
 }

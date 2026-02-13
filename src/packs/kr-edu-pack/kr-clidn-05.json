@@ -31,10 +31,6 @@
                 "TITLE": "Nombre de la columna (ej: Dueño)",
                 "CONTENT": "Explicación breve"
             }
-        },
-        "SLIDE_NUMBER": {
-            "description": "Número de diapositiva",
-            "default": "05/10"
         }
     }
 }

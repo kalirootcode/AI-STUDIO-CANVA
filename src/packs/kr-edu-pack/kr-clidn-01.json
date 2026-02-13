@@ -2,7 +2,7 @@
     "id": "kr-clidn-01",
     "name": "KR-CLI: Cover / Portada",
     "category": "structure",
-    "description": "Portada eye-catching con título gigante, subtítulo y tags.",
+    "description": "Portada hacker-style con título gigante, icono temático dinámico (Material Icons) y hook card.",
     "fields": {
         "TITLE": {
             "description": "Título principal (nombre de herramienta o tema)",
@@ -10,22 +10,13 @@
             "default": "NMAP"
         },
         "SUBTITLE": {
-            "description": "Subtítulo descriptivo detallado",
-            "max_chars": 100,
+            "description": "Hook descriptivo que atrape al lector",
+            "max_chars": 120,
             "default": "El escáner de redes más poderoso del mundo"
         },
-        "TAGS": {
-            "description": "Tags descriptivos con icono",
-            "type": "array",
-            "count": 3,
-            "items": {
-                "ICON": "Material Icon",
-                "TEXT": "Descripción del tag"
-            }
-        },
-        "SLIDE_NUMBER": {
-            "description": "Número de diapositiva",
-            "default": "01/08"
+        "ICON": {
+            "description": "Clave de Iconify (set:nombre) para icono a color. Prioridad: logos, flat-color-icons, fluent-emoji. Ej: logos:linux-tux, flat-color-icons:lock",
+            "default": "flat-color-icons:fingerprint"
         }
     }
 }

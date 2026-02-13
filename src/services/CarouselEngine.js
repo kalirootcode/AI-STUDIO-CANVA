@@ -28,45 +28,32 @@ class CarouselEngine {
             // ────────────── ESTRUCTURA (Cover, TOC, Divider, Summary) ──────────────
 
             'kr-clidn-01': {
-                purpose: 'PORTADA/COVER. Primer slide SIEMPRE. Eye-catching.',
+                purpose: 'PORTADA/COVER. Primer slide SIEMPRE. Solo Texto Elegante con Keywords Cyan.',
                 when: 'Para presentar el tema principal.',
                 repeatable: false,
                 json_example: {
-                    TITLE: "NMAP",
-                    SUBTITLE: "El escáner de redes más poderoso del mundo",
-                    TAGS: [
-                        { ICON: "radar", TEXT: "Escaneo de puertos" },
-                        { ICON: "security", TEXT: "Detección de vulnerabilidades" },
-                        { ICON: "dns", TEXT: "Descubrimiento de redes" }
-                    ],
-                    SLIDE_NUMBER: "01/08"
+                    TITLE: "La *Guía* Definitiva de *NMAP* para *Principiantes*",
+                    SUBTITLE: "Domina el escaneo de redes en minutos.",
                 },
                 rules: [
-                    "TITLE: máx 20 chars, nombre de herramienta o tema",
-                    "SUBTITLE: máx 100 chars, descripción atractiva",
-                    "TAGS: exacto 3 tags descriptivos"
+                    "TITLE: entre 3 y 10 palabras. IMPORTANTE: Envuelve las palabras clave en asteriscos * (ej: *Hack*) para resaltarlas en AZUL ELÉCTRICO.",
+                    "SUBTITLE: máx 120 chars, hook descriptivo.",
+                    "NO uses el campo ICON."
                 ]
             },
             'kr-clidn-09': {
-                purpose: 'FOLLOW CTA. Último slide SIEMPRE. Persuasivo.',
-                when: 'Cerrar el carrusel y persuadir a seguir la cuenta.',
+                purpose: 'CTA FINAL. Último slide SIEMPRE. Iconos sociales TikTok + texto subliminal.',
+                when: 'Cerrar el carrusel y persuadir a dar like, comentar, guardar y compartir.',
                 repeatable: false,
                 json_example: {
                     TITLE: "¿Te fue útil?",
-                    RECAP_ITEMS: [
-                        { ICON: "check_circle", TEXT: "Dominas los comandos básicos de Linux" },
-                        { ICON: "check_circle", TEXT: "Sabes usar el terminal como un pro" },
-                        { ICON: "check_circle", TEXT: "Estás listo para el siguiente nivel" }
-                    ],
-                    CTA_MESSAGE: "Síguenos para más contenido como este todos los días",
-                    HANDLE: "@kr.clidn",
+                    CTA_MESSAGE: "Si llegaste hasta aquí, este contenido fue para ti",
+                    CLOSING_TEXT: "Esto fue solo el inicio...",
                     HASHTAGS: "#KaliLinux #CyberSecurity #HackingÉtico",
-                    SLIDE_NUMBER: "08/08"
                 },
                 rules: [
-                    "RECAP_ITEMS: exacto 3 logros del usuario",
-                    "CTA_MESSAGE: persuasivo, máx 120 chars",
-                    "HANDLE: siempre @kr.clidn",
+                    "CTA_MESSAGE: persuasivo, máx 120 chars, crear conexión emocional",
+                    "CLOSING_TEXT: máx 60 chars, frase FOMO que deje con ganas de más",
                     "HASHTAGS: máx 80 chars"
                 ]
             },
@@ -84,7 +71,6 @@ class CarouselEngine {
                         { NUMBER: "04", TEXT: "Resumen", RANGE: "29-32" }
                     ],
                     TOTAL_SLIDES: "32",
-                    SLIDE_NUMBER: "02/32"
                 },
                 rules: [
                     "ITEMS: entre 3 y 6 secciones",
@@ -100,11 +86,10 @@ class CarouselEngine {
                     CHAPTER_TITLE: "Archivos",
                     CHAPTER_SUBTITLE: "Gestión de archivos y directorios",
                     ICON: "folder",
-                    SLIDE_NUMBER: "11/32"
                 },
                 rules: [
                     "CHAPTER_TITLE: máx 30 chars",
-                    "ICON: Material Icon relevante a la sección"
+                    "ICON: nombre de icono Material Design (ej: 'folder', 'folder_open'). NO USES PREFIJOS."
                 ]
             },
 
@@ -128,7 +113,6 @@ class CarouselEngine {
                         { FLAG: "-a", DESC: "Incluye archivos ocultos" },
                         { FLAG: "-h", DESC: "Tamaños legibles (KB, MB)" }
                     ],
-                    SLIDE_NUMBER: "03/32"
                 },
                 rules: [
                     "COMMAND_NAME: máx 15 chars",
@@ -152,7 +136,6 @@ class CarouselEngine {
                         { NUMBER: "3", NAME: "objetivo", DESCRIPTION: "IP, rango o dominio" }
                     ],
                     TIP: "Los elementos entre [ ] son opcionales.",
-                    SLIDE_NUMBER: "02/08"
                 },
                 rules: ["COMPONENTS: exacto 3", "TIP: máx 100 chars"]
             },
@@ -169,7 +152,6 @@ class CarouselEngine {
                     ],
                     TIP_TITLE: "Pro Tip",
                     TIP_CONTENT: "Combina: nmap -sS -sV -O objetivo",
-                    SLIDE_NUMBER: "03/08"
                 },
                 rules: ["OPTIONS: exacto 2 por slide", "Si hay más de 2, usar OTRO slide kr-clidn-03"]
             },
@@ -187,7 +169,6 @@ class CarouselEngine {
                     BREAKDOWN_CARDS: [
                         { NUMBER: "1", TITLE: "Puerto", CONTENT_HTML: "Número de puerto" }
                     ],
-                    SLIDE_NUMBER: "04/08"
                 },
                 rules: ["OUTPUT_LINES: exacto 2", "BREAKDOWN_CARDS: exacto 1"]
             },
@@ -210,7 +191,6 @@ class CarouselEngine {
                         { NUMBER: "4", TITLE: "VERSION", CONTENT: "Versión" },
                         { NUMBER: "5", TITLE: "PROTO", CONTENT: "TCP/UDP" }
                     ],
-                    SLIDE_NUMBER: "05/08"
                 },
                 rules: ["OUTPUT_LINES: exacto 3", "GRID_ITEMS: exacto 5"]
             },
@@ -226,7 +206,6 @@ class CarouselEngine {
                     RESULT_TEXT: "Verás los puertos abiertos.",
                     NOTE_TITLE: "Nota",
                     NOTE_CONTENT: "Solo escanea TU red.",
-                    SLIDE_NUMBER: "06/08"
                 },
                 rules: ["EXERCISE_LETTER: 1 letra", "COMMAND: máx 50 chars"]
             },
@@ -242,7 +221,6 @@ class CarouselEngine {
                     RESULT_TEXT: "Detectará OS, versiones, scripts.",
                     WARNING_TITLE: "⚠ Cuidado",
                     WARNING_CONTENT: "El flag -A es ruidoso. Solo con autorización.",
-                    SLIDE_NUMBER: "07/08"
                 },
                 rules: ["WARNING_CONTENT: máx 120 chars, advertencia REAL"]
             },
@@ -260,7 +238,6 @@ class CarouselEngine {
                     PERCENTAGE_TEXT: "Precisión con suficientes puertos",
                     TIP_TITLE: "Recuerda",
                     TIP_CONTENT: "Necesita 1 puerto abierto y 1 cerrado.",
-                    SLIDE_NUMBER: "08/08"
                 },
                 rules: ["PERCENTAGE: máx 5 chars (95%, 80%)"]
             },
@@ -280,7 +257,6 @@ class CarouselEngine {
                         { ICON: "code", TEXT: "Open source" }
                     ],
                     GITHUB_STARS: "9.2k",
-                    SLIDE_NUMBER: "05/08"
                 },
                 rules: ["FEATURES: exacto 3", "GITHUB_STARS: formato abreviado"]
             },
@@ -305,7 +281,6 @@ class CarouselEngine {
                         { TEXT: "Formato simple" }
                     ],
                     VERDICT: "nmap para detalle, masscan para velocidad.",
-                    SLIDE_NUMBER: "04/08"
                 },
                 rules: ["LEFT/RIGHT_ITEMS: exacto 3 cada uno", "VERDICT: máx 100 chars"]
             },
@@ -321,7 +296,6 @@ class CarouselEngine {
                     COMMAND: "$ sudo apt install nmap",
                     EXPECTED_RESULT: "El paquete se instalará.",
                     NOTE: "Necesitas conexión a internet.",
-                    SLIDE_NUMBER: "03/07"
                 },
                 rules: ["TITLE: máx 25 chars", "COMMAND: máx 60 chars"]
             },
@@ -340,7 +314,6 @@ class CarouselEngine {
                         { LINE: "echo 'Completado'", COMMENT: "" }
                     ],
                     EXPLANATION: "Este script toma una IP como argumento y ejecuta un escaneo completo.",
-                    SLIDE_NUMBER: "04/08"
                 },
                 rules: ["CODE_LINES: entre 2 y 8 líneas", "LANGUAGE: bash, python, etc."]
             },
@@ -358,7 +331,6 @@ class CarouselEngine {
                         { ICON: "router", TEXT: "IP identifica, TCP garantiza entrega" }
                     ],
                     EXAMPLE: "Cuando navegas, TCP/IP maneja cada paquete.",
-                    SLIDE_NUMBER: "04/08"
                 },
                 rules: ["TERM: máx 20 chars", "KEY_POINTS: exacto 3"]
             },
@@ -377,7 +349,6 @@ class CarouselEngine {
                         { TEXT: "Compartir vulns públicamente" }
                     ],
                     BOTTOM_TIP: "La ética diferencia a un hacker de un criminal.",
-                    SLIDE_NUMBER: "05/08"
                 },
                 rules: ["DO_ITEMS: exacto 2", "DONT_ITEMS: exacto 2"]
             },
@@ -395,7 +366,6 @@ class CarouselEngine {
                         { TEXT: "Permisos root", CHECKED: false }
                     ],
                     NOTE: "Todos deben completarse.",
-                    SLIDE_NUMBER: "02/08"
                 },
                 rules: ["CHECK_ITEMS: entre 3 y 5 items", "CHECKED: true o false"]
             },
@@ -408,7 +378,6 @@ class CarouselEngine {
                     QUOTE_AUTHOR: "Bruce Schneier",
                     CONTEXT: "Criptógrafo y experto en seguridad.",
                     EXTRA_FACT: "El 95% de brechas son por error humano.",
-                    SLIDE_NUMBER: "04/08"
                 },
                 rules: ["QUOTE_TEXT: máx 120 chars, con comillas", "EXTRA_FACT: máx 100 chars"]
             },
@@ -426,7 +395,6 @@ class CarouselEngine {
                         { TYPE: "warning", TEXT: "443/tcp  open  ssl      VULNERABLE" }
                     ],
                     EXPLANATION: "Este escaneo SYN detecta puertos abiertos y versiones de servicios.",
-                    SLIDE_NUMBER: "04/08"
                 },
                 rules: ["TERMINAL_LINES: 4-8 líneas", "TYPE: prompt/output/highlight/success/warning/error"]
             },
@@ -443,7 +411,6 @@ class CarouselEngine {
                         { DEPTH: 1, TYPE: "folder", NAME: "ssh/", DETAIL: "Config SSH" }
                     ],
                     DESCRIPTION: "El directorio /etc contiene todas las configuraciones del sistema.",
-                    SLIDE_NUMBER: "04/08"
                 },
                 rules: ["TREE_ITEMS: 4-6 items", "DEPTH: 0-2", "TYPE: folder o file"]
             },
@@ -459,9 +426,8 @@ class CarouselEngine {
                         { ICON: "monitor", LABEL: "Output", DESC: "El resultado aparece en pantalla" }
                     ],
                     DESCRIPTION: "Cada comando sigue este flujo de ejecución.",
-                    SLIDE_NUMBER: "04/08"
                 },
-                rules: ["FLOW_STEPS: entre 3 y 5", "ICON: Material Icons válido"]
+                rules: ["FLOW_STEPS: entre 3 y 5", "ICON: nombre de icono Material Design (ej: 'security', 'lock'). NO USES PREFIJOS."]
             },
             'kr-clidn-24': {
                 purpose: 'BEFORE/AFTER. Transformación de comando.',
@@ -475,7 +441,6 @@ class CarouselEngine {
                     AFTER_LINES: [{ TEXT: "$ ls -la --color" }, { TEXT: "drwxr-xr-x 2 user user 4096 Jan 15 ./" }],
                     COMMAND: "ls -la --color",
                     EXPLANATION: "Al agregar flags obtienes permisos, tamaño y colores.",
-                    SLIDE_NUMBER: "04/08"
                 },
                 rules: ["BEFORE_LINES: 1-3", "AFTER_LINES: 1-4", "COMMAND: máx 50 chars"]
             },
@@ -490,7 +455,6 @@ class CarouselEngine {
                     EXAMPLE_CMD: "alias ll='ls -la --color=auto'",
                     WHY_TEXT: "Los alias convierten comandos largos en atajos rápidos.",
                     CATEGORY: "Productividad",
-                    SLIDE_NUMBER: "05/08"
                 },
                 rules: ["TIP_TEXT: máx 200 chars", "EXAMPLE_CMD: máx 60 chars"]
             },
@@ -506,7 +470,6 @@ class CarouselEngine {
                         { ICON: "storage", NAME: "Target", IP: "192.168.1.50", STATUS: "target" }
                     ],
                     DESCRIPTION: "Topología típica para pruebas de penetración.",
-                    SLIDE_NUMBER: "04/08"
                 },
                 rules: ["NODES: 3-4 nodos", "STATUS: active o target"]
             },
@@ -523,7 +486,6 @@ class CarouselEngine {
                         { GROUP: "Others", PERMS: "r--", ICON: "public", COLOR: "#ff9500", DESC: "Solo lectura" }
                     ],
                     EXPLANATION: "Los permisos determinan quién puede leer (r), escribir (w) o ejecutar (x).",
-                    SLIDE_NUMBER: "05/08"
                 },
                 rules: ["PERMISSION_GROUPS: exacto 3", "PERMS: 3 chars rwx/-"]
             },
@@ -543,7 +505,6 @@ class CarouselEngine {
                         { CMD: "cp -r", DESC: "Copiar recursivo" }
                     ],
                     NOTE: "Guarda esta referencia rápida.",
-                    SLIDE_NUMBER: "06/08"
                 },
                 rules: ["COMMANDS: entre 6 y 8 items", "CMD: máx 15 chars", "DESC: máx 25 chars"]
             },
@@ -559,7 +520,6 @@ class CarouselEngine {
                     SOLUTION_CMD: "$ sudo apt install nmap",
                     SOLUTION_OUTPUT: "Reading package lists... Done.",
                     WHY_IT_WORKS: "sudo eleva privilegios temporalmente para operaciones de sistema.",
-                    SLIDE_NUMBER: "05/08"
                 },
                 rules: ["ERROR_OUTPUT: máx 150 chars", "WHY_IT_WORKS: máx 200 chars"]
             },
@@ -576,7 +536,6 @@ class CarouselEngine {
                         { NUM: "3", TITLE: "Instala", CMD: "$ sudo apt install nmap", RESULT: "nmap listo" }
                     ],
                     FINAL_NOTE: "¡Listo! Ya puedes usar nmap.",
-                    SLIDE_NUMBER: "04/08"
                 },
                 rules: ["STEPS: exacto 3", "Cada step: NUM, TITLE, CMD, RESULT"]
             },
@@ -598,7 +557,6 @@ class CarouselEngine {
                         { TEXT: 'echo "Done: $TARGET"', TYPE: "string" }
                     ],
                     EXPLANATION: "El script toma una IP como argumento y ejecuta un escaneo SYN.",
-                    SLIDE_NUMBER: "04/08"
                 },
                 rules: ["CODE_LINES: 6-12 líneas", "TYPE: comment/variable/command/string/keyword/blank"]
             }
@@ -723,12 +681,12 @@ TEMPLATES ÚNICOS (máximo 1):
 1️⃣ kr-clidn-17 (Checklist), kr-clidn-18 (Quote)
 
 REGLAS:
-1. SLIDE_NUMBER: "XX/YY" donde YY = total REAL
-2. Numerar secuencialmente: COMMAND_NUMBER, STEP_NUMBER, CHAPTER_NUMBER, TIP_NUMBER
-3. Cada slide = contenido ÚNICO y educativo
-4. MEZCLA templates para VARIEDAD visual — no uses el mismo template 10 veces seguidas
-5. ICON: Material Icons válidos (check, code, terminal, security, radar, etc.)
-6. El post = LIBRO: portada → índice → contenido detallado → resumen → follow
+1. Numerar secuencialmente: COMMAND_NUMBER, STEP_NUMBER, CHAPTER_NUMBER, TIP_NUMBER
+2. Cada slide = contenido ÚNICO y educativo
+3. MEZCLA templates para VARIEDAD visual — no uses el mismo template 10 veces seguidas
+4. ICON: Usa SOLO nombres de iconos Material Design estándar (ej: 'search', 'home', 'lock', 'security', 'bug_report'). NO uses prefijos como 'flat-color-icons:' ni 'fluent-emoji:'. SOLO nombres simples. El sistema los convertirá automáticamente.
+5. El post = LIBRO: portada → índice → contenido detallado → resumen → follow
+6. NO incluyas SLIDE_NUMBER en ningún campo — ya no se usa
 
 ══════════════════════════════════════════════════════════════
 FORMATO DE RESPUESTA
@@ -736,6 +694,8 @@ FORMATO DE RESPUESTA
 
 Responde ÚNICAMENTE con un Array JSON válido.
 Sin markdown, sin backticks, sin texto extra.
+IMPORTANTE: Todos los valores de texto deben estar en UNA SOLA LÍNEA — nunca uses saltos de línea dentro de un string JSON.
+NO uses comillas dobles sin escapar dentro de los valores. Si necesitas comillas, usa comillas simples.
 
 [
   { "templateId": "kr-clidn-01", "content": { ... } },

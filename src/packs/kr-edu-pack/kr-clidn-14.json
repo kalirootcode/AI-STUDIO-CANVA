@@ -32,10 +32,6 @@
             "description": "Explicación del código",
             "max_chars": 200,
             "default": "Este script realiza..."
-        },
-        "SLIDE_NUMBER": {
-            "description": "Número de diapositiva",
-            "default": "04/08"
         }
     }
 }

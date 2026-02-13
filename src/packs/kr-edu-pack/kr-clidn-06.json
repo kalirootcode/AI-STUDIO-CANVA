@@ -38,10 +38,6 @@
             "description": "Contenido de la nota",
             "max_chars": 200,
             "default": "Este comando lista el contenido de tu directorio actual."
-        },
-        "SLIDE_NUMBER": {
-            "description": "Número de diapositiva",
-            "default": "07/10"
         }
     }
 }

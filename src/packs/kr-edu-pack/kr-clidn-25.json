@@ -33,10 +33,6 @@
             "description": "Categoría",
             "max_chars": 20,
             "default": "Productividad"
-        },
-        "SLIDE_NUMBER": {
-            "description": "Número",
-            "default": "04/08"
         }
     }
 }

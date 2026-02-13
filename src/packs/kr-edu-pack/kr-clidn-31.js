@@ -21,8 +21,7 @@ export function render(data) {
             { TEXT: '', TYPE: 'blank' },
             { TEXT: 'echo "Escaneo completado: $OUTPUT"', TYPE: 'string' }
         ],
-        EXPLANATION: data.EXPLANATION || 'Este script toma una IP como argumento y ejecuta un escaneo SYN con detección de versiones y OS.',
-        SLIDE_NUMBER: data.SLIDE_NUMBER || '04/08'
+        EXPLANATION: data.EXPLANATION || 'Este script toma una IP como argumento y ejecuta un escaneo SYN con detección de versiones y OS.'
     };
 
     const linesHTML = d.CODE_LINES.map((l, i) => {
@@ -41,7 +40,7 @@ export function render(data) {
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <script src="https://code.iconify.design/3/3.1.0/iconify.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -63,10 +62,6 @@ export function render(data) {
         }
 
         /* ═══ BRAND BAR ═══ */
-        .brand-bar { display: flex; align-items: center; gap: 16px; margin-bottom: 40px; }
-        .brand-logo { width: 44px; height: 44px; object-fit: contain; }
-        .brand-name { font-family: 'JetBrains Mono', monospace; font-size: 32px; font-weight: 700; letter-spacing: 4px; color: #2563EB; }
-        .brand-line { flex: 1; height: 1px; background: linear-gradient(90deg, rgba(37,99,235,0.3), transparent); }
 
         .content { flex: 1; display: flex; flex-direction: column; justify-content: center; }
 
@@ -117,7 +112,7 @@ export function render(data) {
             padding: 6px 16px;
         }
 
-        .editor-tab i { color: #2563EB; font-size: 20px; }
+        .editor-tab .iconify { color: #2563EB; font-size: 20px; }
         .editor-tab span {
             font-family: 'JetBrains Mono', monospace;
             font-size: 18px; color: #94A3B8;
@@ -174,15 +169,23 @@ export function render(data) {
             display: flex; align-items: flex-start; gap: 16px;
         }
 
-        .explain i { color: #2563EB; font-size: 32px; margin-top: 2px; flex-shrink: 0; }
+        .explain .iconify { color: #2563EB; font-size: 32px; margin-top: 2px; flex-shrink: 0; }
         .explain span { font-size: 28px; color: #94A3B8; line-height: 1.5; }
 
         /* ═══ FOOTER ═══ */
-        .slide-footer { display: flex; justify-content: space-between; align-items: center; padding-top: 20px; }
-        .footer-accent { width: 60px; height: 3px; background: linear-gradient(90deg, #2563EB, transparent); }
-        .slide-num { font-family: 'JetBrains Mono', monospace; font-size: 32px; color: rgba(255,255,255,0.3); }
         .corner-deco { position: absolute; bottom: 60px; left: 60px; width: 80px; height: 80px; border-left: 2px solid rgba(37,99,235,0.12); border-bottom: 2px solid rgba(37,99,235,0.12); }
+    
+        .brand-bar { display: flex; align-items: center; gap: 14px; margin-bottom: 40px; }
+        .brand-logo { width: 36px; height: 36px; object-fit: contain; border-radius: 8px; }
+        .brand-name { font-family: 'JetBrains Mono', monospace; font-size: 26px; font-weight: 700; letter-spacing: 3px; color: #2563EB; }
+        .brand-line { flex: 1; height: 1px; background: linear-gradient(90deg, rgba(37,99,235,0.3), transparent); }
+
+        /* ═══ SWIPE INDICATOR ═══ */
+        .swipe-indicator { position: absolute; bottom: 60px; left: 0; right: 0; display: flex; flex-direction: column; align-items: center; gap: 8px; }
+        .swipe-text { font-family: 'JetBrains Mono', monospace; font-size: 20px; color: rgba(37,99,235,0.5); letter-spacing: 3px; text-transform: uppercase; }
+        .swipe-arrows { font-size: 32px; color: rgba(37,99,235,0.6); letter-spacing: 6px; }
     </style>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 </head>
 <body>
     <div class="slide">
@@ -216,10 +219,9 @@ export function render(data) {
                 <span>${d.EXPLANATION}</span>
             </div>
         </div>
-
-        <div class="slide-footer">
-            <div class="footer-accent"></div>
-            <div class="slide-num">${d.SLIDE_NUMBER}</div>
+        <div class="swipe-indicator">
+            <div class="swipe-text">Desliza</div>
+            <div class="swipe-arrows">❯❯❯</div>
         </div>
         <div class="corner-deco"></div>
     </div>

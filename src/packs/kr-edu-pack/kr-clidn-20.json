@@ -22,10 +22,6 @@
         "ICON": {
             "description": "Material Icon del capítulo",
             "default": "terminal"
-        },
-        "SLIDE_NUMBER": {
-            "description": "Número de diapositiva",
-            "default": "05/16"
         }
     }
 }

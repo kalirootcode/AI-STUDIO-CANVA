@@ -42,10 +42,6 @@
             "description": "Cantidad de stars en GitHub",
             "max_chars": 10,
             "default": "1.2k"
-        },
-        "SLIDE_NUMBER": {
-            "description": "Número de diapositiva",
-            "default": "05/08"
         }
     }
 }

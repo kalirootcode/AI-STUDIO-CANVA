@@ -14,6 +14,7 @@
         "electron-builder": "^24.9.1"
     },
     "dependencies": {
+        "@google/generative-ai": "^0.24.1",
         "playwright": "^1.58.0",
         "puppeteer": "^24.36.0"
     }

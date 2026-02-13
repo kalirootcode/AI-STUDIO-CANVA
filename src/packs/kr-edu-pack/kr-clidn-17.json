@@ -27,10 +27,6 @@
             "description": "Nota inferior",
             "max_chars": 220,
             "default": "Completa todos los items."
-        },
-        "SLIDE_NUMBER": {
-            "description": "Número de diapositiva",
-            "default": "02/08"
         }
     }
 }

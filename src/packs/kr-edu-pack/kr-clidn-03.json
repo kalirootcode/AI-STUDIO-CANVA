@@ -34,10 +34,6 @@
             "description": "Contenido del consejo",
             "max_chars": 220,
             "default": "En Linux puedes combinar opciones: ls -lah"
-        },
-        "SLIDE_NUMBER": {
-            "description": "Número de diapositiva",
-            "default": "03/10"
         }
     }
 }

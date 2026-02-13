@@ -52,10 +52,6 @@
                 "FLAG": "Flag",
                 "DESC": "Descripción"
             }
-        },
-        "SLIDE_NUMBER": {
-            "description": "Número de diapositiva",
-            "default": "03/32"
         }
     }
 }

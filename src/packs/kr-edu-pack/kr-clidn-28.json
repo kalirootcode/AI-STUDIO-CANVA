@@ -27,10 +27,6 @@
             "description": "Nota al pie",
             "max_chars": 120,
             "default": "Guarda esta referencia."
-        },
-        "SLIDE_NUMBER": {
-            "description": "Número",
-            "default": "05/08"
         }
     }
 }

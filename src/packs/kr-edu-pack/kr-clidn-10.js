@@ -14,13 +14,12 @@ export function render(data) {
             { ICON: 'security', TEXT: 'Enfocado en seguridad' },
             { ICON: 'code', TEXT: 'Open source' }
         ],
-        GITHUB_STARS: data.GITHUB_STARS || '2.5k',
-        SLIDE_NUMBER: data.SLIDE_NUMBER || '05/08'
+        GITHUB_STARS: data.GITHUB_STARS || '2.5k'
     };
 
     const featsHTML = d.FEATURES.map(f => `
         <div class="feat-item">
-            <i class="material-icons">${f.ICON || 'check'}</i>
+            ${(f.ICON || 'check').includes(':') ? '<span class="iconify" data-icon="' + (f.ICON || 'check') + '"></span>' : '<i class="material-icons">' + (f.ICON || 'check') + '</i>'}
             <span>${f.TEXT}</span>
         </div>`).join('\n');
 
@@ -28,7 +27,7 @@ export function render(data) {
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <script src="https://code.iconify.design/3/3.1.0/iconify.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -61,21 +60,6 @@ export function render(data) {
             padding: 60px;
             display: flex; flex-direction: column;
         }
-
-        .brand-bar {
-            display: flex; align-items: center; gap: 16px; margin-bottom: 50px;
-        }
-
-        .brand-logo { width: 44px; height: 44px; object-fit: contain; }
-
-        .brand-name {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 32px; font-weight: 700;
-            letter-spacing: 4px; color: #2563EB;
-            text-shadow: 0 0 20px rgba(37,99,235,0.4);
-        }
-
-        .brand-line { flex: 1; height: 1px; background: linear-gradient(90deg, rgba(37,99,235,0.3), transparent); }
 
         .content {
             flex: 1; display: flex; flex-direction: column; justify-content: center;
@@ -130,7 +114,7 @@ export function render(data) {
             flex-shrink: 0;
         }
 
-        .stars-badge i { color: #ff9500; font-size: 32px; }
+        .stars-badge .iconify { color: #ff9500; font-size: 32px; }
 
         .stars-count {
             font-family: 'JetBrains Mono', monospace;
@@ -203,7 +187,7 @@ export function render(data) {
             gap: 14px;
         }
 
-        .feat-item i {
+        .feat-item .iconify {
             color: #2563EB;
             font-size: 32px;
         }
@@ -212,15 +196,6 @@ export function render(data) {
             font-size: 30px;
             color: #e2e8f0;
         }
-
-        .slide-footer {
-            display: flex; justify-content: space-between;
-            align-items: center; padding-top: 30px;
-        }
-
-        .slide-num { font-family: 'JetBrains Mono', monospace; font-size: 32px; color: rgba(255,255,255,0.3); }
-
-        .footer-accent { width: 60px; height: 3px; background: linear-gradient(90deg, #4DD9C0, transparent); }
 
         .corner-deco {
             position: absolute; bottom: 60px; left: 60px;
@@ -236,7 +211,18 @@ export function render(data) {
             color: rgba(77, 217, 192, 0.03);
             font-family: 'Material Icons';
         }
+    
+        .brand-bar { display: flex; align-items: center; gap: 14px; margin-bottom: 40px; }
+        .brand-logo { width: 36px; height: 36px; object-fit: contain; border-radius: 8px; }
+        .brand-name { font-family: 'JetBrains Mono', monospace; font-size: 26px; font-weight: 700; letter-spacing: 3px; color: #2563EB; }
+        .brand-line { flex: 1; height: 1px; background: linear-gradient(90deg, rgba(37,99,235,0.3), transparent); }
+
+        /* ═══ SWIPE INDICATOR ═══ */
+        .swipe-indicator { position: absolute; bottom: 60px; left: 0; right: 0; display: flex; flex-direction: column; align-items: center; gap: 8px; }
+        .swipe-text { font-family: 'JetBrains Mono', monospace; font-size: 20px; color: rgba(37,99,235,0.5); letter-spacing: 3px; text-transform: uppercase; }
+        .swipe-arrows { font-size: 32px; color: rgba(37,99,235,0.6); letter-spacing: 6px; }
     </style>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 </head>
 <body>
     <div class="gh-bg">code</div>
@@ -246,7 +232,6 @@ export function render(data) {
             <div class="brand-name">KR-CLIDN</div>
             <div class="brand-line"></div>
         </div>
-
         <div class="content">
             <div class="tool-header">
                 <div class="tool-meta">
@@ -257,7 +242,7 @@ export function render(data) {
                 <div class="stars-badge">
                     <i class="material-icons">star</i>
                     <div class="stars-count">${d.GITHUB_STARS}</div>
-                    <div class="stars-label">stars</div>
+                    <div class="stars-label">STARS</div>
                 </div>
             </div>
 
@@ -281,10 +266,9 @@ export function render(data) {
                 ${featsHTML}
             </div>
         </div>
-
-        <div class="slide-footer">
-            <div class="footer-accent"></div>
-            <div class="slide-num">${d.SLIDE_NUMBER}</div>
+        <div class="swipe-indicator">
+            <div class="swipe-text">Desliza</div>
+            <div class="swipe-arrows">❯❯❯</div>
         </div>
         <div class="corner-deco"></div>
     </div>

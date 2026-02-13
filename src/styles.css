@@ -635,3 +635,114 @@ body {
     font-family: 'JetBrains Mono', monospace;
     font-weight: 600;
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   DATA EDITOR & LEFT COLUMN
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.left-column {
+    display: flex;
+    flex-direction: column;
+    gap: var(--panel-gap);
+    overflow: hidden;
+    height: 100%;
+    /* Important for flex child */
+}
+
+.data-panel {
+    flex: 1;
+    /* Takes half space */
+    min-height: 200px;
+    display: flex;
+    flex-direction: column;
+}
+
+.editor-panel {
+    flex: 1;
+    /* Takes half space */
+    min-height: 200px;
+}
+
+/* Ensure editor panel content (textarea) fills the flexed panel */
+.editor-panel .panel-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.editor-panel .CodeMirror {
+    flex: 1;
+    height: 100% !important;
+}
+
+.editor-form {
+    padding: 18px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    flex: 1;
+}
+
+.editor-field-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.editor-label {
+    font-size: 10px;
+    font-weight: 700;
+    color: #00A3CC;
+    /* var(--accent-secondary) hardcoded for safety */
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+.editor-input {
+    background: #1a1a1a;
+    border: 1px solid #2a2a2a;
+    color: #ffffff;
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    outline: none;
+    transition: all 0.2s;
+    width: 100%;
+}
+
+.editor-input:focus {
+    border-color: #00D4FF;
+    background: #222222;
+}
+
+.editor-textarea-code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    min-height: 100px;
+    resize: vertical;
+}
+
+
+/* Flash Animation for Editor Inputs */
+@keyframes flashHighlight {
+    0% {
+        background: #1a1a1a;
+        border-color: #2a2a2a;
+    }
+
+    50% {
+        background: rgba(0, 212, 255, 0.2);
+        border-color: #00D4FF;
+    }
+
+    100% {
+        background: #1a1a1a;
+        border-color: #2a2a2a;
+    }
+}
+
+.highlight-flash {
+    animation: flashHighlight 1s ease;
+}

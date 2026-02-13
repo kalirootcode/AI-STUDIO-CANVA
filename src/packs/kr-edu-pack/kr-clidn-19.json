@@ -28,10 +28,6 @@
             "description": "Total de slides",
             "max_chars": 3,
             "default": "16"
-        },
-        "SLIDE_NUMBER": {
-            "description": "Número de diapositiva",
-            "default": "02/16"
         }
     }
 }

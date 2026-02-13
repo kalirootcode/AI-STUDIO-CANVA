@@ -28,10 +28,6 @@
             "description": "Consejo o tip importante al final",
             "max_chars": 200,
             "default": "Los elementos entre corchetes [ ] son opcionales."
-        },
-        "SLIDE_NUMBER": {
-            "description": "Número de diapositiva",
-            "default": "02/10"
         }
     }
 }

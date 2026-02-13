@@ -186,16 +186,105 @@ async function generateWithAI() {
                 }
             }
         } catch (e) {
-            console.error("Error parseando JSON:", e);
-            console.log("Respuesta Raw:", aiResponse.substring(0, 500));
-            // Mostrar los primeros 100 caracteres de la respuesta en el error para debug
-            const preview = aiResponse.length > 100 ? aiResponse.substring(0, 100) + '...' : aiResponse;
-            throw new Error(`La IA no devolvió JSON válido. Respuesta recibida: "${preview}". Error: ${e.message}`);
+            console.warn("⚠️ Parse falló, intentando reparar JSON...", e.message);
+            try {
+                let raw = aiResponse
+                    .replace(/```json\s*/gi, '')
+                    .replace(/```\s*/gi, '')
+                    .trim();
+
+                const arrStart = raw.indexOf('[');
+                if (arrStart === -1) throw new Error('No array found');
+                let src = raw.substring(arrStart);
+
+                // ── Sanitizar: escapar caracteres problemáticos dentro de strings ──
+                let out = '';
+                let inStr = false;
+                let esc = false;
+                for (let i = 0; i < src.length; i++) {
+                    const ch = src[i];
+                    if (esc) { out += ch; esc = false; continue; }
+                    if (ch === '\\' && inStr) { out += ch; esc = true; continue; }
+
+                    if (ch === '"') {
+                        // Detectar si esta comilla cierra el string o es una comilla interna sin escapar
+                        if (inStr) {
+                            // Mirar qué viene después (ignorando whitespace)
+                            let j = i + 1;
+                            while (j < src.length && (src[j] === ' ' || src[j] === '\t')) j++;
+                            const next = src[j] || '';
+                            // Si después viene : , } ] o " es un cierre válido de string
+                            if (next === ':' || next === ',' || next === '}' || next === ']' || next === '"' || next === '\n' || next === '\r') {
+                                inStr = false;
+                                out += '"';
+                            } else {
+                                // Comilla interna sin escapar — escaparla
+                                out += '\\"';
+                            }
+                        } else {
+                            inStr = true;
+                            out += '"';
+                        }
+                        continue;
+                    }
+
+                    if (inStr) {
+                        // Escapar caracteres de control dentro de strings
+                        if (ch === '\n') { out += '\\n'; continue; }
+                        if (ch === '\r') { out += '\\r'; continue; }
+                        if (ch === '\t') { out += '\\t'; continue; }
+                        const code = ch.charCodeAt(0);
+                        if (code < 32) { out += '\\u' + code.toString(16).padStart(4, '0'); continue; }
+                    }
+                    out += ch;
+                }
+
+                // Si terminó dentro de un string, cerrarlo
+                if (inStr) out += '"';
+
+                // Quitar trailing commas
+                out = out.replace(/,\s*([}\]])/g, '$1');
+
+                // Quitar propiedades incompletas al final
+                out = out.replace(/,\s*"[^"]*"\s*:\s*$/m, '');
+                out = out.replace(/,\s*$/m, '');
+
+                // Cerrar brackets/braces faltantes
+                let braces = 0, brackets = 0;
+                inStr = false; esc = false;
+                for (let i = 0; i < out.length; i++) {
+                    const ch = out[i];
+                    if (esc) { esc = false; continue; }
+                    if (ch === '\\') { esc = true; continue; }
+                    if (ch === '"') { inStr = !inStr; continue; }
+                    if (inStr) continue;
+                    if (ch === '{') braces++;
+                    else if (ch === '}') braces--;
+                    else if (ch === '[') brackets++;
+                    else if (ch === ']') brackets--;
+                }
+                while (braces > 0) { out += '}'; braces--; }
+                while (brackets > 0) { out += ']'; brackets--; }
+                out = out.replace(/,\s*([}\]])/g, '$1');
+
+                slidesData = JSON.parse(out);
+                console.log(`✅ JSON reparado exitosamente — ${slidesData.length} slides recuperados`);
+            } catch (repairError) {
+                console.error("Error parseando JSON:", e.message);
+                console.error("Error reparando JSON:", repairError.message);
+                console.log("Respuesta Raw (primeros 1000 chars):", aiResponse.substring(0, 1000));
+                const preview = aiResponse.length > 100 ? aiResponse.substring(0, 100) + '...' : aiResponse;
+                throw new Error(`La IA no devolvió JSON válido. Respuesta recibida: "${preview}". Error: ${e.message}`);
+            }
         }
 
         if (!Array.isArray(slidesData) || slidesData.length === 0) {
             throw new Error('El carrusel generado está vacío.');
         }
+
+        // STORE DATA GLOBALLY FOR EDITOR
+        window.currentSlidesData = slidesData;
+        console.log("Global Slides Data stored:", window.currentSlidesData.length, "items");
 
         console.log(`✅ ${slidesData.length} slides parseados correctamente`);
 
@@ -237,6 +326,17 @@ async function generateWithAI() {
         showProgress(100, '¡Carrusel Completo!');
         showStatus(`✨ ${generatedSlides.length} Slides profesionales generados`, 'success');
 
+        // ═══ AUTO-GENERAR SEO VIRAL ═══
+        // Generar automáticamente metadata para TikTok usando la misma API key
+        if (typeof window.autoGenerateSEO === 'function') {
+            console.log('🚀 Auto-generando SEO viral...');
+            // Ejecutar en background sin bloquear la UI
+            setTimeout(() => {
+                window.autoGenerateSEO(theme, apiKey);
+            }, 500);
+        }
+
+
     } catch (error) {
         console.error('Generation error:', error);
         showStatus(`Error: ${error.message}`, 'error');
@@ -263,7 +363,129 @@ function updateSlideView() {
     // Actualizar previsualización
     setTimeout(updatePreview, 100);
     updateNavUI();
+
+    // UPDATE DATA EDITOR
+    if (window.currentSlidesData && window.currentSlidesData[currentSlideIndex] && dataEditor) {
+        dataEditor.renderFields(window.currentSlidesData[currentSlideIndex].content);
+    }
+
+    // INJECT CLICK LISTENER FOR SYNC
+    const iframe = document.getElementById('previewFrame');
+    if (iframe && iframe.contentWindow) {
+        // Wait for load to ensure body exists
+        iframe.onload = () => {
+            const doc = iframe.contentDocument || iframe.contentWindow.document;
+            const script = doc.createElement('script');
+            script.textContent = `
+                document.body.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    let text = e.target.innerText;
+                    if (text && text.length > 0) {
+                        window.parent.postMessage({ type: 'preview-click', text: text }, '*');
+                    }
+                }, true);
+            `;
+            doc.body.appendChild(script);
+
+            // INJECT ANIMATIONS
+            const style = doc.createElement('style');
+            style.textContent = `
+/* CYBER-MOTION ANIMATIONS */
+@keyframes tracking-in-expand { 0% { letter-spacing: -0.5em; opacity: 0; filter: blur(12px); } 40% { opacity: 0.6; } 100% { opacity: 1; filter: blur(0px); } }
+.animate-title { animation: tracking-in-expand 0.8s cubic-bezier(0.215, 0.610, 0.355, 1.000) both; }
+@keyframes fade-in-up { 0% { transform: translateY(20px); opacity: 0; } 100% { transform: translateY(0); opacity: 1; } }
+.animate-item { animation: fade-in-up 0.6s cubic-bezier(0.390, 0.575, 0.565, 1.000) both; }
+@keyframes icon-pop { 0% { transform: scale(0) rotate(-45deg); opacity: 0; } 60% { transform: scale(1.1) rotate(5deg); opacity: 1; } 100% { transform: scale(1) rotate(0); opacity: 1; } }
+.animate-icon { animation: icon-pop 0.6s cubic-bezier(0.175, 0.885, 0.320, 1.275) both; }
+@keyframes flicker { 0%, 19%, 22%, 62%, 64%, 65%, 70%, 100% { opacity: 1; } 20%, 21%, 63%, 64%, 69% { opacity: 0.4; } }
+.animate-terminal { animation: flicker 4s linear infinite both; }
+            `;
+            doc.head.appendChild(style);
+
+            // AUTO-APPLY ANIMATIONS SCRIPT
+            const animScript = doc.createElement('script');
+            animScript.textContent = `
+                setTimeout(() => {
+                    // Titles
+                    document.querySelectorAll('.title, h1, .slide-title').forEach(el => el.classList.add('animate-title'));
+                    
+                    // List Items / Steps (Staggered)
+                    document.querySelectorAll('li, .step, .flow-step, .social-item').forEach((el, i) => {
+                        el.style.animationDelay = (i * 0.15 + 0.3) + 's';
+                        el.classList.add('animate-item');
+                    });
+                    
+                    // Icons
+                    document.querySelectorAll('.icon, .logo-hero, .flow-icon-box').forEach(el => {
+                        el.classList.add('animate-icon');
+                    });
+
+                    // Terminal
+                    document.querySelectorAll('.terminal-window').forEach(el => el.classList.add('animate-terminal'));
+                }, 100);
+            `;
+            doc.body.appendChild(animScript);
+        };
+        // Also try immediately if already loaded
+        try {
+            const doc = iframe.contentDocument || iframe.contentWindow.document;
+            if (doc && doc.body) {
+                const script = doc.createElement('script');
+                script.textContent = `
+                    document.body.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        let text = e.target.innerText;
+                        if (text && text.length > 0) {
+                            window.parent.postMessage({ type: 'preview-click', text: text }, '*');
+                        }
+                    });
+                 `;
+                doc.body.appendChild(script);
+
+                // INJECT ANIMATIONS (Fallback)
+                const style = doc.createElement('style');
+                style.textContent = `
+/* CYBER-MOTION ANIMATIONS */
+@keyframes tracking-in-expand { 0% { letter-spacing: -0.5em; opacity: 0; filter: blur(12px); } 40% { opacity: 0.6; } 100% { opacity: 1; filter: blur(0px); } }
+.animate-title { animation: tracking-in-expand 0.8s cubic-bezier(0.215, 0.610, 0.355, 1.000) both; }
+@keyframes fade-in-up { 0% { transform: translateY(20px); opacity: 0; } 100% { transform: translateY(0); opacity: 1; } }
+.animate-item { animation: fade-in-up 0.6s cubic-bezier(0.390, 0.575, 0.565, 1.000) both; }
+@keyframes icon-pop { 0% { transform: scale(0) rotate(-45deg); opacity: 0; } 60% { transform: scale(1.1) rotate(5deg); opacity: 1; } 100% { transform: scale(1) rotate(0); opacity: 1; } }
+.animate-icon { animation: icon-pop 0.6s cubic-bezier(0.175, 0.885, 0.320, 1.275) both; }
+@keyframes flicker { 0%, 19%, 22%, 62%, 64%, 65%, 70%, 100% { opacity: 1; } 20%, 21%, 63%, 64%, 69% { opacity: 0.4; } }
+.animate-terminal { animation: flicker 4s linear infinite both; }
+                `;
+                doc.head.appendChild(style);
+
+                // AUTO-APPLY ANIMATIONS SCRIPT
+                const animScript = doc.createElement('script');
+                animScript.textContent = `
+                    setTimeout(() => {
+                        document.querySelectorAll('.title, h1, .slide-title').forEach(el => el.classList.add('animate-title'));
+                        document.querySelectorAll('li, .step, .flow-step, .social-item').forEach((el, i) => {
+                            el.style.animationDelay = (i * 0.15 + 0.3) + 's';
+                            el.classList.add('animate-item');
+                        });
+                        document.querySelectorAll('.icon, .logo-hero, .flow-icon-box').forEach(el => el.classList.add('animate-icon'));
+                        document.querySelectorAll('.terminal-window').forEach(el => el.classList.add('animate-terminal'));
+                    }, 100);
+                `;
+                doc.body.appendChild(animScript);
+            }
+        } catch (e) { }
+    }
 }
+
+// Global Message Listener for Sync
+window.addEventListener('message', (event) => {
+    if (event.data && event.data.type === 'preview-click' && dataEditor) {
+        console.log("Preview Clicked:", event.data.text);
+        // Clean text (remove newlines, extra spaces)
+        const clean = event.data.text.replace(/\\s+/g, ' ').trim();
+        dataEditor.focusFieldByValue(clean);
+    }
+});
 
 function updateNavUI() {
     // Buscar o crear controles de navegación en el panel de preview
@@ -321,6 +543,13 @@ function nextSlide() {
     }
 }
 
+
+// Import DataEditor (assuming ES6 modules are supported, or just include it if it's a script)
+// Since we are in Electron/Browser context, we might need to load it via script tag or just assume it's global if loaded in HTML.
+// ensuring DataEditor is available. For now, let's assume it's loaded.
+
+let dataEditor = null; // New
+
 document.addEventListener('DOMContentLoaded', async () => {
     try {
         console.log("DOM Cargado. Iniciando módulos...");
@@ -335,6 +564,40 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         updatePreviewSize();
         console.log("Preview OK");
+
+        // Init Data Editor
+        // We need to import it properly. If we can't use import here easily without build step, 
+        // I will assume the class is available globally or render it here.
+        // Actually, looking at index.html (I haven't seen it yet), I should probably check imports.
+        // But to be safe, I'll instantiate if the class exists.
+        if (typeof DataEditor !== 'undefined') {
+            dataEditor = new DataEditor('dataEditorPanel', (newData) => {
+                // On Change Callback
+                if (generatedSlides.length > 0) {
+                    // 1. Update internal data
+                    // We need to store robust data, currently generatedSlides is just HTML strings.
+                    // We need to upgrade generatedSlides to be Objects { templateId, content: {} } OR
+                    // Keep generatedSlides as HTML but ALSO store a separate `slidesData` array.
+
+                    // Let's implement `slidesData` global state management.
+                    if (window.currentSlidesData) {
+                        window.currentSlidesData[currentSlideIndex].content = newData;
+
+                        // 2. Re-render current slide
+                        const item = window.currentSlidesData[currentSlideIndex];
+                        const newHtml = templateEngine.renderTemplate(item.templateId, newData);
+
+                        // 3. Update Editor & Preview
+                        editor.setValue(newHtml);
+                        generatedSlides[currentSlideIndex] = newHtml; // Update HTML cache
+                    }
+                }
+            });
+            console.log("Data Editor Initialized");
+        } else {
+            console.warn("DataEditor class not found. Make sure to include it in index.html");
+        }
+
     } catch (err) {
         console.error("FATAL ERROR IN INITIALIZATION:", err);
         alert("Error crítico iniciando la app: " + err.message);
@@ -541,15 +804,21 @@ function updatePreview() {
     ::-webkit-scrollbar { display: none !important; }
 </style>`;
 
+    const iconifyScript = '<script src="https://code.iconify.design/3/3.1.0/iconify.min.js"></script>';
+
+    let finalCode = code;
+    // Remove conflicting Material Icons link if present to avoid dual-loading (optional, but cleaner)
+    // finalCode = finalCode.replace(/<link[^>]*Material\+Icons[^>]*>/g, '');
+
     let finalHTML;
     if (code.includes('<!DOCTYPE') || code.includes('<html')) {
         if (code.includes('</body>')) {
-            finalHTML = code.replace('</body>', previewStyles + '</body>');
+            finalHTML = code.replace('</body>', previewStyles + iconifyScript + '</body>');
         } else {
-            finalHTML = code + previewStyles;
+            finalHTML = code + previewStyles + iconifyScript;
         }
     } else {
-        finalHTML = `<!DOCTYPE html><html><head><meta charset="UTF-8"></head><body>${code}${previewStyles}</body></html>`;
+        finalHTML = `<!DOCTYPE html><html><head><meta charset="UTF-8">${iconifyScript}</head><body>${code}${previewStyles}</body></html>`;
     }
 
     // Write to iframe
@@ -606,22 +875,64 @@ async function exportSingleContent() {
     const aspectKey = document.getElementById('aspectRatio').value;
     const { width, height } = ASPECT_RATIOS[aspectKey];
 
+    // ANIMATION & SCRIPT EMBEDDING FOR EXPORT
+    const animationStyles = `
+<style>
+/* CYBER-MOTION ANIMATIONS */
+@keyframes tracking-in-expand { 0% { letter-spacing: -0.5em; opacity: 0; filter: blur(12px); } 40% { opacity: 0.6; } 100% { opacity: 1; filter: blur(0px); } }
+.animate-title { animation: tracking-in-expand 0.8s cubic-bezier(0.215, 0.610, 0.355, 1.000) both; }
+@keyframes fade-in-up { 0% { transform: translateY(20px); opacity: 0; } 100% { transform: translateY(0); opacity: 1; } }
+.animate-item { animation: fade-in-up 0.6s cubic-bezier(0.390, 0.575, 0.565, 1.000) both; }
+@keyframes icon-pop { 0% { transform: scale(0) rotate(-45deg); opacity: 0; } 60% { transform: scale(1.1) rotate(5deg); opacity: 1; } 100% { transform: scale(1) rotate(0); opacity: 1; } }
+.animate-icon { animation: icon-pop 0.6s cubic-bezier(0.175, 0.885, 0.320, 1.275) both; }
+@keyframes flicker { 0%, 19%, 22%, 62%, 64%, 65%, 70%, 100% { opacity: 1; } 20%, 21%, 63%, 64%, 69% { opacity: 0.4; } }
+.animate-terminal { animation: flicker 4s linear infinite both; }
+</style>
+<script>
+window.onload = function() {
+    setTimeout(() => {
+        document.querySelectorAll('.title, h1, .slide-title').forEach(el => el.classList.add('animate-title'));
+        document.querySelectorAll('li, .step, .flow-step, .social-item').forEach((el, i) => {
+            el.style.animationDelay = (i * 0.15 + 0.3) + 's';
+            el.classList.add('animate-item');
+        });
+        document.querySelectorAll('.icon, .logo-hero, .flow-icon-box').forEach(el => el.classList.add('animate-icon'));
+        document.querySelectorAll('.terminal-window').forEach(el => el.classList.add('animate-terminal'));
+    }, 100);
+};
+</script>`;
+
+    // Append to code (before closing body or at end)
+    let finalCode = code;
+    if (finalCode.includes('</body>')) {
+        finalCode = finalCode.replace('</body>', animationStyles + '</body>');
+    } else {
+        finalCode += animationStyles;
+    }
+
     setProcessing(true);
 
     try {
         let result;
         if (format === 'MP4') {
-            showProgress(0, 'Generando video HD frame-by-frame...');
+            const calculatedDuration = detectAnimationDuration(finalCode);
+            showProgress(0, `Generando video HD (${calculatedDuration}s) frame-by-frame...`);
+
             result = await window.cyberCanvas.exportVideo({
-                html: code,
+                html: finalCode, // Use code with animations
                 width,
                 height,
-                duration: 5 // Default duration
+                duration: calculatedDuration
             });
         } else {
             showProgress(0, 'Exportando imagen de alta calidad...');
             result = await window.cyberCanvas.exportImage({
-                html: code,
+                html: code, // Images don't needed animations? Or maybe yes if we snap at end?
+                // Actually images should look "finished".
+                // Animations start at 0 opacity.
+                // So for IMAGES, we should NOT inject animations, or inject a CSS that sets opacity: 1 immediately.
+                // Current logic: code (raw) is passed to exportImage.
+                // Raw code has NO animation classes. So it renders static. Correct.
                 width,
                 height,
                 format

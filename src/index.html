@@ -56,16 +56,31 @@
     <!-- Main Content -->
     <main class="main-content">
         <!-- Editor Panel -->
-        <section class="panel editor-panel">
-            <div class="panel-header">
-                <span class="panel-icon">&lt;/&gt;</span>
-                <span class="panel-title">EDITOR</span>
-                <button id="clearBtn" class="btn-icon" title="Limpiar">✕</button>
-            </div>
-            <div class="panel-content">
-                <textarea id="editor"></textarea>
-            </div>
-        </section>
+        <!-- Left Column (Data + Code) -->
+        <div class="left-column">
+            <!-- Data Editor Panel -->
+            <section class="panel data-panel">
+                <div class="panel-header">
+                    <span class="panel-icon">⚡</span>
+                    <span class="panel-title">DATA EDITOR</span>
+                </div>
+                <div id="dataEditorPanel" class="panel-content">
+                    <!-- Dynamic Inputs -->
+                </div>
+            </section>
+
+            <!-- Code Editor Panel -->
+            <section class="panel editor-panel">
+                <div class="panel-header">
+                    <span class="panel-icon">&lt;/&gt;</span>
+                    <span class="panel-title">CODE HTML</span>
+                    <button id="clearBtn" class="btn-icon" title="Limpiar">✕</button>
+                </div>
+                <div class="panel-content">
+                    <textarea id="editor"></textarea>
+                </div>
+            </section>
+        </div>
 
         <!-- Preview Panel -->
         <section class="panel preview-panel">
@@ -109,6 +124,23 @@
                 <button id="generateBtn" class="btn btn-ai">
                     <span>🤖</span> GENERAR CON IA
                 </button>
+
+                <!-- SEO Viral Engine Section -->
+                <div class="control-group" style="margin-top: 20px;">
+                    <label class="control-label">🚀 SEO VIRAL ENGINE</label>
+                    <textarea id="seoOutput" class="textarea-input seo-output"
+                        placeholder="Aquí aparecerá el título, descripción y hashtags optimizados para TikTok..."
+                        readonly
+                        style="min-height: 180px; font-family: 'JetBrains Mono', monospace; font-size: 13px; line-height: 1.6;"></textarea>
+                    <div style="display: flex; gap: 10px; margin-top: 10px;">
+                        <button id="generateSEOBtn" class="btn btn-secondary" style="flex: 1;">
+                            <span>✨</span> GENERAR SEO
+                        </button>
+                        <button id="copySEOBtn" class="btn btn-accent" style="flex: 1;">
+                            <span>📋</span> COPIAR
+                        </button>
+                    </div>
+                </div>
 
                 <div class="divider"></div>
 
@@ -169,6 +201,8 @@
     <script src="services/TemplateEngine.js"></script>
     <script src="services/CarouselEngine.js"></script>
     <script src="renderer.js"></script>
+    <script type="module" src="services/DataEditor.js"></script>
+    <script src="seo-frontend.js"></script>
 </body>
 
 </html>

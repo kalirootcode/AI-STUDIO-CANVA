@@ -32,10 +32,6 @@
             "description": "Ejemplo práctico",
             "max_chars": 180,
             "default": "Ejemplo práctico."
-        },
-        "SLIDE_NUMBER": {
-            "description": "Número de diapositiva",
-            "default": "04/08"
         }
     }
 }

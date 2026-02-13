@@ -37,10 +37,6 @@
             "description": "Explicación detallada del script",
             "max_chars": 200,
             "default": "Explicación del script."
-        },
-        "SLIDE_NUMBER": {
-            "description": "Número de diapositiva",
-            "default": "04/08"
         }
     }
 }

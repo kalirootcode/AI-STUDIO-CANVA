@@ -23,10 +23,6 @@
             "description": "Dato adicional",
             "max_chars": 180,
             "default": "Dato impactante."
-        },
-        "SLIDE_NUMBER": {
-            "description": "Número de diapositiva",
-            "default": "04/08"
         }
     }
 }

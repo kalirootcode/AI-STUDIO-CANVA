@@ -29,10 +29,6 @@
             "description": "Nota final de éxito",
             "max_chars": 120,
             "default": "¡Listo!"
-        },
-        "SLIDE_NUMBER": {
-            "description": "Número",
-            "default": "04/08"
         }
     }
 }

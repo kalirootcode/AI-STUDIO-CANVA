@@ -46,7 +46,6 @@ app.on('activate', () => {
 // ─── Helper: Preparar HTML para exportación (idéntico al previsualizador) ───
 function prepareExportHTML(html, width, height) {
     // Inyectar estilos de reset directamente en el HTML del usuario
-    // Esto replica EXACTAMENTE lo que hace el previsualizador
     const exportStyles = `
 <style id="export-reset">
     html {
@@ -62,20 +61,35 @@ function prepareExportHTML(html, width, height) {
         overflow: hidden !important;
         max-width: ${width}px !important;
         max-height: ${height}px !important;
+        overflow: hidden !important;
     }
     ::-webkit-scrollbar { display: none !important; }
 </style>`;
 
-    // Inyectar los estilos en el HTML existente (como hace el previsualizador)
-    let finalHTML;
-    if (html.includes('<!DOCTYPE') || html.includes('<html')) {
-        if (html.includes('</body>')) {
-            finalHTML = html.replace('</body>', exportStyles + '</body>');
+    // --- PATCH: Ensure Iconify is present for export ---
+    // Script de Iconify (Inyección forzada para asegurar renderizado)
+    const iconifyScript = '<script src="https://code.iconify.design/3/3.1.0/iconify.min.js"></script>';
+    let finalHTML = html;
+
+    // 1. Inyectar Script si falta
+    if (!finalHTML.includes('iconify.min.js')) {
+        if (finalHTML.includes('<head>')) {
+             finalHTML = finalHTML.replace('<head>', '<head>' + iconifyScript);
+        } else if (finalHTML.includes('<body>')) {
+             finalHTML = iconifyScript + finalHTML;
+        }
+    }
+
+    // 2. Inyectar Estilos
+    if (finalHTML.includes('<!DOCTYPE') || finalHTML.includes('<html')) {
+        if (finalHTML.includes('</body>')) {
+            finalHTML = finalHTML.replace('</body>', exportStyles + '</body>');
         } else {
-            finalHTML = html + exportStyles;
+            finalHTML = finalHTML + exportStyles;
         }
     } else {
-        finalHTML = `<!DOCTYPE html><html><head><meta charset="UTF-8"></head><body>${html}${exportStyles}</body></html>`;
+        // Fallback for raw content: Wrap in full HTML + Script + Styles
+        finalHTML = `<!DOCTYPE html><html><head><meta charset="UTF-8">${iconifyScript}</head><body>${html}${exportStyles}</body></html>`;
     }
 
     return finalHTML;
@@ -391,7 +405,7 @@ ipcMain.handle('call-ai', async (event, { provider, apiKey, prompt }) => {
                             contents: [{ parts: [{ text: prompt }] }],
                             generationConfig: {
                                 temperature: 0.7,
-                                maxOutputTokens: 8192
+                                maxOutputTokens: 65536
                             }
                         })
                     });
@@ -418,6 +432,12 @@ ipcMain.handle('call-ai', async (event, { provider, apiKey, prompt }) => {
                         continue;
                     }
 
+                    // Detectar truncación por tokens
+                    const finishReason = data.candidates[0].finishReason;
+                    if (finishReason === 'MAX_TOKENS') {
+                        console.warn(`[IPC] ⚠️ Respuesta TRUNCADA por MAX_TOKENS — el JSON estará incompleto`);
+                    }
+
                     const code = data.candidates[0].content.parts[0].text.trim();
                     // Limpieza simple
                     let cleanCode = code;
@@ -426,7 +446,8 @@ ipcMain.handle('call-ai', async (event, { provider, apiKey, prompt }) => {
                     if (cleanCode.endsWith('```')) cleanCode = cleanCode.slice(0, -3);
 
                     console.log(`[IPC] Éxito con Gemini (${model})`);
-                    console.log(`[IPC] Response Preview: ${cleanCode.substring(0, 500)}...`);
+                    console.log(`[IPC] Response length: ${cleanCode.length} chars | finishReason: ${finishReason}`);
+                    console.log(`[IPC] Response Preview: ${cleanCode.substring(0, 300)}...`);
                     return { success: true, code: cleanCode.trim() };
 
                 } catch (err) {
@@ -487,6 +508,29 @@ ipcMain.handle('call-ai', async (event, { provider, apiKey, prompt }) => {
             return { success: true, code: code.trim() };
         }
     } catch (error) {
+        return { success: false, error: error.message };
+    }
+});
+
+// ─── IPC: Generar Metadata SEO Viral ───
+ipcMain.handle('generate-seo', async (event, { tema, nicho, apiKey }) => {
+    try {
+        console.log(`[IPC] generate-seo request: Tema="${tema}", Nicho="${nicho}", APIKey=${apiKey ? 'OK' : 'Missing'}`);
+
+        if (!apiKey) {
+            throw new Error('API Key requerida');
+        }
+
+        // Importar y usar SEOEngine
+        const SEOEngine = require('./src/services/SEOEngine');
+        const seo = new SEOEngine(apiKey);
+
+        const metadata = await seo.generarMetadataViral(tema, nicho);
+
+        console.log(`[IPC] SEO generado exitosamente para: ${tema}`);
+        return { success: true, data: metadata };
+    } catch (error) {
+        console.error('[IPC] Error generando SEO:', error);
         return { success: false, error: error.message };
     }
 });

@@ -29,10 +29,6 @@
             "description": "Descripción educativa",
             "max_chars": 200,
             "default": "Explicación."
-        },
-        "SLIDE_NUMBER": {
-            "description": "Número",
-            "default": "04/08"
         }
     }
 }

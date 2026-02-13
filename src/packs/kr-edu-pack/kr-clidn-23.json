@@ -23,10 +23,6 @@
             "description": "Explicación del flujo",
             "max_chars": 200,
             "default": "Cada paso del flujo."
-        },
-        "SLIDE_NUMBER": {
-            "description": "Número",
-            "default": "04/08"
         }
     }
 }

@@ -32,10 +32,6 @@
                 "TITLE": "Título de la explicación (ej: Permisos)",
                 "CONTENT_HTML": "Contenido explicativo (soporta <br>, <span>)"
             }
-        },
-        "SLIDE_NUMBER": {
-            "description": "Número de diapositiva",
-            "default": "04/10"
         }
     }
 }

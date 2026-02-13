@@ -10,15 +10,14 @@ export function render(data) {
         COMMAND: data.COMMAND || '$ nmap 192.168.1.1',
         RESULT_TEXT: data.RESULT_TEXT || 'Verás los puertos abiertos del objetivo.',
         NOTE_TITLE: data.NOTE_TITLE || 'Nota',
-        NOTE_CONTENT: data.NOTE_CONTENT || 'Solo escanea dispositivos con tu autorización.',
-        SLIDE_NUMBER: data.SLIDE_NUMBER || '06/08'
+        NOTE_CONTENT: data.NOTE_CONTENT || 'Solo escanea dispositivos con tu autorización.'
     };
 
     return `<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <script src="https://code.iconify.design/3/3.1.0/iconify.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -51,21 +50,6 @@ export function render(data) {
             padding: 60px;
             display: flex; flex-direction: column;
         }
-
-        .brand-bar {
-            display: flex; align-items: center; gap: 16px; margin-bottom: 50px;
-        }
-
-        .brand-logo { width: 44px; height: 44px; object-fit: contain; }
-
-        .brand-name {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 32px; font-weight: 700;
-            letter-spacing: 4px; color: #2563EB;
-            text-shadow: 0 0 20px rgba(37,99,235,0.4);
-        }
-
-        .brand-line { flex: 1; height: 1px; background: linear-gradient(90deg, rgba(37,99,235,0.3), transparent); }
 
         .content {
             flex: 1; display: flex; flex-direction: column; justify-content: center;
@@ -157,7 +141,7 @@ export function render(data) {
             margin-bottom: 36px;
         }
 
-        .result-box i { color: #2563EB; font-size: 32px; margin-top: 2px; }
+        .result-box .iconify { color: #2563EB; font-size: 32px; margin-top: 2px; }
 
         .result-text {
             font-size: 32px;
@@ -176,7 +160,7 @@ export function render(data) {
             gap: 14px;
         }
 
-        .note-box i { color: #2563EB; font-size: 30px; margin-top: 2px; }
+        .note-box .iconify { color: #2563EB; font-size: 30px; margin-top: 2px; }
 
         .note-content { flex: 1; }
 
@@ -190,21 +174,24 @@ export function render(data) {
             font-size: 28px; color: #94a3b8; line-height: 1.5;
         }
 
-        .slide-footer {
-            display: flex; justify-content: space-between; align-items: center; padding-top: 30px;
-        }
-
-        .slide-num { font-family: 'JetBrains Mono', monospace; font-size: 32px; color: rgba(255,255,255,0.3); }
-
-        .footer-accent { width: 60px; height: 3px; background: linear-gradient(90deg, #2563EB, transparent); }
-
         .corner-deco {
             position: absolute; bottom: 60px; left: 60px;
             width: 100px; height: 100px;
             border-left: 2px solid rgba(37,99,235,0.15);
             border-bottom: 2px solid rgba(37,99,235,0.15);
         }
+    
+        .brand-bar { display: flex; align-items: center; gap: 14px; margin-bottom: 40px; }
+        .brand-logo { width: 36px; height: 36px; object-fit: contain; border-radius: 8px; }
+        .brand-name { font-family: 'JetBrains Mono', monospace; font-size: 26px; font-weight: 700; letter-spacing: 3px; color: #2563EB; }
+        .brand-line { flex: 1; height: 1px; background: linear-gradient(90deg, rgba(37,99,235,0.3), transparent); }
+
+        /* ═══ SWIPE INDICATOR ═══ */
+        .swipe-indicator { position: absolute; bottom: 60px; left: 0; right: 0; display: flex; flex-direction: column; align-items: center; gap: 8px; }
+        .swipe-text { font-family: 'JetBrains Mono', monospace; font-size: 20px; color: rgba(37,99,235,0.5); letter-spacing: 3px; text-transform: uppercase; }
+        .swipe-arrows { font-size: 32px; color: rgba(37,99,235,0.6); letter-spacing: 6px; }
     </style>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 </head>
 <body>
     <div class="slide">
@@ -217,22 +204,19 @@ export function render(data) {
         <div class="content">
             <div class="lab-badge">
                 <div class="badge-letter">${d.EXERCISE_LETTER}</div>
-                <div class="badge-text">// LAB</div>
+                <div class="badge-text">// EJERCICIO</div>
             </div>
-
             <div class="lab-title">${d.TITLE}</div>
             <div class="lab-intro">${d.INTRO_TEXT}</div>
 
             <div class="cmd-terminal">
-                <div class="cmd-bar">
-                    <div class="b"></div><div class="b"></div><div class="b"></div>
-                </div>
+                <div class="cmd-bar"><span class="b"></span><span class="b"></span><span class="b"></span></div>
                 <div class="cmd-body">${d.COMMAND}</div>
             </div>
 
             <div class="result-box">
                 <i class="material-icons">arrow_forward</i>
-                <div class="result-text">${d.RESULT_TEXT}</div>
+                <span class="result-text">${d.RESULT_TEXT}</span>
             </div>
 
             <div class="note-box">
@@ -244,9 +228,9 @@ export function render(data) {
             </div>
         </div>
 
-        <div class="slide-footer">
-            <div class="footer-accent"></div>
-            <div class="slide-num">${d.SLIDE_NUMBER}</div>
+        <div class="swipe-indicator">
+            <div class="swipe-text">Desliza</div>
+            <div class="swipe-arrows">❯❯❯</div>
         </div>
         <div class="corner-deco"></div>
     </div>

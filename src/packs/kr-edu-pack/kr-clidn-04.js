@@ -6,7 +6,6 @@ export function render(data) {
     const d = {
         TITLE: data.TITLE || 'Entendiendo la Salida',
         WARNING_TEXT: data.WARNING_TEXT || 'Interpretar correctamente la salida es clave.',
-        SLIDE_NUMBER: data.SLIDE_NUMBER || '04/08',
         OUTPUT_LINES: data.OUTPUT_LINES || [
             { TEXT: 'PORT   STATE SERVICE', HIGHLIGHT: 'STATE' },
             { TEXT: '22/tcp open  ssh', HIGHLIGHT: 'open' }
@@ -37,7 +36,7 @@ export function render(data) {
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <script src="https://code.iconify.design/3/3.1.0/iconify.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -62,31 +61,10 @@ export function render(data) {
             padding: 60px;
             display: flex;
             flex-direction: column;
-        }
-
-        .brand-bar {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-            margin-bottom: 50px;
-        }
-
-        .brand-bar .dot {
+        }.brand-bar .dot {
             width: 12px; height: 12px;
             background: #2563EB; border-radius: 50%;
             box-shadow: 0 0 12px #2563EB;
-        }
-
-        .brand-name {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 32px; font-weight: 700;
-            letter-spacing: 4px; color: #2563EB;
-            text-shadow: 0 0 20px rgba(37,99,235,0.4);
-        }
-
-        .brand-line {
-            flex: 1; height: 1px;
-            background: linear-gradient(90deg, rgba(37,99,235,0.3), transparent);
         }
 
         .content {
@@ -120,7 +98,7 @@ export function render(data) {
             margin-bottom: 40px;
         }
 
-        .warn-bar i { color: #ff3366; font-size: 30px; }
+        .warn-bar .iconify { color: #ff3366; font-size: 30px; }
         .warn-bar span { font-size: 30px; color: #ff3366; }
 
         /* ═══ TERMINAL ═══ */
@@ -220,21 +198,6 @@ export function render(data) {
             line-height: 1.5;
         }
 
-        .slide-footer {
-            display: flex; justify-content: space-between;
-            align-items: center; padding-top: 30px;
-        }
-
-        .slide-num {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 32px; color: rgba(255,255,255,0.3);
-        }
-
-        .footer-accent {
-            width: 60px; height: 3px;
-            background: linear-gradient(90deg, #4DD9C0, transparent);
-        }
-
         .corner-deco {
             position: absolute;
             bottom: 60px; left: 60px;
@@ -242,7 +205,18 @@ export function render(data) {
             border-left: 2px solid rgba(77,217,192,0.15);
             border-bottom: 2px solid rgba(77,217,192,0.15);
         }
+    
+        .brand-bar { display: flex; align-items: center; gap: 14px; margin-bottom: 40px; }
+        .brand-logo { width: 36px; height: 36px; object-fit: contain; border-radius: 8px; }
+        .brand-name { font-family: 'JetBrains Mono', monospace; font-size: 26px; font-weight: 700; letter-spacing: 3px; color: #2563EB; }
+        .brand-line { flex: 1; height: 1px; background: linear-gradient(90deg, rgba(37,99,235,0.3), transparent); }
+
+        /* ═══ SWIPE INDICATOR ═══ */
+        .swipe-indicator { position: absolute; bottom: 60px; left: 0; right: 0; display: flex; flex-direction: column; align-items: center; gap: 8px; }
+        .swipe-text { font-family: 'JetBrains Mono', monospace; font-size: 20px; color: rgba(37,99,235,0.5); letter-spacing: 3px; text-transform: uppercase; }
+        .swipe-arrows { font-size: 32px; color: rgba(37,99,235,0.6); letter-spacing: 6px; }
     </style>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 </head>
 <body>
     <div class="slide">
@@ -275,10 +249,9 @@ export function render(data) {
                 ${breakHTML}
             </div>
         </div>
-
-        <div class="slide-footer">
-            <div class="footer-accent"></div>
-            <div class="slide-num">${d.SLIDE_NUMBER}</div>
+        <div class="swipe-indicator">
+            <div class="swipe-text">Desliza</div>
+            <div class="swipe-arrows">❯❯❯</div>
         </div>
         <div class="corner-deco"></div>
     </div>

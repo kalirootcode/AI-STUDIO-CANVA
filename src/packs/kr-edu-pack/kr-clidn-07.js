@@ -10,15 +10,14 @@ export function render(data) {
         COMMAND: data.COMMAND || '$ nmap -A objetivo',
         RESULT_TEXT: data.RESULT_TEXT || 'Resultado detallado del escaneo.',
         WARNING_TITLE: data.WARNING_TITLE || '⚠ Cuidado',
-        WARNING_CONTENT: data.WARNING_CONTENT || 'Uso no autorizado es ilegal.',
-        SLIDE_NUMBER: data.SLIDE_NUMBER || '07/08'
+        WARNING_CONTENT: data.WARNING_CONTENT || 'Uso no autorizado es ilegal.'
     };
 
     return `<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <script src="https://code.iconify.design/3/3.1.0/iconify.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -52,23 +51,10 @@ export function render(data) {
             display: flex; flex-direction: column;
         }
 
-        .brand-bar {
-            display: flex; align-items: center; gap: 16px; margin-bottom: 50px;
-        }
-
         .brand-bar .dot {
             width: 12px; height: 12px; background: #ff3366;
             border-radius: 50%; box-shadow: 0 0 12px #ff3366;
         }
-
-        .brand-name {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 32px; font-weight: 700;
-            letter-spacing: 4px; color: #2563EB;
-            text-shadow: 0 0 20px rgba(37,99,235,0.4);
-        }
-
-        .brand-line { flex: 1; height: 1px; background: linear-gradient(90deg, rgba(255,51,102,0.3), transparent); }
 
         .content {
             flex: 1; display: flex; flex-direction: column; justify-content: center;
@@ -142,7 +128,7 @@ export function render(data) {
             margin-bottom: 32px;
         }
 
-        .result-box i { color: #2563EB; font-size: 30px; margin-top: 2px; }
+        .result-box .iconify { color: #2563EB; font-size: 30px; margin-top: 2px; }
 
         .result-text { font-size: 30px; color: #e2e8f0; line-height: 1.5; }
 
@@ -169,7 +155,7 @@ export function render(data) {
             margin-bottom: 16px;
         }
 
-        .warning-header i {
+        .warning-header .iconify {
             font-size: 36px; color: #ff3366;
         }
 
@@ -183,15 +169,6 @@ export function render(data) {
             font-size: 30px; color: #e2e8f0;
             line-height: 1.6; padding-left: 50px;
         }
-
-        .slide-footer {
-            display: flex; justify-content: space-between;
-            align-items: center; padding-top: 30px;
-        }
-
-        .slide-num { font-family: 'JetBrains Mono', monospace; font-size: 32px; color: rgba(255,255,255,0.3); }
-
-        .footer-accent { width: 60px; height: 3px; background: linear-gradient(90deg, #ff3366, transparent); }
 
         .corner-deco {
             position: absolute; bottom: 60px; left: 60px;
@@ -207,7 +184,18 @@ export function render(data) {
             color: rgba(255, 51, 102, 0.04);
             font-family: 'Material Icons';
         }
+    
+        .brand-bar { display: flex; align-items: center; gap: 14px; margin-bottom: 40px; }
+        .brand-logo { width: 36px; height: 36px; object-fit: contain; border-radius: 8px; }
+        .brand-name { font-family: 'JetBrains Mono', monospace; font-size: 26px; font-weight: 700; letter-spacing: 3px; color: #2563EB; }
+        .brand-line { flex: 1; height: 1px; background: linear-gradient(90deg, rgba(37,99,235,0.3), transparent); }
+
+        /* ═══ SWIPE INDICATOR ═══ */
+        .swipe-indicator { position: absolute; bottom: 60px; left: 0; right: 0; display: flex; flex-direction: column; align-items: center; gap: 8px; }
+        .swipe-text { font-family: 'JetBrains Mono', monospace; font-size: 20px; color: rgba(37,99,235,0.5); letter-spacing: 3px; text-transform: uppercase; }
+        .swipe-arrows { font-size: 32px; color: rgba(37,99,235,0.6); letter-spacing: 6px; }
     </style>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 </head>
 <body>
     <div class="shield-bg">shield</div>
@@ -223,34 +211,31 @@ export function render(data) {
                 <div class="badge-letter">${d.EXERCISE_LETTER}</div>
                 <div class="badge-text">// PRECAUCIÓN</div>
             </div>
-
             <div class="lab-title">${d.TITLE}</div>
             <div class="lab-intro">${d.INTRO_TEXT}</div>
 
             <div class="cmd-terminal">
-                <div class="cmd-bar">
-                    <div class="b"></div><div class="b"></div><div class="b"></div>
-                </div>
+                <div class="cmd-bar"><span class="b"></span><span class="b"></span><span class="b"></span></div>
                 <div class="cmd-body">${d.COMMAND}</div>
             </div>
 
             <div class="result-box">
                 <i class="material-icons">arrow_forward</i>
-                <div class="result-text">${d.RESULT_TEXT}</div>
+                <span class="result-text">${d.RESULT_TEXT}</span>
             </div>
 
             <div class="warning-card">
                 <div class="warning-header">
-                    <i class="material-icons">gpp_bad</i>
-                    <div class="warning-title">${d.WARNING_TITLE}</div>
+                    <i class="material-icons">warning</i>
+                    <span class="warning-title">${d.WARNING_TITLE}</span>
                 </div>
                 <div class="warning-text">${d.WARNING_CONTENT}</div>
             </div>
         </div>
 
-        <div class="slide-footer">
-            <div class="footer-accent"></div>
-            <div class="slide-num">${d.SLIDE_NUMBER}</div>
+        <div class="swipe-indicator">
+            <div class="swipe-text">Desliza</div>
+            <div class="swipe-arrows">❯❯❯</div>
         </div>
         <div class="corner-deco"></div>
     </div>
