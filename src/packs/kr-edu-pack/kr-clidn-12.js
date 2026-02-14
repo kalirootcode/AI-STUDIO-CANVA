@@ -22,6 +22,15 @@ export function render(data) {
         VERDICT: data.VERDICT || 'Ambas son herramientas complementarias.'
     };
 
+    const escapeHTML = (str) => {
+        return str
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+    };
+
     const leftHTML = d.LEFT_ITEMS.map(i => `<div class="vs-item"><i class="material-icons">check_circle</i><span>${i.TEXT}</span></div>`).join('\n');
     const rightHTML = d.RIGHT_ITEMS.map(i => `<div class="vs-item"><i class="material-icons">check_circle</i><span>${i.TEXT}</span></div>`).join('\n');
 
@@ -91,16 +100,23 @@ export function render(data) {
         .right .vs-icon { background: rgba(77,217,192,0.1); border: 1px solid rgba(77,217,192,0.2); }
         .right .vs-icon .iconify { color: #4DD9C0; font-size: 32px; }
 
-        .vs-name { font-family: 'JetBrains Mono', monospace; font-size: 32px; font-weight: 700; }
+        .vs-name {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 32px; font-weight: 700;
+            white-space: pre-wrap; word-break: break-word;
+        }
         .left .vs-name { color: #2563EB; }
         .right .vs-name { color: #4DD9C0; }
 
         .vs-items { display: flex; flex-direction: column; gap: 14px; }
 
         .vs-item { display: flex; align-items: flex-start; gap: 10px; }
-        .left .vs-item .iconify { color: rgba(37,99,235,0.5); font-size: 28px; margin-top: 2px; }
-        .right .vs-item .iconify { color: rgba(77,217,192,0.5); font-size: 28px; margin-top: 2px; }
-        .vs-item span { font-size: 28px; color: #94a3b8; line-height: 1.4; }
+        .left .vs-item .iconify { color: rgba(37,99,235,0.5); font-size: 28px; margin-top: 2px; flex-shrink: 0; }
+        .right .vs-item .iconify { color: rgba(77,217,192,0.5); font-size: 28px; margin-top: 2px; flex-shrink: 0; }
+        .vs-item span {
+            font-size: 28px; color: #94a3b8; line-height: 1.4;
+            white-space: pre-wrap; word-break: break-word;
+        }
 
         /* ═══ VS BADGE ═══ */
         .vs-badge {
@@ -127,8 +143,11 @@ export function render(data) {
             display: flex; align-items: center; gap: 14px;
         }
 
-        .verdict .iconify { color: #ff9500; font-size: 32px; }
-        .verdict span { font-size: 30px; color: #e2e8f0; line-height: 1.4; }
+        .verdict .iconify { color: #ff9500; font-size: 32px; flex-shrink: 0; }
+        .verdict span {
+            font-size: 30px; color: #e2e8f0; line-height: 1.4;
+            white-space: pre-wrap; word-break: break-word;
+        }
 
         .corner-deco { position: absolute; bottom: 60px; left: 60px; width: 80px; height: 80px; border-left: 2px solid rgba(255,149,0,0.12); border-bottom: 2px solid rgba(255,149,0,0.12); }
     
@@ -153,7 +172,7 @@ export function render(data) {
         </div>
         <div class="content">
             <div class="section-label">// Comparación</div>
-            <div class="title">${d.TITLE}</div>
+            <div class="title">${escapeHTML(d.TITLE)}</div>
 
             <div class="vs-wrapper">
                 <div class="vs-badge">VS</div>
@@ -162,25 +181,25 @@ export function render(data) {
                     <div class="vs-card left">
                         <div class="vs-header">
                             <div class="vs-icon">${(d.LEFT_ICON || 'code').includes(':') ? '<span class="iconify" data-icon="' + (d.LEFT_ICON || 'code') + '"></span>' : '<i class="material-icons">' + (d.LEFT_ICON || 'code') + '</i>'}</div>
-                            <div class="vs-name">${d.LEFT_NAME}</div>
+                            <div class="vs-name">${escapeHTML(d.LEFT_NAME)}</div>
                         </div>
-                        <div class="vs-items">${leftHTML}</div>
+                        <div class="vs-items">${d.LEFT_ITEMS.map(i => `<div class="vs-item"><i class="material-icons">check_circle</i><span>${escapeHTML(i.TEXT)}</span></div>`).join('\n')}</div>
                     </div>
 
                     <!-- RIGHT -->
                     <div class="vs-card right">
                         <div class="vs-header">
                             <div class="vs-icon">${(d.RIGHT_ICON || 'terminal').includes(':') ? '<span class="iconify" data-icon="' + (d.RIGHT_ICON || 'terminal') + '"></span>' : '<i class="material-icons">' + (d.RIGHT_ICON || 'terminal') + '</i>'}</div>
-                            <div class="vs-name">${d.RIGHT_NAME}</div>
+                            <div class="vs-name">${escapeHTML(d.RIGHT_NAME)}</div>
                         </div>
-                        <div class="vs-items">${rightHTML}</div>
+                        <div class="vs-items">${d.RIGHT_ITEMS.map(i => `<div class="vs-item"><i class="material-icons">check_circle</i><span>${escapeHTML(i.TEXT)}</span></div>`).join('\n')}</div>
                     </div>
                 </div>
             </div>
 
             <div class="verdict">
                 <i class="material-icons">gavel</i>
-                <span>${d.VERDICT}</span>
+                <span>${escapeHTML(d.VERDICT)}</span>
             </div>
         </div>
         <div class="swipe-indicator">

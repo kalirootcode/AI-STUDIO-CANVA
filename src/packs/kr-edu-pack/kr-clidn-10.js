@@ -17,10 +17,19 @@ export function render(data) {
         GITHUB_STARS: data.GITHUB_STARS || '2.5k'
     };
 
+    const escapeHTML = (str) => {
+        return str
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+    };
+
     const featsHTML = d.FEATURES.map(f => `
         <div class="feat-item">
             ${(f.ICON || 'check').includes(':') ? '<span class="iconify" data-icon="' + (f.ICON || 'check') + '"></span>' : '<i class="material-icons">' + (f.ICON || 'check') + '</i>'}
-            <span>${f.TEXT}</span>
+            <span>${escapeHTML(f.TEXT)}</span>
         </div>`).join('\n');
 
     return `<!DOCTYPE html>
@@ -167,6 +176,8 @@ export function render(data) {
             font-size: 30px;
             font-weight: 600;
             color: #4DD9C0;
+            white-space: pre-wrap;
+            word-break: break-all;
         }
 
         /* ═══ FEATURES ═══ */
@@ -235,13 +246,13 @@ export function render(data) {
         <div class="content">
             <div class="tool-header">
                 <div class="tool-meta">
-                    <div class="tool-cat">// ${d.TOOL_CATEGORY}</div>
-                    <div class="tool-name">${d.TOOL_NAME}</div>
-                    <div class="tool-desc">${d.DESCRIPTION}</div>
+                    <div class="tool-cat">// ${escapeHTML(d.TOOL_CATEGORY)}</div>
+                    <div class="tool-name">${escapeHTML(d.TOOL_NAME)}</div>
+                    <div class="tool-desc">${escapeHTML(d.DESCRIPTION)}</div>
                 </div>
                 <div class="stars-badge">
                     <i class="material-icons">star</i>
-                    <div class="stars-count">${d.GITHUB_STARS}</div>
+                    <div class="stars-count">${escapeHTML(d.GITHUB_STARS)}</div>
                     <div class="stars-label">STARS</div>
                 </div>
             </div>
@@ -250,7 +261,7 @@ export function render(data) {
                 <div class="term-label">INSTALACIÓN</div>
                 <div class="term-box">
                     <div class="term-top"><div class="b"></div><div class="b"></div><div class="b"></div></div>
-                    <div class="term-code">${d.INSTALL_CMD}</div>
+                    <div class="term-code">${escapeHTML(d.INSTALL_CMD)}</div>
                 </div>
             </div>
 
@@ -258,7 +269,7 @@ export function render(data) {
                 <div class="term-label">USO</div>
                 <div class="term-box">
                     <div class="term-top"><div class="b"></div><div class="b"></div><div class="b"></div></div>
-                    <div class="term-code">${d.USAGE_CMD}</div>
+                    <div class="term-code">${escapeHTML(d.USAGE_CMD)}</div>
                 </div>
             </div>
 

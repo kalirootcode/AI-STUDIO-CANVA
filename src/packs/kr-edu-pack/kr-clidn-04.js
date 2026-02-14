@@ -15,10 +15,20 @@ export function render(data) {
         ]
     };
 
+    const escapeHTML = (str) => {
+        return str
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+    };
+
     const outputHTML = d.OUTPUT_LINES.map(line => {
-        let text = line.TEXT;
+        let text = escapeHTML(line.TEXT);
         if (line.HIGHLIGHT) {
-            text = text.replace(line.HIGHLIGHT, `<span class="hl">${line.HIGHLIGHT}</span>`);
+            const safeHighlight = escapeHTML(line.HIGHLIGHT);
+            text = text.replace(safeHighlight, `<span class="hl">${safeHighlight}</span>`);
         }
         return `<div class="term-line">${text}</div>`;
     }).join('\n');
@@ -27,8 +37,8 @@ export function render(data) {
         <div class="break-card">
             <div class="break-num">${c.NUMBER}</div>
             <div class="break-body">
-                <div class="break-title">${c.TITLE}</div>
-                <div class="break-text">${c.CONTENT_HTML}</div>
+                <div class="break-title">${escapeHTML(c.TITLE)}</div>
+                <div class="break-text">${escapeHTML(c.CONTENT_HTML)}</div>
             </div>
         </div>`).join('\n');
 
@@ -143,7 +153,8 @@ export function render(data) {
         }
 
         .term-line {
-            white-space: pre;
+            white-space: pre-wrap;
+            word-break: break-all;
         }
 
         .hl {
@@ -228,11 +239,11 @@ export function render(data) {
 
         <div class="content">
             <div class="section-label">// Output</div>
-            <div class="title">${d.TITLE}</div>
+            <div class="title">${escapeHTML(d.TITLE)}</div>
 
             <div class="warn-bar">
                 <i class="material-icons">error_outline</i>
-                <span>${d.WARNING_TEXT}</span>
+                <span>${escapeHTML(d.WARNING_TEXT)}</span>
             </div>
 
             <div class="terminal">

@@ -18,6 +18,15 @@ export function render(data) {
         EXPLANATION: data.EXPLANATION || 'Este escaneo SYN detecta puertos abiertos y las versiones de los servicios que se ejecutan en cada uno.'
     };
 
+    const escapeHTML = (str) => {
+        return str
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+    };
+
     const linesHTML = d.TERMINAL_LINES.map(l => {
         let cls = 'term-line';
         if (l.TYPE === 'prompt') cls += ' prompt';
@@ -25,7 +34,7 @@ export function render(data) {
         else if (l.TYPE === 'success') cls += ' success';
         else if (l.TYPE === 'warning') cls += ' warn';
         else if (l.TYPE === 'error') cls += ' err';
-        return `<div class="${cls}">${l.TEXT}</div>`;
+        return `<div class="${cls}">${escapeHTML(l.TEXT)}</div>`;
     }).join('\n');
 
     return `<!DOCTYPE html>
@@ -81,9 +90,10 @@ export function render(data) {
             font-family: 'JetBrains Mono', monospace;
             font-size: 24px;
             line-height: 1.9;
+            white-space: pre-wrap; word-break: break-all;
         }
 
-        .term-line { color: #6b7280; }
+        .term-line { color: #6b7280; white-space: pre-wrap; word-break: break-all; }
         .term-line.prompt { color: #4DD9C0; font-weight: 700; }
         .term-line.hl { color: #2563EB; font-weight: 700; }
         .term-line.success { color: #4ade80; }
@@ -108,7 +118,10 @@ export function render(data) {
             display: flex; align-items: flex-start; gap: 16px;
         }
         .explain .iconify { color: #2563EB; font-size: 32px; margin-top: 2px; flex-shrink: 0; }
-        .explain span { font-size: 28px; color: #94a3b8; line-height: 1.5; }
+        .explain span {
+            font-size: 28px; color: #94a3b8; line-height: 1.5;
+            white-space: pre-wrap; word-break: break-word;
+        }
 
         .corner-deco { position: absolute; bottom: 60px; left: 60px; width: 100px; height: 100px; border-left: 2px solid rgba(77,217,192,0.12); border-bottom: 2px solid rgba(77,217,192,0.12); }
 

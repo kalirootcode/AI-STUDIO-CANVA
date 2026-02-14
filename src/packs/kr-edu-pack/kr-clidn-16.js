@@ -16,6 +16,15 @@ export function render(data) {
         BOTTOM_TIP: data.BOTTOM_TIP || 'La ética es lo que diferencia a un hacker de un criminal.'
     };
 
+    const escapeHTML = (str) => {
+        return str
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+    };
+
     const doHTML = d.DO_ITEMS.map(i => `<div class="practice-item do"><i class="material-icons">check_circle</i><span>${i.TEXT}</span></div>`).join('\n');
     const dontHTML = d.DONT_ITEMS.map(i => `<div class="practice-item dont"><i class="material-icons">cancel</i><span>${i.TEXT}</span></div>`).join('\n');
 
@@ -57,16 +66,23 @@ export function render(data) {
         .do-col .col-header .iconify { color: #4DD9C0; }
         .dont-col .col-header .iconify { color: #ff3366; }
 
-        .col-title { font-family: 'JetBrains Mono', monospace; font-size: 32px; font-weight: 700; }
+        .col-title {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 32px; font-weight: 700;
+            white-space: pre-wrap; word-break: break-word;
+        }
         .do-col .col-title { color: #4DD9C0; }
         .dont-col .col-title { color: #ff3366; }
 
         .practices { display: flex; flex-direction: column; gap: 14px; }
 
         .practice-item { display: flex; align-items: flex-start; gap: 10px; }
-        .practice-item.do .iconify { color: #4DD9C0; font-size: 30px; margin-top: 2px; }
-        .practice-item.dont .iconify { color: #ff3366; font-size: 30px; margin-top: 2px; }
-        .practice-item span { font-size: 28px; color: #94a3b8; line-height: 1.4; }
+        .practice-item.do .iconify { color: #4DD9C0; font-size: 30px; margin-top: 2px; flex-shrink: 0; }
+        .practice-item.dont .iconify { color: #ff3366; font-size: 30px; margin-top: 2px; flex-shrink: 0; }
+        .practice-item span {
+            font-size: 28px; color: #94a3b8; line-height: 1.4;
+            white-space: pre-wrap; word-break: break-word;
+        }
 
         .tip-bottom {
             background: rgba(255,149,0,0.06);
@@ -74,8 +90,11 @@ export function render(data) {
             border-radius: 12px; padding: 24px 28px;
             display: flex; align-items: center; gap: 12px;
         }
-        .tip-bottom .iconify { color: #ff9500; font-size: 32px; }
-        .tip-bottom span { font-size: 30px; color: #e2e8f0; line-height: 1.4; }
+        .tip-bottom .iconify { color: #ff9500; font-size: 32px; flex-shrink: 0; }
+        .tip-bottom span {
+            font-size: 30px; color: #e2e8f0; line-height: 1.4;
+            white-space: pre-wrap; word-break: break-word;
+        }
         .corner-deco { position: absolute; bottom: 60px; left: 60px; width: 80px; height: 80px; border-left: 2px solid rgba(255,149,0,0.12); border-bottom: 2px solid rgba(255,149,0,0.12); }
     
         .brand-bar { display: flex; align-items: center; gap: 14px; margin-bottom: 40px; }
@@ -100,7 +119,7 @@ export function render(data) {
 
         <div class="content">
             <div class="section-label">BUENAS PRÁCTICAS</div>
-            <div class="title">${d.TITLE}</div>
+            <div class="title">${escapeHTML(d.TITLE)}</div>
 
             <div class="columns">
                 <div class="column do-col">
@@ -109,7 +128,7 @@ export function render(data) {
                         <div class="col-title">HACER ✓</div>
                     </div>
                     <div class="practices">
-                        ${doHTML}
+                        ${d.DO_ITEMS.map(i => `<div class="practice-item do"><i class="material-icons">check_circle</i><span>${escapeHTML(i.TEXT)}</span></div>`).join('\n')}
                     </div>
                 </div>
                 <div class="column dont-col">
@@ -118,14 +137,14 @@ export function render(data) {
                         <div class="col-title">EVITAR ✗</div>
                     </div>
                     <div class="practices">
-                        ${dontHTML}
+                        ${d.DONT_ITEMS.map(i => `<div class="practice-item dont"><i class="material-icons">cancel</i><span>${escapeHTML(i.TEXT)}</span></div>`).join('\n')}
                     </div>
                 </div>
             </div>
 
             <div class="tip-bottom">
                 <i class="material-icons">gavel</i>
-                <span>${d.BOTTOM_TIP}</span>
+                <span>${escapeHTML(d.BOTTOM_TIP)}</span>
             </div>
         </div>
         <div class="swipe-indicator">

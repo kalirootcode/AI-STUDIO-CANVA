@@ -20,10 +20,19 @@ export function render(data) {
         ]
     };
 
+    const escapeHTML = (str) => {
+        return str
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+    };
+
     const flagsHTML = d.KEY_FLAGS.map(f => `
         <div class="flag-row">
             <div class="flag-tag">${f.FLAG}</div>
-            <div class="flag-desc">${f.DESC}</div>
+            <div class="flag-desc">${escapeHTML(f.DESC)}</div>
         </div>`).join('\n');
 
     return `<!DOCTYPE html>
@@ -98,11 +107,13 @@ export function render(data) {
             font-size: 72px; font-weight: 800;
             color: #fff; margin-bottom: 12px;
             text-shadow: 0 0 30px rgba(37,99,235,0.2);
+            word-break: break-all;
         }
 
         .cmd-desc {
             font-size: 30px; color: #94a3b8;
             margin-bottom: 36px; line-height: 1.5;
+            white-space: pre-wrap; word-break: break-word;
         }
 
         /* ═══ SYNTAX BOX ═══ */
@@ -124,6 +135,7 @@ export function render(data) {
         .syntax-text {
             font-family: 'JetBrains Mono', monospace;
             font-size: 32px; font-weight: 600; color: #fff;
+            white-space: pre-wrap; word-break: break-word;
         }
 
         /* ═══ EXAMPLE TERMINAL ═══ */
@@ -145,18 +157,20 @@ export function render(data) {
         .term-bar .b:nth-child(2) { background: #ff9500; }
         .term-bar .b:nth-child(3) { background: #4DD9C0; }
 
-        .term-body { padding: 24px; }
+        .term-body { padding: 24px; white-space: pre-wrap; word-break: break-all; }
 
         .term-input {
             font-family: 'JetBrains Mono', monospace;
             font-size: 32px; font-weight: 700;
             color: #4DD9C0; margin-bottom: 12px;
+            white-space: pre-wrap; word-break: break-all;
         }
 
         .term-output {
             font-family: 'JetBrains Mono', monospace;
             font-size: 28px; color: #94a3b8;
             line-height: 1.6;
+            white-space: pre-wrap; word-break: break-all;
         }
 
         /* ═══ KEY FLAGS ═══ */
@@ -194,6 +208,7 @@ export function render(data) {
 
         .flag-desc {
             font-size: 28px; color: #94a3b8;
+            white-space: pre-wrap; word-break: break-word;
         }
 
         /* ═══ FOOTER ═══ */
@@ -235,10 +250,10 @@ export function render(data) {
 
             <div class="syntax-box">
                 <div class="syntax-label">SINTAXIS</div>
-                <div class="syntax-text">${d.SYNTAX}</div>
+                <div class="syntax-text">${escapeHTML(d.SYNTAX)}</div>
             </div>
 
-            <div class="cmd-desc">${d.DESCRIPTION}</div>
+            <div class="cmd-desc">${escapeHTML(d.DESCRIPTION)}</div>
 
             <div class="terminal">
                 <div class="term-bar">
@@ -247,8 +262,8 @@ export function render(data) {
                     <div class="b"></div>
                 </div>
                 <div class="term-body">
-                    <div class="term-input">${d.EXAMPLE_CMD}</div>
-                    <div class="term-output">${d.EXAMPLE_OUTPUT}</div>
+                    <div class="term-input">${escapeHTML(d.EXAMPLE_CMD)}</div>
+                    <div class="term-output">${escapeHTML(d.EXAMPLE_OUTPUT)}</div>
                 </div>
             </div>
 

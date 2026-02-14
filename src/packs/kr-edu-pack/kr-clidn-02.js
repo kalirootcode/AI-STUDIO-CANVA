@@ -14,12 +14,21 @@ export function render(data) {
         ]
     };
 
+    const escapeHTML = (str) => {
+        return str
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+    };
+
     const compsHTML = d.COMPONENTS.map(c => `
         <div class="comp-row">
             <div class="comp-num">${c.NUMBER}</div>
             <div class="comp-info">
-                <span class="comp-name">${c.NAME}</span>
-                <span class="comp-desc">${c.DESCRIPTION}</span>
+                <span class="comp-name">${escapeHTML(c.NAME)}</span>
+                <span class="comp-desc">${escapeHTML(c.DESCRIPTION)}</span>
             </div>
             <div class="comp-arrow"><i class="material-icons">subdirectory_arrow_right</i></div>
         </div>`).join('\n');
@@ -120,6 +129,8 @@ export function render(data) {
             font-weight: 700;
             color: #fff;
             display: inline;
+            white-space: pre-wrap;
+            word-break: break-all;
         }
 
         .cmd-bar {
@@ -186,6 +197,7 @@ export function render(data) {
             display: flex;
             flex-direction: column;
             gap: 4px;
+            min-width: 0; /* Important for flex child truncation/wrap */
         }
 
         .comp-name {
@@ -193,11 +205,15 @@ export function render(data) {
             font-size: 32px;
             font-weight: 700;
             color: #2563EB;
+            white-space: pre-wrap;
+            word-break: break-all;
         }
 
         .comp-desc {
             font-size: 30px;
             color: #94a3b8;
+            white-space: pre-wrap;
+            word-break: break-word;
         }
 
         .comp-arrow {
@@ -217,12 +233,14 @@ export function render(data) {
             gap: 16px;
         }
 
-        .tip-box .iconify { color: #2563EB; font-size: 32px; }
+        .tip-box .iconify { color: #2563EB; font-size: 32px; flex-shrink: 0; }
 
         .tip-text {
             font-size: 30px;
             color: #94a3b8;
             line-height: 1.5;
+            white-space: pre-wrap;
+            word-break: break-word;
         }
 
         .corner-deco {
@@ -257,11 +275,11 @@ export function render(data) {
 
         <div class="content">
             <div class="section-label">// ANATOMÍA</div>
-            <div class="title">${d.TITLE}</div>
+            <div class="title">${escapeHTML(d.TITLE)}</div>
 
             <div class="cmd-box">
                 <div class="cmd-bar"><span></span><span></span><span></span></div>
-                <span class="cmd-text">${d.COMMAND_STRUCTURE}</span>
+                <span class="cmd-text">${escapeHTML(d.COMMAND_STRUCTURE)}</span>
             </div>
 
             <div class="components">
@@ -270,7 +288,7 @@ export function render(data) {
 
             <div class="tip-box">
                 <i class="material-icons">tips_and_updates</i>
-                <span class="tip-text">${d.TIP}</span>
+                <span class="tip-text">${escapeHTML(d.TIP)}</span>
             </div>
         </div>
 

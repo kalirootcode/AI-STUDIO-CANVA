@@ -15,6 +15,15 @@ export function render(data) {
         EXAMPLE: data.EXAMPLE || 'Ejemplo práctico del concepto.'
     };
 
+    const escapeHTML = (str) => {
+        return str
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+    };
+
     const pointsHTML = d.KEY_POINTS.map(p => `
         <div class="point-item">
             <div class="point-icon">${(p.ICON || 'check').includes(':') ? '<span class="iconify" data-icon="' + (p.ICON || 'check') + '"></span>' : '<i class="material-icons">' + (p.ICON || 'check') + '</i>'}</div>
@@ -54,6 +63,7 @@ export function render(data) {
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
+            word-break: break-all;
         }
 
         .definition {
@@ -61,6 +71,7 @@ export function render(data) {
             margin-bottom: 40px; line-height: 1.6;
             padding-left: 16px;
             border-left: 3px solid rgba(168,85,247,0.3);
+            white-space: pre-wrap; word-break: break-word;
         }
 
         /* ═══ KEY POINTS ═══ */
@@ -85,7 +96,10 @@ export function render(data) {
         }
 
         .point-icon .iconify { color: #a855f7; font-size: 30px; }
-        .point-item span { font-size: 30px; color: #94a3b8; line-height: 1.4; }
+        .point-item span {
+            font-size: 30px; color: #94a3b8; line-height: 1.4;
+            white-space: pre-wrap; word-break: break-word;
+        }
 
         /* ═══ EXAMPLE ═══ */
         .example-box {
@@ -95,8 +109,11 @@ export function render(data) {
             display: flex; align-items: flex-start; gap: 14px;
         }
 
-        .example-box .iconify { color: #2563EB; font-size: 32px; margin-top: 2px; }
-        .example-box span { font-size: 30px; color: #94a3b8; line-height: 1.5; }
+        .example-box .iconify { color: #2563EB; font-size: 32px; margin-top: 2px; flex-shrink: 0; }
+        .example-box span {
+            font-size: 30px; color: #94a3b8; line-height: 1.5;
+            white-space: pre-wrap; word-break: break-word;
+        }
         .corner-deco { position: absolute; bottom: 60px; left: 60px; width: 80px; height: 80px; border-left: 2px solid rgba(168,85,247,0.12); border-bottom: 2px solid rgba(168,85,247,0.12); }
     
         .brand-bar { display: flex; align-items: center; gap: 14px; margin-bottom: 40px; }
@@ -119,13 +136,17 @@ export function render(data) {
             <div class="brand-line"></div>
         </div>
         <div class="content">
-            <div class="cat-tag">// ${d.CATEGORY}</div>
-            <div class="term-name">${d.TERM}</div>
-            <div class="definition">${d.DEFINITION}</div>
-            <div class="points">${pointsHTML}</div>
+            <div class="cat-tag">// ${escapeHTML(d.CATEGORY)}</div>
+            <div class="term-name">${escapeHTML(d.TERM)}</div>
+            <div class="definition">${escapeHTML(d.DEFINITION)}</div>
+            <div class="points">${d.KEY_POINTS.map(p => `
+                <div class="point-item">
+                    <div class="point-icon">${(p.ICON || 'check').includes(':') ? '<span class="iconify" data-icon="' + (p.ICON || 'check') + '"></span>' : '<i class="material-icons">' + (p.ICON || 'check') + '</i>'}</div>
+                    <span>${escapeHTML(p.TEXT)}</span>
+                </div>`).join('\n')}</div>
             <div class="example-box">
                 <i class="material-icons">play_circle</i>
-                <span>${d.EXAMPLE}</span>
+                <span>${escapeHTML(d.EXAMPLE)}</span>
             </div>
         </div>
         <div class="swipe-indicator">

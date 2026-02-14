@@ -14,14 +14,23 @@ export function render(data) {
         ]
     };
 
+    const escapeHTML = (str) => {
+        return str
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+    };
+
     const optsHTML = d.OPTIONS.map(o => `
         <div class="opt-card">
             <div class="opt-header">
                 <div class="opt-icon">${(o.ICON || 'code').includes(':') ? '<span class="iconify" data-icon="' + (o.ICON || 'code') + '"></span>' : '<i class="material-icons">' + (o.ICON || 'code') + '</i>'}</div>
                 <div class="opt-flag">${o.FLAG}</div>
             </div>
-            <div class="opt-name">${o.NAME}</div>
-            <div class="opt-desc">${o.DESCRIPTION}</div>
+            <div class="opt-name">${escapeHTML(o.NAME)}</div>
+            <div class="opt-desc">${escapeHTML(o.DESCRIPTION)}</div>
         </div>`).join('\n');
 
     return `<!DOCTYPE html>
@@ -152,6 +161,8 @@ export function render(data) {
             padding: 6px 18px;
             border-radius: 8px;
             border: 1px solid rgba(77, 217, 192, 0.2);
+            white-space: pre-wrap;
+            word-break: break-all;
         }
 
         .opt-name {
@@ -160,12 +171,16 @@ export function render(data) {
             font-weight: 600;
             color: #fff;
             margin-bottom: 8px;
+            white-space: pre-wrap;
+            word-break: break-word;
         }
 
         .opt-desc {
             font-size: 30px;
             color: #94a3b8;
             line-height: 1.4;
+            white-space: pre-wrap;
+            word-break: break-word;
         }
 
         /* ═══ TIP BOX ═══ */
@@ -229,8 +244,8 @@ export function render(data) {
 
         <div class="content">
             <div class="section-label">// OPCIONES</div>
-            <div class="title">${d.TITLE}</div>
-            <div class="intro">${d.INTRO_TEXT}</div>
+            <div class="title">${escapeHTML(d.TITLE)}</div>
+            <div class="intro">${escapeHTML(d.INTRO_TEXT)}</div>
 
             <div class="opts-grid">
                 ${optsHTML}
@@ -239,8 +254,8 @@ export function render(data) {
             <div class="tip-box">
                 <i class="material-icons">tips_and_updates</i>
                 <div class="tip-content">
-                    <div class="tip-title">${d.TIP_TITLE}</div>
-                    <div class="tip-text">${d.TIP_CONTENT}</div>
+                    <div class="tip-title">${escapeHTML(d.TIP_TITLE)}</div>
+                    <div class="tip-text">${escapeHTML(d.TIP_CONTENT)}</div>
                 </div>
             </div>
         </div>

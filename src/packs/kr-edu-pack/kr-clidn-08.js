@@ -15,6 +15,15 @@ export function render(data) {
         TIP_CONTENT: data.TIP_CONTENT || 'Consejo importante.'
     };
 
+    const escapeHTML = (str) => {
+        return str
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+    };
+
     return `<!DOCTYPE html>
 <html lang="es">
 <head>
@@ -99,11 +108,13 @@ export function render(data) {
             padding: 28px;
             font-family: 'JetBrains Mono', monospace;
             font-size: 30px; font-weight: 700; color: #4DD9C0;
+            white-space: pre-wrap; word-break: break-all;
         }
 
         .result-text {
             font-size: 30px; color: #94a3b8;
             margin-bottom: 36px; line-height: 1.5;
+            white-space: pre-wrap; word-break: break-word;
         }
 
         /* ═══ BIG STAT ═══ */
@@ -144,6 +155,7 @@ export function render(data) {
         .stat-text {
             font-size: 30px; color: #94a3b8;
             margin-top: 12px; position: relative;
+            white-space: pre-wrap; word-break: break-word;
         }
 
         /* ═══ TIP ═══ */
@@ -198,26 +210,26 @@ export function render(data) {
                 <div class="badge-letter">${d.EXERCISE_LETTER}</div>
                 <div class="badge-text">// DATO CLAVE</div>
             </div>
-            <div class="lab-title">${d.TITLE}</div>
-            <div class="lab-intro">${d.INTRO_TEXT}</div>
+            <div class="lab-title">${escapeHTML(d.TITLE)}</div>
+            <div class="lab-intro">${escapeHTML(d.INTRO_TEXT)}</div>
 
             <div class="cmd-box">
                 <div class="cmd-bar"><span class="b"></span><span class="b"></span><span class="b"></span></div>
-                <div class="cmd-text">${d.COMMAND}</div>
+                <div class="cmd-text">${escapeHTML(d.COMMAND)}</div>
             </div>
 
-            <div class="result-text">${d.RESULT_TEXT}</div>
+            <div class="result-text">${escapeHTML(d.RESULT_TEXT)}</div>
 
             <div class="stat-card">
-                <div class="stat-number">${d.PERCENTAGE}</div>
-                <div class="stat-text">${d.PERCENTAGE_TEXT}</div>
+                <div class="stat-number">${escapeHTML(d.PERCENTAGE)}</div>
+                <div class="stat-text">${escapeHTML(d.PERCENTAGE_TEXT)}</div>
             </div>
 
             <div class="tip-box">
                 <i class="material-icons">lightbulb</i>
                 <div class="tip-content">
-                    <div class="tip-title">${d.TIP_TITLE}</div>
-                    <div class="tip-text">${d.TIP_CONTENT}</div>
+                    <div class="tip-title">${escapeHTML(d.TIP_TITLE)}</div>
+                    <div class="tip-text">${escapeHTML(d.TIP_CONTENT)}</div>
                 </div>
             </div>
         </div>

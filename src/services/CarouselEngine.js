@@ -647,9 +647,9 @@ USA LOS NUEVOS TEMPLATES CREATIVAMENTE:
 - 📖 kr-clidn-30 (Mini Tutorial): Para tutoriales compactos de 3 pasos
 - 📝 kr-clidn-31 (Script Editor): Para mostrar scripts completos con syntax highlighting
 
-REGLA PRINCIPAL: Genera TODOS los slides que el contenido necesite.
-NO hay límite artificial. Si el tema requiere 5 slides, genera 5.
-Si requiere 35, genera 35. El contenido manda.
+REGLA PRINCIPAL: Genera TODOS los slides que el contenido necesite, pero NUNCA excedas 35 slides.
+NO hay límite artificial bajo, si requiere 5 slides, genera 5. 
+Pero el MÁXIMO ABSOLUTO es 35 imágenes para que el post no quede demasiado largo. Ajusta el contenido para entrar en este límite.
 
 ESTRUCTURA OBLIGATORIA — TIPO LIBRO:
 ┌──────────────────────────────────────────────────────────┐

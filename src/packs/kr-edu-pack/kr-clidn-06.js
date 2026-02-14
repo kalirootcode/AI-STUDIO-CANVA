@@ -13,6 +13,15 @@ export function render(data) {
         NOTE_CONTENT: data.NOTE_CONTENT || 'Solo escanea dispositivos con tu autorización.'
     };
 
+    const escapeHTML = (str) => {
+        return str
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+    };
+
     return `<!DOCTYPE html>
 <html lang="es">
 <head>
@@ -126,6 +135,8 @@ export function render(data) {
             font-size: 34px;
             font-weight: 700;
             color: #4DD9C0;
+            white-space: pre-wrap;
+            word-break: break-all;
         }
 
         /* ═══ RESULT ═══ */
@@ -141,12 +152,14 @@ export function render(data) {
             margin-bottom: 36px;
         }
 
-        .result-box .iconify { color: #2563EB; font-size: 32px; margin-top: 2px; }
+        .result-box .iconify { color: #2563EB; font-size: 32px; margin-top: 2px; flex-shrink: 0; }
 
         .result-text {
             font-size: 32px;
             color: #e2e8f0;
             line-height: 1.5;
+            white-space: pre-wrap;
+            word-break: break-word;
         }
 
         /* ═══ NOTE ═══ */
@@ -206,24 +219,24 @@ export function render(data) {
                 <div class="badge-letter">${d.EXERCISE_LETTER}</div>
                 <div class="badge-text">// EJERCICIO</div>
             </div>
-            <div class="lab-title">${d.TITLE}</div>
-            <div class="lab-intro">${d.INTRO_TEXT}</div>
+            <div class="lab-title">${escapeHTML(d.TITLE)}</div>
+            <div class="lab-intro">${escapeHTML(d.INTRO_TEXT)}</div>
 
             <div class="cmd-terminal">
                 <div class="cmd-bar"><span class="b"></span><span class="b"></span><span class="b"></span></div>
-                <div class="cmd-body">${d.COMMAND}</div>
+                <div class="cmd-body">${escapeHTML(d.COMMAND)}</div>
             </div>
 
             <div class="result-box">
                 <i class="material-icons">arrow_forward</i>
-                <span class="result-text">${d.RESULT_TEXT}</span>
+                <span class="result-text">${escapeHTML(d.RESULT_TEXT)}</span>
             </div>
 
             <div class="note-box">
                 <i class="material-icons">info</i>
                 <div class="note-content">
-                    <div class="note-title">${d.NOTE_TITLE}</div>
-                    <div class="note-text">${d.NOTE_CONTENT}</div>
+                    <div class="note-title">${escapeHTML(d.NOTE_TITLE)}</div>
+                    <div class="note-text">${escapeHTML(d.NOTE_CONTENT)}</div>
                 </div>
             </div>
         </div>

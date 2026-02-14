@@ -20,14 +20,23 @@ export function render(data) {
         ]
     };
 
-    const outHTML = d.OUTPUT_LINES.map(l => `<div class="term-line">${l.TEXT}</div>`).join('\n');
+    const escapeHTML = (str) => {
+        return str
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+    };
+
+    const outHTML = d.OUTPUT_LINES.map(l => `<div class="term-line">${escapeHTML(l.TEXT)}</div>`).join('\n');
 
     const gridHTML = d.GRID_ITEMS.map(g => `
         <div class="grid-item">
             <div class="grid-num">${g.NUMBER}</div>
             <div class="grid-body">
-                <div class="grid-title">${g.TITLE}</div>
-                <div class="grid-desc">${g.CONTENT}</div>
+                <div class="grid-title">${escapeHTML(g.TITLE)}</div>
+                <div class="grid-desc">${escapeHTML(g.CONTENT)}</div>
             </div>
         </div>`).join('\n');
 
@@ -194,8 +203,8 @@ export function render(data) {
 
         <div class="content">
             <div class="section-label">// Desglose</div>
-            <div class="title">${d.TITLE}</div>
-            <div class="intro">${d.INTRO_TEXT}</div>
+            <div class="title">${escapeHTML(d.TITLE)}</div>
+            <div class="intro">${escapeHTML(d.INTRO_TEXT)}</div>
 
             <div class="terminal">
                 <div class="term-bar">

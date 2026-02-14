@@ -15,6 +15,15 @@ export function render(data) {
         NOTE: data.NOTE || 'Todos los items deben completarse antes de comenzar.'
     };
 
+    const escapeHTML = (str) => {
+        return str
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+    };
+
     const checksHTML = d.CHECK_ITEMS.map(c => `
         <div class="check-row ${c.CHECKED ? 'checked' : ''}">
             <div class="check-box">${(c.CHECKED ? 'check-box' : 'check-box-outline-blank').includes(':') ? '<span class="iconify" data-icon="' + (c.CHECKED ? 'check-box' : 'check-box-outline-blank') + '"></span>' : '<i class="material-icons">' + (c.CHECKED ? 'check-box' : 'check-box-outline-blank') + '</i>'}</div>
@@ -36,8 +45,15 @@ export function render(data) {
         .content { flex: 1; display: flex; flex-direction: column; justify-content: center; }
 
         .section-label { font-family: 'JetBrains Mono', monospace; font-size: 30px; color: #2563EB; letter-spacing: 3px; margin-bottom: 16px; }
-        .title { font-family: 'JetBrains Mono', monospace; font-size: 52px; font-weight: 700; margin-bottom: 16px; }
-        .desc { font-size: 32px; color: #94a3b8; margin-bottom: 40px; line-height: 1.5; }
+        .title {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 52px; font-weight: 700; margin-bottom: 16px;
+            white-space: pre-wrap; word-break: break-word;
+        }
+        .desc {
+            font-size: 32px; color: #94a3b8; margin-bottom: 40px; line-height: 1.5;
+            white-space: pre-wrap; word-break: break-word;
+        }
 
         .checks { display: flex; flex-direction: column; gap: 14px; margin-bottom: 36px; }
 
@@ -52,11 +68,14 @@ export function render(data) {
 
         .check-row.checked { border-color: rgba(77,217,192,0.15); }
 
-        .check-box .iconify { font-size: 32px; }
+        .check-box .iconify { font-size: 32px; flex-shrink: 0; }
         .check-row.checked .check-box .iconify { color: #4DD9C0; }
         .check-row:not(.checked) .check-box .iconify { color: rgba(255,255,255,0.2); }
 
-        .check-row span { font-size: 32px; color: #94a3b8; }
+        .check-row span {
+            font-size: 32px; color: #94a3b8;
+            white-space: pre-wrap; word-break: break-word;
+        }
         .check-row.checked span { color: #e2e8f0; }
 
         .note-box {
@@ -65,8 +84,11 @@ export function render(data) {
             border-radius: 12px; padding: 22px 28px;
             display: flex; align-items: center; gap: 12px;
         }
-        .note-box .iconify { color: #2563EB; font-size: 30px; }
-        .note-box span { font-size: 28px; color: #94a3b8; }
+        .note-box .iconify { color: #2563EB; font-size: 30px; flex-shrink: 0; }
+        .note-box span {
+            font-size: 28px; color: #94a3b8;
+            white-space: pre-wrap; word-break: break-word;
+        }
         .corner-deco { position: absolute; bottom: 60px; left: 60px; width: 80px; height: 80px; border-left: 2px solid rgba(37,99,235,0.12); border-bottom: 2px solid rgba(37,99,235,0.12); }
     
         .brand-bar { display: flex; align-items: center; gap: 14px; margin-bottom: 40px; }
@@ -90,12 +112,16 @@ export function render(data) {
         </div>
         <div class="content">
             <div class="section-label">// Checklist</div>
-            <div class="title">${d.TITLE}</div>
-            <div class="desc">${d.DESCRIPTION}</div>
-            <div class="checks">${checksHTML}</div>
+            <div class="title">${escapeHTML(d.TITLE)}</div>
+            <div class="desc">${escapeHTML(d.DESCRIPTION)}</div>
+            <div class="checks">${d.CHECK_ITEMS.map(c => `
+                <div class="check-row ${c.CHECKED ? 'checked' : ''}">
+                    <div class="check-box">${(c.CHECKED ? 'check-box' : 'check-box-outline-blank').includes(':') ? '<span class="iconify" data-icon="' + (c.CHECKED ? 'check-box' : 'check-box-outline-blank') + '"></span>' : '<i class="material-icons">' + (c.CHECKED ? 'check-box' : 'check-box-outline-blank') + '</i>'}</div>
+                    <span>${escapeHTML(c.TEXT)}</span>
+                </div>`).join('\n')}</div>
             <div class="note-box">
                 <i class="material-icons">info</i>
-                <span>${d.NOTE}</span>
+                <span>${escapeHTML(d.NOTE)}</span>
             </div>
         </div>
         <div class="swipe-indicator">

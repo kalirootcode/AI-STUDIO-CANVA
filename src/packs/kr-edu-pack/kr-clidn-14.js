@@ -14,10 +14,20 @@ export function render(data) {
         EXPLANATION: data.EXPLANATION || 'Este script realiza una tarea básica.'
     };
 
+    const escapeHTML = (str) => {
+        return str
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+    };
+
     const codeHTML = d.CODE_LINES.map((l, i) => {
         const lineNum = String(i + 1).padStart(2, '0');
-        const comment = l.COMMENT ? `<span class="code-comment">${l.COMMENT}</span>` : '';
-        return `<div class="code-line"><span class="line-num">${lineNum}</span><span class="code-text">${l.LINE}</span>${comment}</div>`;
+        const comment = l.COMMENT ? `<span class="code-comment">${escapeHTML(l.COMMENT)}</span>` : '';
+        // Use escaped content for the line
+        return `<div class="code-line"><span class="line-num">${lineNum}</span><span class="code-text">${escapeHTML(l.LINE)}</span>${comment}</div>`;
     }).join('\n');
 
     return `<!DOCTYPE html>
@@ -35,8 +45,15 @@ export function render(data) {
         .content { flex: 1; display: flex; flex-direction: column; justify-content: center; }
 
         .section-label { font-family: 'JetBrains Mono', monospace; font-size: 30px; color: #4DD9C0; letter-spacing: 3px; margin-bottom: 16px; }
-        .title { font-family: 'JetBrains Mono', monospace; font-size: 48px; font-weight: 700; margin-bottom: 16px; }
-        .desc { font-size: 32px; color: #94a3b8; margin-bottom: 36px; line-height: 1.5; }
+        .title {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 48px; font-weight: 700; margin-bottom: 16px;
+            white-space: pre-wrap; word-break: break-word;
+        }
+        .desc {
+            font-size: 32px; color: #94a3b8; margin-bottom: 36px; line-height: 1.5;
+            white-space: pre-wrap; word-break: break-word;
+        }
 
         /* ═══ CODE EDITOR ═══ */
         .code-editor {
@@ -74,11 +91,12 @@ export function render(data) {
 
         .code-line {
             display: flex; align-items: baseline; gap: 16px;
+            flex-wrap: wrap; /* Allow wrapping if content is too long */
         }
 
-        .line-num { color: rgba(255,255,255,0.15); font-size: 24px; min-width: 28px; text-align: right; }
-        .code-text { color: #e2e8f0; }
-        .code-comment { color: #4a5568; margin-left: 12px; font-style: italic; }
+        .line-num { color: rgba(255,255,255,0.15); font-size: 24px; min-width: 28px; text-align: right; user-select: none; }
+        .code-text { color: #e2e8f0; white-space: pre-wrap; word-break: break-all; max-width: 100%; }
+        .code-comment { color: #4a5568; margin-left: 12px; font-style: italic; white-space: pre-wrap; word-break: break-word; }
 
         /* ═══ EXPLANATION ═══ */
         .explain-box {
@@ -89,8 +107,11 @@ export function render(data) {
             display: flex; align-items: flex-start; gap: 14px;
         }
 
-        .explain-box .iconify { color: #2563EB; font-size: 30px; margin-top: 2px; }
-        .explain-box span { font-size: 30px; color: #94a3b8; line-height: 1.5; }
+        .explain-box .iconify { color: #2563EB; font-size: 30px; margin-top: 2px; flex-shrink: 0; }
+        .explain-box span {
+            font-size: 30px; color: #94a3b8; line-height: 1.5;
+            white-space: pre-wrap; word-break: break-word;
+        }
         .corner-deco { position: absolute; bottom: 60px; left: 60px; width: 80px; height: 80px; border-left: 2px solid rgba(77,217,192,0.12); border-bottom: 2px solid rgba(77,217,192,0.12); }
     
         .brand-bar { display: flex; align-items: center; gap: 14px; margin-bottom: 40px; }
@@ -114,8 +135,8 @@ export function render(data) {
         </div>
         <div class="content">
             <div class="section-label">// Código</div>
-            <div class="title">${d.TITLE}</div>
-            <div class="desc">${d.DESCRIPTION}</div>
+            <div class="title">${escapeHTML(d.TITLE)}</div>
+            <div class="desc">${escapeHTML(d.DESCRIPTION)}</div>
 
             <div class="code-editor">
                 <div class="editor-bar">
@@ -127,7 +148,7 @@ export function render(data) {
 
             <div class="explain-box">
                 <i class="material-icons">lightbulb</i>
-                <span>${d.EXPLANATION}</span>
+                <span>${escapeHTML(d.EXPLANATION)}</span>
             </div>
         </div>
         <div class="swipe-indicator">

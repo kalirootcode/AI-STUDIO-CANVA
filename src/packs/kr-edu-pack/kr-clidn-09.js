@@ -11,6 +11,17 @@ export function render(data) {
         HASHTAGS: data.HASHTAGS || '#KaliLinux #CyberSecurity #HackingÉtico'
     };
 
+    // Removed premature closing brace
+
+    const escapeHTML = (str) => {
+        return str
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+    };
+
     return `<!DOCTYPE html>
 <html lang="es">
 <head>
@@ -107,6 +118,8 @@ export function render(data) {
             margin-bottom: 56px;
             font-weight: 400;
             max-width: 800px;
+            white-space: pre-wrap;
+            word-break: break-word;
         }
 
         /* ═══ SOCIAL ICONS BAR (TikTok style) ═══ */
@@ -146,7 +159,8 @@ export function render(data) {
             background: rgba(255, 44, 85, 0.12);
             border: 2px solid rgba(255, 44, 85, 0.35);
         }
-        .social-heart .social-icon .iconify { color: #FE2C55; }
+        /* Removed color override to allow multi-color SVG */
+        .social-heart .social-icon .iconify { /* color: #FE2C55; */ }
         .social-heart .social-icon::after {
             content: '';
             position: absolute;
@@ -161,14 +175,14 @@ export function render(data) {
             background: rgba(255, 255, 255, 0.06);
             border: 2px solid rgba(255, 255, 255, 0.15);
         }
-        .social-comment .social-icon .iconify { color: #fff; }
+        /* .social-comment .social-icon .iconify { color: #fff; } */
 
         /* Bookmark / Save */
         .social-save .social-icon {
             background: rgba(255, 189, 46, 0.1);
             border: 2px solid rgba(255, 189, 46, 0.3);
         }
-        .social-save .social-icon .iconify { color: #ffbd2e; }
+        /* .social-save .social-icon .iconify { color: #ffbd2e; } */
         .social-save .social-icon::after {
             content: '';
             position: absolute;
@@ -183,7 +197,7 @@ export function render(data) {
             background: rgba(37, 99, 235, 0.1);
             border: 2px solid rgba(37, 99, 235, 0.3);
         }
-        .social-share .social-icon .iconify { color: #2563EB; }
+        /* .social-share .social-icon .iconify { color: #2563EB; } */
 
         .social-label {
             font-family: 'JetBrains Mono', monospace;
@@ -297,32 +311,87 @@ export function render(data) {
             <div class="brand-hero">KR-CLIDN</div>
             <div class="brand-divider"></div>
 
-            <div class="title">${d.TITLE}</div>
-            <div class="cta-message">${d.CTA_MESSAGE}</div>
+            <div class="title">${escapeHTML(d.TITLE)}</div>
+            <div class="cta-message">${escapeHTML(d.CTA_MESSAGE)}</div>
 
             <!-- TikTok Social Icons -->
+            <!-- Redesigned Professional Icons (Inline SVG for 100% RELIABILITY) -->
             <div class="social-bar">
+                
+                <!-- LIKE: Red Heart -->
                 <div class="social-item social-heart">
-                    <div class="social-icon"><span class="iconify" data-icon="flat-color-icons:like"></span></div>
+                    <div class="social-icon">
+                        <svg width="50" height="50" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M12 21.35L10.55 20.03C5.4 15.36 2 12.28 2 8.5C2 5.42 4.42 3 7.5 3C9.24 3 10.91 3.81 12 5.09C13.09 3.81 14.76 3 16.5 3C19.58 3 22 5.42 22 8.5C22 12.28 18.6 15.36 13.45 20.04L12 21.35Z" fill="#FF453A"/>
+                            <path d="M12 21.35L10.55 20.03C5.4 15.36 2 12.28 2 8.5C2 5.42 4.42 3 7.5 3C9.24 3 10.91 3.81 12 5.09C13.09 3.81 14.76 3 16.5 3C19.58 3 22 5.42 22 8.5C22 12.28 18.6 15.36 13.45 20.04L12 21.35Z" fill="url(#paint0_radial_heart)" fill-opacity="0.2"/>
+                            <defs>
+                                <radialGradient id="paint0_radial_heart" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(12 8) rotate(90) scale(16)">
+                                    <stop stop-color="white"/>
+                                    <stop offset="1" stop-color="#FF453A" stop-opacity="0"/>
+                                </radialGradient>
+                            </defs>
+                        </svg>
+                    </div>
                     <span class="social-label">Me gusta</span>
                 </div>
+
+                <!-- COMMENT: Blue Bubble -->
                 <div class="social-item social-comment">
-                    <div class="social-icon"><span class="iconify" data-icon="flat-color-icons:comments"></span></div>
+                    <div class="social-icon">
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M20 2H4C2.9 2 2 2.9 2 4V22L6 18H20C21.1 18 22 17.1 22 16V4C22 2.9 21.1 2 20 2Z" fill="#3B82F6"/>
+                            <path d="M20 2H4C2.9 2 2 2.9 2 4V22L6 18H20C21.1 18 22 17.1 22 16V4C22 2.9 21.1 2 20 2Z" fill="url(#paint0_linear_comm)" fill-opacity="0.2"/>
+                            <path d="M7 9H17" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                            <path d="M7 13H14" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                            <defs>
+                                <linearGradient id="paint0_linear_comm" x1="12" y1="2" x2="12" y2="22" gradientUnits="userSpaceOnUse">
+                                    <stop stop-color="white" stop-opacity="0.3"/>
+                                    <stop offset="1" stop-color="#2563EB" stop-opacity="0"/>
+                                </linearGradient>
+                            </defs>
+                        </svg>
+                    </div>
                     <span class="social-label">Comenta</span>
                 </div>
+
+                <!-- SAVE: Yellow Bookmark -->
                 <div class="social-item social-save">
-                    <div class="social-icon"><span class="iconify" data-icon="flat-color-icons:bookmark"></span></div>
+                    <div class="social-icon">
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M17 3H7C5.9 3 5 3.9 5 5V21L12 18L19 21V5C19 3.9 18.1 3 17 3Z" fill="#F59E0B"/>
+                             <path d="M17 3H7C5.9 3 5 3.9 5 5V21L12 18L19 21V5C19 3.9 18.1 3 17 3Z" fill="url(#paint0_linear_save)" fill-opacity="0.2"/>
+                             <defs>
+                                <linearGradient id="paint0_linear_save" x1="12" y1="3" x2="12" y2="21" gradientUnits="userSpaceOnUse">
+                                    <stop stop-color="white" stop-opacity="0.4"/>
+                                    <stop offset="1" stop-color="#D97706" stop-opacity="0"/>
+                                </linearGradient>
+                            </defs>
+                        </svg>
+                    </div>
                     <span class="social-label">Guarda</span>
                 </div>
+
+                <!-- SHARE: Green/Blue Share -->
                 <div class="social-item social-share">
-                    <div class="social-icon"><span class="iconify" data-icon="flat-color-icons:share"></span></div>
+                    <div class="social-icon">
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M18 16.08C17.24 16.08 16.56 16.38 16.04 16.85L8.91 12.7C8.96 12.47 9 12.24 9 12C9 11.76 8.96 11.53 8.91 11.3L15.96 7.19C16.5 7.69 17.21 8 18 8C19.66 8 21 6.66 21 5C21 3.34 19.66 2 18 2C16.34 2 15 3.34 15 5C15 5.24 15.04 5.47 15.09 5.7L8.04 9.81C7.5 9.31 6.79 9 6 9C4.34 9 3 10.34 3 12C3 13.66 4.34 15 6 15C6.79 15 7.5 14.69 8.04 14.19L15.16 18.34C15.11 18.55 15.08 18.77 15.08 19C15.08 20.61 16.39 21.91 18 21.91C19.61 21.91 20.92 20.61 20.92 19C20.92 17.39 19.61 16.08 18 16.08Z" fill="#10B981"/>
+                            <path d="M18 16.08C17.24 16.08 16.56 16.38 16.04 16.85L8.91 12.7C8.96 12.47 9 12.24 9 12C9 11.76 8.96 11.53 8.91 11.3L15.96 7.19C16.5 7.69 17.21 8 18 8C19.66 8 21 6.66 21 5C21 3.34 19.66 2 18 2C16.34 2 15 3.34 15 5C15 5.24 15.04 5.47 15.09 5.7L8.04 9.81C7.5 9.31 6.79 9 6 9C4.34 9 3 10.34 3 12C3 13.66 4.34 15 6 15C6.79 15 7.5 14.69 8.04 14.19L15.16 18.34C15.11 18.55 15.08 18.77 15.08 19C15.08 20.61 16.39 21.91 18 21.91C19.61 21.91 20.92 20.61 20.92 19C20.92 17.39 19.61 16.08 18 16.08Z" fill="url(#paint0_linear_share)" fill-opacity="0.2"/>
+                            <defs>
+                                <linearGradient id="paint0_linear_share" x1="12" y1="2" x2="12" y2="22" gradientUnits="userSpaceOnUse">
+                                    <stop stop-color="white" stop-opacity="0.3"/>
+                                    <stop offset="1" stop-color="#10B981" stop-opacity="0"/>
+                                </linearGradient>
+                            </defs>
+                        </svg>
+                    </div>
                     <span class="social-label">Comparte</span>
                 </div>
             </div>
 
             <!-- Subliminal Closing Text -->
             <div class="closing-section">
-                <div class="closing-main">${d.CLOSING_TEXT}</div>
+                <div class="closing-main">${escapeHTML(d.CLOSING_TEXT)}</div>
                 <div class="closing-sub">
                     <i class="material-icons">bookmark</i>
                     Guarda · Sigue · No te pierdas nada
@@ -330,7 +399,7 @@ export function render(data) {
                 </div>
             </div>
 
-            <div class="hashtags">${d.HASHTAGS}</div>
+            <div class="hashtags">${escapeHTML(d.HASHTAGS)}</div>
         </div>
     </div>
 </body>

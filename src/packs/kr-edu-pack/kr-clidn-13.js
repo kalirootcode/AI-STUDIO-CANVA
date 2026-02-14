@@ -3,6 +3,15 @@
  * Un único paso numerado con detalle completo
  */
 export function render(data) {
+    const escapeHTML = (str) => {
+        return str
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+    };
+
     const d = {
         STEP_NUMBER: data.STEP_NUMBER || '01',
         TOTAL_STEPS: data.TOTAL_STEPS || '05',
@@ -85,6 +94,7 @@ export function render(data) {
         .step-title {
             font-family: 'JetBrains Mono', monospace;
             font-size: 52px; font-weight: 700; line-height: 1.2;
+            white-space: pre-wrap; word-break: break-word;
         }
 
         /* ═══ DESCRIPTION ═══ */
@@ -93,6 +103,7 @@ export function render(data) {
             margin-bottom: 40px; line-height: 1.6;
             padding-left: 8px;
             border-left: 3px solid rgba(37,99,235,0.2);
+            white-space: pre-wrap; word-break: break-word;
         }
 
         /* ═══ COMMAND ═══ */
@@ -118,6 +129,7 @@ export function render(data) {
             padding: 28px;
             font-family: 'JetBrains Mono', monospace;
             font-size: 32px; font-weight: 700; color: #4DD9C0;
+            white-space: pre-wrap; word-break: break-all;
         }
 
         /* ═══ RESULT ═══ */
@@ -130,8 +142,11 @@ export function render(data) {
             margin-bottom: 28px;
         }
 
-        .result-box .iconify { color: #2563EB; font-size: 30px; margin-top: 2px; }
-        .result-box span { font-size: 30px; color: #e2e8f0; line-height: 1.5; }
+        .result-box .iconify { color: #2563EB; font-size: 30px; margin-top: 2px; flex-shrink: 0; }
+        .result-box span {
+            font-size: 30px; color: #e2e8f0; line-height: 1.5;
+            white-space: pre-wrap; word-break: break-word;
+        }
 
         /* ═══ NOTE ═══ */
         .note-box {
@@ -142,8 +157,11 @@ export function render(data) {
             display: flex; align-items: center; gap: 12px;
         }
 
-        .note-box .iconify { font-size: 30px; }
-        .note-box span { font-size: 28px; color: #94a3b8; }
+        .note-box .iconify { font-size: 30px; flex-shrink: 0; }
+        .note-box span {
+            font-size: 28px; color: #94a3b8;
+            white-space: pre-wrap; word-break: break-word;
+        }
         .corner-deco { position: absolute; bottom: 60px; left: 60px; width: 80px; height: 80px; border-left: 2px solid rgba(168,85,247,0.12); border-bottom: 2px solid rgba(168,85,247,0.12); }
     
         .brand-bar { display: flex; align-items: center; gap: 14px; margin-bottom: 40px; }
@@ -166,21 +184,21 @@ export function render(data) {
             <div class="brand-line"></div>
         </div>
 
-            <div class="step-desc">${d.DESCRIPTION}</div>
+            <div class="step-desc">${escapeHTML(d.DESCRIPTION)}</div>
 
             <div class="cmd-block">
                 <div class="cmd-bar"><div class="b"></div><div class="b"></div><div class="b"></div></div>
-                <div class="cmd-text">${d.COMMAND}</div>
+                <div class="cmd-text">${escapeHTML(d.COMMAND)}</div>
             </div>
 
             <div class="result-box">
                 <i class="material-icons">arrow_forward_rounded</i>
-                <span>${d.EXPECTED_RESULT}</span>
+                <span>${escapeHTML(d.EXPECTED_RESULT)}</span>
             </div>
 
             <div class="note-box">
                 <span class="iconify" data-icon="flat-color-icons:info"></span>
-                <span>${d.NOTE}</span>
+                <span>${escapeHTML(d.NOTE)}</span>
             </div>
         </div>
         <div class="swipe-indicator">

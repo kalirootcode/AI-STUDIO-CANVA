@@ -74,9 +74,9 @@ function prepareExportHTML(html, width, height) {
     // 1. Inyectar Script si falta
     if (!finalHTML.includes('iconify.min.js')) {
         if (finalHTML.includes('<head>')) {
-             finalHTML = finalHTML.replace('<head>', '<head>' + iconifyScript);
+            finalHTML = finalHTML.replace('<head>', '<head>' + iconifyScript);
         } else if (finalHTML.includes('<body>')) {
-             finalHTML = iconifyScript + finalHTML;
+            finalHTML = iconifyScript + finalHTML;
         }
     }
 
@@ -116,7 +116,7 @@ ipcMain.handle('export-image', async (event, { html, width, height, format }) =>
 
         // Preparar HTML (inyectar reset, idéntico al previsualizador)
         const finalHTML = prepareExportHTML(html, width, height);
-        await page.setContent(finalHTML, { waitUntil: 'domcontentloaded', timeout: 10000 });
+        await page.setContent(finalHTML, { waitUntil: 'networkidle0', timeout: 60000 });
 
         // Esperar carga de fuentes y renderizado completo
         await page.evaluate(() => document.fonts.ready).catch(() => { });
@@ -219,11 +219,18 @@ ipcMain.handle('export-batch', async (event, { slides, width, height, format, ti
             // ─── Renderizado directo (idéntico al previsualizador) ───
             const finalHTML = prepareExportHTML(html, width, height);
 
-            await page.setContent(finalHTML, { waitUntil: 'domcontentloaded', timeout: 10000 });
+            await page.setContent(finalHTML, { waitUntil: 'networkidle0', timeout: 60000 });
 
             // Esperar carga de fuentes y renderizado completo
-            await page.evaluate(() => document.fonts.ready).catch(() => { });
-            if (i === 0) await new Promise(resolve => setTimeout(resolve, 3000)); // Primera vez: fuentes + base64
+            await page.evaluate(async () => {
+                await document.fonts.ready;
+                // Double check for Black Ops One specifically if present
+                if (document.fonts.check('1em "Black Ops One"')) return;
+                // Force wait if not ready
+                await new Promise(r => setTimeout(r, 1000));
+            }).catch(() => { });
+
+            if (i === 0) await new Promise(resolve => setTimeout(resolve, 5000)); // Primera vez: 5s para asegurar fuentes
             else await new Promise(resolve => setTimeout(resolve, 1500));  // Siguientes: más rápido
 
             await page.screenshot({

@@ -14,6 +14,15 @@ export function render(data) {
         DESCRIPTION: data.DESCRIPTION || 'Cada comando en Linux sigue este flujo desde la entrada hasta la salida.'
     };
 
+    const escapeHTML = (str) => {
+        return str
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+    };
+
     const flowHTML = d.FLOW_STEPS.map((step, i) => {
         const arrow = i < d.FLOW_STEPS.length - 1 ? '<div class="flow-arrow"><i class="material-icons">arrow_downward</i></div>' : '';
         return `
@@ -21,8 +30,8 @@ export function render(data) {
                 <div class="flow-num">${String(i + 1).padStart(2, '0')}</div>
                 <div class="flow-icon-box">${step.ICON.includes(':') ? '<span class="iconify" data-icon="' + step.ICON + '"></span>' : '<i class="material-icons">' + step.ICON + '</i>'}</div>
                 <div class="flow-info">
-                    <div class="flow-label">${step.LABEL}</div>
-                    <div class="flow-desc">${step.DESC}</div>
+                    <div class="flow-label">${escapeHTML(step.LABEL)}</div>
+                    <div class="flow-desc">${escapeHTML(step.DESC)}</div>
                 </div>
             </div>
             ${arrow}`;
@@ -75,8 +84,15 @@ export function render(data) {
         .flow-icon-box .iconify { font-size: 32px; filter: drop-shadow(0 0 10px rgba(168,85,247,0.5)); }
 
         .flow-info { flex: 1; }
-        .flow-label { font-family: 'JetBrains Mono', monospace; font-size: 28px; font-weight: 700; color: #e2e8f0; margin-bottom: 6px; }
-        .flow-desc { font-size: 24px; color: #94a3b8; line-height: 1.4; }
+        .flow-label {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 28px; font-weight: 700; color: #e2e8f0; margin-bottom: 6px;
+            white-space: pre-wrap; word-break: break-word;
+        }
+        .flow-desc {
+            font-size: 24px; color: #94a3b8; line-height: 1.4;
+            white-space: pre-wrap; word-break: break-word;
+        }
 
         .flow-arrow {
             display: flex; justify-content: center; padding: 8px 0;
@@ -91,7 +107,10 @@ export function render(data) {
             display: flex; align-items: flex-start; gap: 14px;
         }
         .desc-bottom .iconify { color: #a855f7; font-size: 30px; flex-shrink: 0; }
-        .desc-bottom span { font-size: 26px; color: #94a3b8; line-height: 1.5; }
+        .desc-bottom span {
+            font-size: 26px; color: #94a3b8; line-height: 1.5;
+            white-space: pre-wrap; word-break: break-word;
+        }
         .corner-deco { position: absolute; bottom: 60px; left: 60px; width: 100px; height: 100px; border-left: 2px solid rgba(168,85,247,0.12); border-bottom: 2px solid rgba(168,85,247,0.12); }
     
         .brand-bar { display: flex; align-items: center; gap: 14px; margin-bottom: 40px; }
@@ -116,11 +135,11 @@ export function render(data) {
         </div>
         <div class="content">
             <div class="section-label">// Flujo</div>
-            <div class="title">${d.TITLE}</div>
+            <div class="title">${escapeHTML(d.TITLE)}</div>
             <div class="flow">${flowHTML}</div>
             <div class="desc-bottom">
                 <span class="iconify" data-icon="flat-color-icons:idea"></span>
-                <span>${d.DESCRIPTION}</span>
+                <span>${escapeHTML(d.DESCRIPTION)}</span>
             </div>
         </div>
         <div class="swipe-indicator">

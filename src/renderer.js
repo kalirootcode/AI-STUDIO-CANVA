@@ -365,8 +365,23 @@ function updateSlideView() {
     updateNavUI();
 
     // UPDATE DATA EDITOR
-    if (window.currentSlidesData && window.currentSlidesData[currentSlideIndex] && dataEditor) {
-        dataEditor.renderFields(window.currentSlidesData[currentSlideIndex].content);
+    if (window.currentSlidesData && window.currentSlidesData[currentSlideIndex]) {
+        // Ensure DataEditor is initialized
+        if (!dataEditor && typeof DataEditor !== 'undefined') {
+            dataEditor = new DataEditor('dataEditorPanel', (newData) => {
+                if (generatedSlides.length > 0 && window.currentSlidesData) {
+                    window.currentSlidesData[currentSlideIndex].content = newData;
+                    const item = window.currentSlidesData[currentSlideIndex];
+                    const newHtml = templateEngine.renderTemplate(item.templateId, newData);
+                    editor.setValue(newHtml);
+                    generatedSlides[currentSlideIndex] = newHtml;
+                }
+            });
+        }
+
+        if (dataEditor) {
+            dataEditor.renderFields(window.currentSlidesData[currentSlideIndex].content);
+        }
     }
 
     // INJECT CLICK LISTENER FOR SYNC
@@ -379,7 +394,6 @@ function updateSlideView() {
             script.textContent = `
                 document.body.addEventListener('click', (e) => {
                     e.preventDefault();
-                    e.stopPropagation();
                     let text = e.target.innerText;
                     if (text && text.length > 0) {
                         window.parent.postMessage({ type: 'preview-click', text: text }, '*');
@@ -388,44 +402,7 @@ function updateSlideView() {
             `;
             doc.body.appendChild(script);
 
-            // INJECT ANIMATIONS
-            const style = doc.createElement('style');
-            style.textContent = `
-/* CYBER-MOTION ANIMATIONS */
-@keyframes tracking-in-expand { 0% { letter-spacing: -0.5em; opacity: 0; filter: blur(12px); } 40% { opacity: 0.6; } 100% { opacity: 1; filter: blur(0px); } }
-.animate-title { animation: tracking-in-expand 0.8s cubic-bezier(0.215, 0.610, 0.355, 1.000) both; }
-@keyframes fade-in-up { 0% { transform: translateY(20px); opacity: 0; } 100% { transform: translateY(0); opacity: 1; } }
-.animate-item { animation: fade-in-up 0.6s cubic-bezier(0.390, 0.575, 0.565, 1.000) both; }
-@keyframes icon-pop { 0% { transform: scale(0) rotate(-45deg); opacity: 0; } 60% { transform: scale(1.1) rotate(5deg); opacity: 1; } 100% { transform: scale(1) rotate(0); opacity: 1; } }
-.animate-icon { animation: icon-pop 0.6s cubic-bezier(0.175, 0.885, 0.320, 1.275) both; }
-@keyframes flicker { 0%, 19%, 22%, 62%, 64%, 65%, 70%, 100% { opacity: 1; } 20%, 21%, 63%, 64%, 69% { opacity: 0.4; } }
-.animate-terminal { animation: flicker 4s linear infinite both; }
-            `;
-            doc.head.appendChild(style);
-
-            // AUTO-APPLY ANIMATIONS SCRIPT
-            const animScript = doc.createElement('script');
-            animScript.textContent = `
-                setTimeout(() => {
-                    // Titles
-                    document.querySelectorAll('.title, h1, .slide-title').forEach(el => el.classList.add('animate-title'));
-                    
-                    // List Items / Steps (Staggered)
-                    document.querySelectorAll('li, .step, .flow-step, .social-item').forEach((el, i) => {
-                        el.style.animationDelay = (i * 0.15 + 0.3) + 's';
-                        el.classList.add('animate-item');
-                    });
-                    
-                    // Icons
-                    document.querySelectorAll('.icon, .logo-hero, .flow-icon-box').forEach(el => {
-                        el.classList.add('animate-icon');
-                    });
-
-                    // Terminal
-                    document.querySelectorAll('.terminal-window').forEach(el => el.classList.add('animate-terminal'));
-                }, 100);
-            `;
-            doc.body.appendChild(animScript);
+            // ANIMATIONS REMOVED PER USER REQUEST
         };
         // Also try immediately if already loaded
         try {
@@ -443,35 +420,7 @@ function updateSlideView() {
                  `;
                 doc.body.appendChild(script);
 
-                // INJECT ANIMATIONS (Fallback)
-                const style = doc.createElement('style');
-                style.textContent = `
-/* CYBER-MOTION ANIMATIONS */
-@keyframes tracking-in-expand { 0% { letter-spacing: -0.5em; opacity: 0; filter: blur(12px); } 40% { opacity: 0.6; } 100% { opacity: 1; filter: blur(0px); } }
-.animate-title { animation: tracking-in-expand 0.8s cubic-bezier(0.215, 0.610, 0.355, 1.000) both; }
-@keyframes fade-in-up { 0% { transform: translateY(20px); opacity: 0; } 100% { transform: translateY(0); opacity: 1; } }
-.animate-item { animation: fade-in-up 0.6s cubic-bezier(0.390, 0.575, 0.565, 1.000) both; }
-@keyframes icon-pop { 0% { transform: scale(0) rotate(-45deg); opacity: 0; } 60% { transform: scale(1.1) rotate(5deg); opacity: 1; } 100% { transform: scale(1) rotate(0); opacity: 1; } }
-.animate-icon { animation: icon-pop 0.6s cubic-bezier(0.175, 0.885, 0.320, 1.275) both; }
-@keyframes flicker { 0%, 19%, 22%, 62%, 64%, 65%, 70%, 100% { opacity: 1; } 20%, 21%, 63%, 64%, 69% { opacity: 0.4; } }
-.animate-terminal { animation: flicker 4s linear infinite both; }
-                `;
-                doc.head.appendChild(style);
-
-                // AUTO-APPLY ANIMATIONS SCRIPT
-                const animScript = doc.createElement('script');
-                animScript.textContent = `
-                    setTimeout(() => {
-                        document.querySelectorAll('.title, h1, .slide-title').forEach(el => el.classList.add('animate-title'));
-                        document.querySelectorAll('li, .step, .flow-step, .social-item').forEach((el, i) => {
-                            el.style.animationDelay = (i * 0.15 + 0.3) + 's';
-                            el.classList.add('animate-item');
-                        });
-                        document.querySelectorAll('.icon, .logo-hero, .flow-icon-box').forEach(el => el.classList.add('animate-icon'));
-                        document.querySelectorAll('.terminal-window').forEach(el => el.classList.add('animate-terminal'));
-                    }, 100);
-                `;
-                doc.body.appendChild(animScript);
+                // ANIMATIONS REMOVED PER USER REQUEST
             }
         } catch (e) { }
     }
@@ -821,6 +770,14 @@ function updatePreview() {
         finalHTML = `<!DOCTYPE html><html><head><meta charset="UTF-8">${iconifyScript}</head><body>${code}${previewStyles}</body></html>`;
     }
 
+    // SANITIZE: Prevent script execution in preview (e.g. alert(1) from slide content)
+    // We replace <script> tags with a safe variant or comment them out in the PREVIEW only.
+    // The editor still keeps the original code.
+    finalHTML = finalHTML.replace(/<script\b[^>]*>([\s\S]*?)<\/script>/gim, "<!-- SCRIPT BLOCKED IN PREVIEW -->");
+
+    // Also block inline handlers if dangerous (optional, but good for <img on...> etc)
+    // finalHTML = finalHTML.replace(/on\w+="[^"]*"/g, 'data-blocked-handler');
+
     // Write to iframe
     const doc = frame.contentDocument || frame.contentWindow.document;
     doc.open();
@@ -875,54 +832,21 @@ async function exportSingleContent() {
     const aspectKey = document.getElementById('aspectRatio').value;
     const { width, height } = ASPECT_RATIOS[aspectKey];
 
-    // ANIMATION & SCRIPT EMBEDDING FOR EXPORT
-    const animationStyles = `
-<style>
-/* CYBER-MOTION ANIMATIONS */
-@keyframes tracking-in-expand { 0% { letter-spacing: -0.5em; opacity: 0; filter: blur(12px); } 40% { opacity: 0.6; } 100% { opacity: 1; filter: blur(0px); } }
-.animate-title { animation: tracking-in-expand 0.8s cubic-bezier(0.215, 0.610, 0.355, 1.000) both; }
-@keyframes fade-in-up { 0% { transform: translateY(20px); opacity: 0; } 100% { transform: translateY(0); opacity: 1; } }
-.animate-item { animation: fade-in-up 0.6s cubic-bezier(0.390, 0.575, 0.565, 1.000) both; }
-@keyframes icon-pop { 0% { transform: scale(0) rotate(-45deg); opacity: 0; } 60% { transform: scale(1.1) rotate(5deg); opacity: 1; } 100% { transform: scale(1) rotate(0); opacity: 1; } }
-.animate-icon { animation: icon-pop 0.6s cubic-bezier(0.175, 0.885, 0.320, 1.275) both; }
-@keyframes flicker { 0%, 19%, 22%, 62%, 64%, 65%, 70%, 100% { opacity: 1; } 20%, 21%, 63%, 64%, 69% { opacity: 0.4; } }
-.animate-terminal { animation: flicker 4s linear infinite both; }
-</style>
-<script>
-window.onload = function() {
-    setTimeout(() => {
-        document.querySelectorAll('.title, h1, .slide-title').forEach(el => el.classList.add('animate-title'));
-        document.querySelectorAll('li, .step, .flow-step, .social-item').forEach((el, i) => {
-            el.style.animationDelay = (i * 0.15 + 0.3) + 's';
-            el.classList.add('animate-item');
-        });
-        document.querySelectorAll('.icon, .logo-hero, .flow-icon-box').forEach(el => el.classList.add('animate-icon'));
-        document.querySelectorAll('.terminal-window').forEach(el => el.classList.add('animate-terminal'));
-    }, 100);
-};
-</script>`;
-
-    // Append to code (before closing body or at end)
-    let finalCode = code;
-    if (finalCode.includes('</body>')) {
-        finalCode = finalCode.replace('</body>', animationStyles + '</body>');
-    } else {
-        finalCode += animationStyles;
-    }
+    // ANIMATIONS REMOVED PER USER REQUEST
 
     setProcessing(true);
 
     try {
         let result;
         if (format === 'MP4') {
-            const calculatedDuration = detectAnimationDuration(finalCode);
-            showProgress(0, `Generando video HD (${calculatedDuration}s) frame-by-frame...`);
+            const duration = 5;
+            showProgress(0, `Generando video HD (${duration}s) frame-by-frame...`);
 
             result = await window.cyberCanvas.exportVideo({
-                html: finalCode, // Use code with animations
+                html: code,
                 width,
                 height,
-                duration: calculatedDuration
+                duration
             });
         } else {
             showProgress(0, 'Exportando imagen de alta calidad...');

@@ -20,8 +20,17 @@ export function render(data) {
         EXPLANATION: data.EXPLANATION || 'Al agregar las flags -la y --color, obtienes permisos, propietario, tamaño y colores que facilitan la lectura.'
     };
 
-    const beforeHTML = d.BEFORE_LINES.map(l => `<div class="term-line">${l.TEXT}</div>`).join('');
-    const afterHTML = d.AFTER_LINES.map(l => `<div class="term-line">${l.TEXT}</div>`).join('');
+    const escapeHTML = (str) => {
+        return str
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+    };
+
+    const beforeHTML = d.BEFORE_LINES.map(l => `<div class="term-line">${escapeHTML(l.TEXT)}</div>`).join('');
+    const afterHTML = d.AFTER_LINES.map(l => `<div class="term-line">${escapeHTML(l.TEXT)}</div>`).join('');
 
     return `<!DOCTYPE html>
 <html lang="es">
@@ -37,20 +46,20 @@ export function render(data) {
         .slide { position: relative; z-index: 1; width: 100%; height: 100%; padding: 60px; display: flex; flex-direction: column; }
 
         .content { flex: 1; display: flex; flex-direction: column; justify-content: center; }
-        .section-label { font-family: 'JetBrains Mono', monospace; font-size: 24px; color: #2563EB; letter-spacing: 4px; margin-bottom: 16px; }
-        .title { font-family: 'JetBrains Mono', monospace; font-size: 52px; font-weight: 700; margin-bottom: 36px; }
+        .section-label { font-family: 'JetBrains Mono', monospace; font-size: 20px; color: #2563EB; letter-spacing: 4px; margin-bottom: 12px; }
+        .title { font-family: 'JetBrains Mono', monospace; font-size: 42px; font-weight: 700; margin-bottom: 24px; line-height: 1.2; }
 
         /* ═══ PANELS ═══ */
-        .panels { display: flex; flex-direction: column; gap: 0; margin-bottom: 32px; }
+        .panels { display: flex; flex-direction: column; gap: 0; margin-bottom: 20px; }
 
         .panel-label-row {
             display: flex; align-items: center; gap: 12px;
-            padding: 12px 0;
+            padding: 8px 0;
         }
         .panel-badge {
             font-family: 'JetBrains Mono', monospace;
-            font-size: 20px; font-weight: 700;
-            padding: 6px 16px; border-radius: 8px;
+            font-size: 18px; font-weight: 700;
+            padding: 4px 12px; border-radius: 6px;
             letter-spacing: 2px;
         }
         .panel-badge.before { background: rgba(255,51,102,0.12); color: #ff3366; border: 1px solid rgba(255,51,102,0.2); }
@@ -58,54 +67,58 @@ export function render(data) {
 
         .panel {
             background: #0c0c0c;
-            border-radius: 16px;
-            padding: 28px 32px;
+            border-radius: 12px;
+            padding: 20px 24px;
             font-family: 'JetBrains Mono', monospace;
-            font-size: 24px;
-            line-height: 1.8;
+            font-size: 20px;
+            line-height: 1.6;
         }
         .panel.before-panel { border: 1px solid rgba(255,51,102,0.15); }
         .panel.after-panel { border: 1px solid rgba(77,217,192,0.15); }
 
-        .panel .term-line { color: #94a3b8; }
+        .panel .term-line { color: #94a3b8; white-space: pre-wrap; word-break: break-word; }
         .before-panel .term-line:first-child { color: #ff3366; }
         .after-panel .term-line:first-child { color: #4DD9C0; }
 
         /* ═══ ARROW ═══ */
         .transform-arrow {
             display: flex; align-items: center; justify-content: center; gap: 12px;
-            padding: 16px 0;
+            padding: 10px 0;
         }
-        .transform-arrow .iconify { color: #2563EB; font-size: 36px; }
+        .transform-arrow .iconify { color: #2563EB; font-size: 32px; }
         .cmd-badge {
             font-family: 'JetBrains Mono', monospace;
-            font-size: 22px; color: #2563EB;
+            font-size: 20px; color: #2563EB;
             background: rgba(37,99,235,0.08);
             border: 1px solid rgba(37,99,235,0.15);
-            padding: 8px 20px; border-radius: 10px;
+            padding: 6px 16px; border-radius: 8px;
         }
 
         .explain-box {
             background: rgba(15,20,40,0.7);
             border: 1px solid rgba(37,99,235,0.1);
             border-left: 4px solid #2563EB;
-            border-radius: 16px;
-            padding: 28px 32px;
-            display: flex; align-items: flex-start; gap: 14px;
+            border-radius: 12px;
+            padding: 20px 24px;
+            display: flex; align-items: flex-start; gap: 12px;
+            /* margin-top: auto; REMOVED to allow true centering of the content group */
         }
-        .explain-box .iconify { color: #2563EB; font-size: 30px; flex-shrink: 0; }
-        .explain-box span { font-size: 26px; color: #94a3b8; line-height: 1.5; }
+        .explain-box .iconify { color: #2563EB; font-size: 28px; flex-shrink: 0; }
+        .explain-box span {
+            font-size: 22px; color: #94a3b8; line-height: 1.5;
+            white-space: pre-wrap; word-break: break-word;
+        }
         .corner-deco { position: absolute; bottom: 60px; left: 60px; width: 100px; height: 100px; border-left: 2px solid rgba(37,99,235,0.12); border-bottom: 2px solid rgba(37,99,235,0.12); }
     
-        .brand-bar { display: flex; align-items: center; gap: 14px; margin-bottom: 40px; }
-        .brand-logo { width: 36px; height: 36px; object-fit: contain; border-radius: 8px; }
-        .brand-name { font-family: 'JetBrains Mono', monospace; font-size: 26px; font-weight: 700; letter-spacing: 3px; color: #2563EB; }
+        .brand-bar { display: flex; align-items: center; gap: 14px; margin-bottom: 30px; }
+        .brand-logo { width: 32px; height: 32px; object-fit: contain; border-radius: 6px; }
+        .brand-name { font-family: 'JetBrains Mono', monospace; font-size: 22px; font-weight: 700; letter-spacing: 3px; color: #2563EB; }
         .brand-line { flex: 1; height: 1px; background: linear-gradient(90deg, rgba(37,99,235,0.3), transparent); }
 
         /* ═══ SWIPE INDICATOR ═══ */
-        .swipe-indicator { position: absolute; bottom: 60px; left: 0; right: 0; display: flex; flex-direction: column; align-items: center; gap: 8px; }
-        .swipe-text { font-family: 'JetBrains Mono', monospace; font-size: 20px; color: rgba(37,99,235,0.5); letter-spacing: 3px; text-transform: uppercase; }
-        .swipe-arrows { font-size: 32px; color: rgba(37,99,235,0.6); letter-spacing: 6px; }
+        .swipe-indicator { position: absolute; bottom: 40px; left: 0; right: 0; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+        .swipe-text { font-family: 'JetBrains Mono', monospace; font-size: 18px; color: rgba(37,99,235,0.5); letter-spacing: 3px; text-transform: uppercase; }
+        .swipe-arrows { font-size: 28px; color: rgba(37,99,235,0.6); letter-spacing: 6px; }
     </style>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 </head>
@@ -119,21 +132,21 @@ export function render(data) {
         </div>
         <div class="content">
             <div class="section-label">// Transformación</div>
-            <div class="title">${d.TITLE}</div>
+            <div class="title">${escapeHTML(d.TITLE)}</div>
             <div class="panels">
-                <div class="panel-label-row"><div class="panel-badge before">${d.BEFORE_TITLE}</div></div>
+                <div class="panel-label-row"><div class="panel-badge before">${escapeHTML(d.BEFORE_TITLE)}</div></div>
                 <div class="panel before-panel">${beforeHTML}</div>
                 <div class="transform-arrow">
                     <i class="material-icons">arrow_downward</i>
-                    <div class="cmd-badge">${d.COMMAND}</div>
+                    <div class="cmd-badge">${escapeHTML(d.COMMAND)}</div>
                     <i class="material-icons">arrow_downward</i>
                 </div>
-                <div class="panel-label-row"><div class="panel-badge after">${d.AFTER_TITLE}</div></div>
+                <div class="panel-label-row"><div class="panel-badge after">${escapeHTML(d.AFTER_TITLE)}</div></div>
                 <div class="panel after-panel">${afterHTML}</div>
             </div>
             <div class="explain-box">
                 <i class="material-icons">auto_awesome</i>
-                <span>${d.EXPLANATION}</span>
+                <span>${escapeHTML(d.EXPLANATION)}</span>
             </div>
         </div>
         <div class="swipe-indicator">
