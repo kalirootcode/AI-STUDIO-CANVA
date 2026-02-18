@@ -56,12 +56,12 @@ export function render(data) {
             <div class="chapter-num">${TemplateUtils.renderEditable('CHAPTER_NUMBER', `${esc(d.CHAPTER_NUMBER)}`, data._overrides)}</div>
             <div class="line-deco"></div>
             <div class="mono" style="font-size:32px; font-weight:700; color:#fff; margin-bottom:16px;">${TemplateUtils.renderEditable('CHAPTER_TITLE', `${esc(d.CHAPTER_TITLE)}`, data._overrides)}</div>
-            <div style="font-size:24px; color:#94a3b8; max-width:700px; line-height:1.5;">${TemplateUtils.renderEditable('CHAPTER_SUBTITLE', `${esc(d.CHAPTER_SUBTITLE)}`, data._overrides)}</div>
+            <div style="font-size:24px; color:#ffffff; max-width:700px; line-height:1.5;">${TemplateUtils.renderEditable('CHAPTER_SUBTITLE', `${esc(d.CHAPTER_SUBTITLE)}`, data._overrides)}</div>
         </div>
 
         <!-- Footer -->
         <div style="display:flex; align-items:center; justify-content:center; opacity:0.5;">
-            <span class="mono" style="letter-spacing:2px; font-size:14px;">CYBER-CANVAS // CHAPTER</span>
+            
         </div>
     </div>
 

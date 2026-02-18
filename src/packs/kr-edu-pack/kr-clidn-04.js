@@ -57,7 +57,7 @@ export function render(data) {
                 <div class="term-dot red"></div>
                 <div class="term-dot yellow"></div>
                 <div class="term-dot green"></div>
-                <span style="margin-left: 12px; color: #666;" class="mono">terminal</span>
+                <span style="margin-left: 12px; color: #ffffff;" class="mono">terminal</span>
             </div>
             <div class="term-body" style="line-height: 1.4;">
                 ${d.COMMAND ? `<div><span style="color:var(--success-color); font-weight:700;">$</span> <span style="color:var(--primary-color); font-weight:700;">${TemplateUtils.renderEditable('COMMAND', `${esc(d.COMMAND)}`, data._overrides)}</span></div><br>` : ''}
@@ -72,15 +72,11 @@ export function render(data) {
                 <div style="background: linear-gradient(135deg, var(--primary-color), #7c3aed); color: #000; width: 42px; height: 42px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 22px; flex-shrink: 0;" class="mono">${c.NUMBER}</div>
                 <div>
                     <div class="mono" style="font-size: 22px; font-weight: 600; color: var(--primary-color); margin-bottom: 6px;">${esc(c.TITLE)}</div>
-                    <div style="font-size: 20px; color: #94a3b8; line-height: 1.5;">${esc(c.CONTENT_HTML)}</div>
+                    <div style="font-size: 20px; color: #ffffff; line-height: 1.5;">${esc(c.CONTENT_HTML)}</div>
                 </div>
             </div>`).join('')}
         </div>
-
-        <!-- Footer -->
-        <div style="margin-top: auto; display:flex; align-items:center; opacity:0.5;">
-            <div style="width:40px; height:4px; background:var(--accent-color); margin-right:16px;"></div>
-            <span class="mono" style="letter-spacing:2px; font-size:14px;">CYBER-CANVAS // OUTPUT</span>
+            
         </div>
     </div>
 

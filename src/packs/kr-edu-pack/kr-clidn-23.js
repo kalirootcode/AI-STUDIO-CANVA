@@ -30,7 +30,7 @@ export function render(data) {
                 </div>
                 <div style="flex:1;">
                     <div style="font-family:var(--font-mono); font-size:24px; font-weight:700; color:var(--primary-color); letter-spacing:1px;">${esc(step.LABEL)}</div>
-                    <div style="font-size:20px; color:#94a3b8; margin-top:4px;">${esc(step.DESC)}</div>
+                    <div style="font-size:20px; color:#ffffff; margin-top:4px;">${esc(step.DESC)}</div>
                 </div>
                 <div class="mono" style="font-size:20px; color:#333; font-weight:700;">${String(i + 1).padStart(2, '0')}</div>
             </div>
@@ -60,10 +60,7 @@ export function render(data) {
         </div>
 
         <!-- Footer -->
-        <div style="display:flex; align-items:center; opacity:0.5;">
-            <div style="width:40px; height:4px; background:var(--accent-color); margin-right:16px;"></div>
-            <span class="mono" style="letter-spacing:2px; font-size:14px;">CYBER-CANVAS // FLOW</span>
-        </div>
+        
     </div>
 
     ${TemplateUtils.getAutoFitScript()}

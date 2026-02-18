@@ -26,11 +26,11 @@ export function render(data) {
         success: 'var(--success-color)',
         warning: 'var(--warning-color)',
         error: '#ff3333',
-        output: '#94a3b8'
+        output: '#ffffff'
     };
 
     const linesHTML = d.TERMINAL_LINES.map(l => {
-        const color = colorMap[l.TYPE] || '#94a3b8';
+        const color = colorMap[l.TYPE] || '#ffffff';
         const prefix = l.TYPE === 'prompt' ? '<span style="color:var(--success-color);">❯</span> ' : '  ';
         return `<div style="padding:6px 0; font-size:22px; color:${color}; font-family:var(--font-mono); line-height:1.6;">${prefix}${esc(l.TEXT)}</div>`;
     }).join('');
@@ -59,7 +59,7 @@ export function render(data) {
             <div class="terminal-window" style="flex:1;">
                 <div class="term-header">
                     <div class="term-dot red"></div><div class="term-dot yellow"></div><div class="term-dot green"></div>
-                    <span class="mono" style="margin-left:auto; font-size:16px; color:#666;">terminal</span>
+                    <span class="mono" style="margin-left:auto; font-size:16px; color:#ffffff;">terminal</span>
                 </div>
                 <div class="term-body">
                     ${linesHTML}
@@ -74,10 +74,7 @@ export function render(data) {
         </div>
 
         <!-- Footer -->
-        <div style="display:flex; align-items:center; opacity:0.5;">
-            <div style="width:40px; height:4px; background:var(--accent-color); margin-right:16px;"></div>
-            <span class="mono" style="letter-spacing:2px; font-size:14px;">CYBER-CANVAS // TERMINAL</span>
-        </div>
+        
     </div>
 
     ${TemplateUtils.getAutoFitScript()}

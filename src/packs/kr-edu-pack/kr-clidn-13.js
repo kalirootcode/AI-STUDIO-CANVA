@@ -58,7 +58,7 @@ export function render(data) {
         </div>
 
         <!-- Description -->
-        <div style="font-size:24px; color:#94a3b8; line-height:1.6; padding-left:12px; border-left:3px solid rgba(0,217,255,0.2); margin-bottom:24px;">
+        <div style="font-size:24px; color:#ffffff; line-height:1.6; padding-left:12px; border-left:3px solid rgba(0,217,255,0.2); margin-bottom:24px;">
             ${TemplateUtils.renderEditable('DESCRIPTION', `${esc(d.DESCRIPTION)}`, data._overrides)}
         </div>
 
@@ -81,13 +81,9 @@ export function render(data) {
         <!-- Note -->
         <div class="glass-panel" style="display:flex; gap:12px; align-items:center; border-color:rgba(168,85,247,0.15);">
             <span style="font-size:24px;">ℹ️</span>
-            <span style="font-size:20px; color:#94a3b8;">${esc(d.NOTE)}</span>
+            <span style="font-size:20px; color:#ffffff;">${esc(d.NOTE)}</span>
         </div>
-
-        <!-- Footer -->
-        <div style="margin-top:auto; display:flex; align-items:center; opacity:0.5;">
-            <div style="width:40px; height:4px; background:var(--accent-color); margin-right:16px;"></div>
-            <span class="mono" style="letter-spacing:2px; font-size:14px;">CYBER-CANVAS // STEP</span>
+            
         </div>
     </div>
 

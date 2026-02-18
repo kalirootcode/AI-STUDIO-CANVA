@@ -23,7 +23,7 @@ export function render(data) {
         <div style="display:flex; gap:16px; align-items:flex-start; padding:4px 0;">
             <span style="color:#444; font-size:18px; min-width:30px; text-align:right; user-select:none;">${i + 1}</span>
             <span style="color:var(--primary-color); font-size:22px; flex:1;">${esc(line.LINE)}</span>
-            ${line.COMMENT ? `<span style="color:#555; font-size:18px; white-space:nowrap;">${esc(line.COMMENT)}</span>` : ''}
+            ${line.COMMENT ? `<span style="color:#ffffff; font-size:18px; white-space:nowrap;">${esc(line.COMMENT)}</span>` : ''}
         </div>`).join('');
 
     return `<!DOCTYPE html>
@@ -52,7 +52,7 @@ export function render(data) {
         <div class="terminal-window" style="flex:1;">
             <div class="term-header">
                 <div class="term-dot red"></div><div class="term-dot yellow"></div><div class="term-dot green"></div>
-                <span class="mono" style="margin-left:auto; font-size:16px; color:#666;">${esc(d.LANGUAGE)}</span>
+                <span class="mono" style="margin-left:auto; font-size:16px; color:#ffffff;">${esc(d.LANGUAGE)}</span>
             </div>
             <div class="term-body" style="font-family:var(--font-mono);">
                 ${codeHTML}
@@ -64,11 +64,7 @@ export function render(data) {
             <span style="font-size:24px;">💡</span>
             <span style="font-size:22px; color:#e2e8f0; line-height:1.5;">${esc(d.EXPLANATION)}</span>
         </div>
-
-        <!-- Footer -->
-        <div style="margin-top:auto; display:flex; align-items:center; opacity:0.5;">
-            <div style="width:40px; height:4px; background:var(--accent-color); margin-right:16px;"></div>
-            <span class="mono" style="letter-spacing:2px; font-size:14px;">CYBER-CANVAS // CODE</span>
+            
         </div>
     </div>
 

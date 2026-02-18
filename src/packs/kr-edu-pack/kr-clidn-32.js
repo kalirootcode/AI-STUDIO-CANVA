@@ -30,7 +30,7 @@ export function render(data) {
                             <span style="font-family:var(--font-mono); font-size:28px; font-weight:800; color:${s.COLOR};">${s.VALUE}%</span>
                         </div>
                     </div>
-                    <span style="font-family:var(--font-mono); font-size:20px; color:#94a3b8; letter-spacing:1px;">${esc(s.LABEL)}</span>
+                    <span style="font-family:var(--font-mono); font-size:20px; color:#ffffff; letter-spacing:1px;">${esc(s.LABEL)}</span>
                 </div>
             `).join('')}
         </div>`;
@@ -76,10 +76,7 @@ export function render(data) {
         </div>
 
         <!-- Footer -->
-        <div style="display:flex; align-items:center; opacity:0.5;">
-            <div style="width:40px; height:4px; background:var(--accent-color); margin-right:16px;"></div>
-            <span class="mono" style="letter-spacing:2px; font-size:14px;">CYBER-CANVAS // STATS</span>
-        </div>
+        
     </div>
 
     ${TemplateUtils.getAutoFitScript()}

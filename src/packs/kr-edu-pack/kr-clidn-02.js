@@ -54,7 +54,7 @@ export function render(data) {
                 <div style="background: var(--primary-color); color: #000; width: 44px; height: 44px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 24px; flex-shrink: 0;" class="mono">${c.NUMBER}</div>
                 <div>
                     <div class="mono" style="font-size: 28px; font-weight: 700; color: #fff; margin-bottom: 4px;">${esc(c.NAME)}</div>
-                    <div style="font-size: 22px; color: #94a3b8;">${esc(c.DESCRIPTION)}</div>
+                    <div style="font-size: 22px; color: #ffffff;">${esc(c.DESCRIPTION)}</div>
                 </div>
             </div>`).join('')}
         </div>
@@ -62,13 +62,9 @@ export function render(data) {
         <!-- Tip -->
         <div class="glass-panel" style="display: flex; gap: 16px; align-items: center; border-color: var(--warning-color);">
             <span style="font-size: 32px;">💡</span>
-            <span style="font-size: 22px; color: #94a3b8;">${TemplateUtils.renderEditable('TIP', `${esc(d.TIP)}`, data._overrides)}</span>
+            <span style="font-size: 22px; color: #ffffff;">${TemplateUtils.renderEditable('TIP', `${esc(d.TIP)}`, data._overrides)}</span>
         </div>
-
-        <!-- Footer -->
-        <div style="margin-top: auto; display:flex; align-items:center; opacity:0.5;">
-            <div style="width:40px; height:4px; background:var(--accent-color); margin-right:16px;"></div>
-            <span class="mono" style="letter-spacing:2px; font-size:14px;">CYBER-CANVAS // ANATOMY</span>
+            
         </div>
     </div>
 

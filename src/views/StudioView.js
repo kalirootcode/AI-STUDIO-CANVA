@@ -41,6 +41,34 @@ export class StudioView extends BaseView {
                             </div>
                         </div>
 
+                        <!-- SEO SECTION (Auto-Generated) -->
+                        <div class="control-group" style="margin-top: 15px; padding-top: 15px; border-top: 1px dashed #333;">
+                            <label style="color: #00D9FF;">🤖 SEO & VIRALIZACIÓN</label>
+                            <textarea id="seoCaption" class="textarea-input" style="height: 80px; font-size: 11px; color: #aaa !important;" placeholder="Descripción viral generada por IA..." readonly></textarea>
+                            <input type="text" id="seoHashtags" style="font-size: 11px; color: #00D9FF !important;" placeholder="#Hashtags" readonly>
+                            <button id="copySeoBtn" style="
+                                margin-top: 6px;
+                                background: linear-gradient(135deg, #00D9FF22, #0066FF22);
+                                border: 1px solid #00D9FF44;
+                                color: #00D9FF;
+                                padding: 8px 12px;
+                                border-radius: 6px;
+                                cursor: pointer;
+                                font-size: 11px;
+                                font-weight: 700;
+                                width: 100%;
+                                display: flex;
+                                align-items: center;
+                                justify-content: center;
+                                gap: 6px;
+                                transition: all 0.2s;
+                                letter-spacing: 0.5px;
+                            ">
+                                <span class="material-icons" style="font-size: 14px;">content_copy</span>
+                                COPIAR DESCRIPCIÓN + HASHTAGS
+                            </button>
+                        </div>
+
                         <!-- AI Provider Select -->
                         <div class="control-group" style="margin-top: 15px;">
                             <label>MODELO DE IA</label>
@@ -94,7 +122,7 @@ export class StudioView extends BaseView {
                         </div>
 
                         <div style="display:flex; gap:10px; align-items:center;">
-                            <button id="toggleSafeZone" class="icon-btn" title="Ver Zona Segura TikTok" style="color:#fff; border:1px solid #444; padding:4px; border-radius:4px;">
+                            <button id="toggleSafeZone" class="icon-btn active" title="Ver Zona Segura TikTok" style="color:#fff; border:1px solid #444; padding:4px; border-radius:4px;">
                                 <span class="material-icons">crop_free</span>
                             </button>
                             <select id="aspectRatio" class="ratio-select">
@@ -216,6 +244,39 @@ export class StudioView extends BaseView {
         // Buttons
         const genBtn = this.element.querySelector('#generateBtn');
         if (genBtn) genBtn.onclick = () => window.app.handleGenerate(); // Hook to main app logic
+
+        // Copy SEO Button
+        const copySeoBtn = this.element.querySelector('#copySeoBtn');
+        if (copySeoBtn) {
+            copySeoBtn.onclick = async () => {
+                const caption = this.element.querySelector('#seoCaption')?.value || '';
+                const hashtags = this.element.querySelector('#seoHashtags')?.value || '';
+
+                if (!caption && !hashtags) {
+                    copySeoBtn.innerHTML = '<span class="material-icons" style="font-size:14px;">warning</span> SIN DATOS';
+                    setTimeout(() => {
+                        copySeoBtn.innerHTML = '<span class="material-icons" style="font-size:14px;">content_copy</span> COPIAR DESCRIPCIÓN + HASHTAGS';
+                    }, 2000);
+                    return;
+                }
+
+                const textToCopy = `${caption}\n\n${hashtags}`.trim();
+
+                try {
+                    await navigator.clipboard.writeText(textToCopy);
+                    copySeoBtn.innerHTML = '<span class="material-icons" style="font-size:14px;">check</span> ¡COPIADO!';
+                    copySeoBtn.style.borderColor = '#00FF88';
+                    copySeoBtn.style.color = '#00FF88';
+                    setTimeout(() => {
+                        copySeoBtn.innerHTML = '<span class="material-icons" style="font-size:14px;">content_copy</span> COPIAR DESCRIPCIÓN + HASHTAGS';
+                        copySeoBtn.style.borderColor = '#00D9FF44';
+                        copySeoBtn.style.color = '#00D9FF';
+                    }, 2500);
+                } catch (err) {
+                    console.error('Copy failed:', err);
+                }
+            };
+        }
 
         // Navigation
         this.element.querySelector('#prevSlide').onclick = () => window.app.handlePrevSlide();
@@ -512,11 +573,34 @@ export class StudioView extends BaseView {
         }
 
         frame.srcdoc = finalHtml;
+
+        // Persist Safe Zone State
+        frame.onload = () => {
+            const toggleSafeBtn = this.element.querySelector('#toggleSafeZone');
+            if (toggleSafeBtn && toggleSafeBtn.classList.contains('active')) {
+                const safeZone = frame.contentDocument.querySelector('.safe-zone');
+                if (safeZone) safeZone.classList.add('debug');
+            }
+        };
     }
 
     updateSlideCounter(current, total) {
         const el = this.element.querySelector('#slideCounter');
         if (el) el.innerText = `${current} / ${total}`;
+    }
+
+    updateSEO(seoData) {
+        if (!seoData) return;
+        const captionEl = this.element.querySelector('#seoCaption');
+        const hashtagsEl = this.element.querySelector('#seoHashtags');
+
+        if (captionEl && seoData.description) captionEl.value = seoData.description;
+        if (hashtagsEl && seoData.hashtags) {
+            // Handle array or string
+            hashtagsEl.value = Array.isArray(seoData.hashtags)
+                ? seoData.hashtags.join(' ')
+                : seoData.hashtags;
+        }
     }
 
     getAspectRatio() {

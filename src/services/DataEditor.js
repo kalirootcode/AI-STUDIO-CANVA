@@ -39,18 +39,116 @@ export class DataEditor {
         const aiSection = document.createElement('div');
         aiSection.className = 'ai-assistant-section';
         aiSection.innerHTML = `
-            <div class="panel-header small" style="margin-bottom: 10px; border-bottom: 1px solid #333; padding-bottom: 5px;">
-                <span class="material-icons" style="font-size: 16px; color: var(--accent-cyan);">auto_fix_high</span>
-                <span>AI DESIGN ASSISTANT</span>
-            </div>
-            <div class="ai-input-group">
-                <input type="text" id="aiRefineInput" class="editor-input" placeholder="Ej: 'Resumir texto', 'Corregir ortografía'..." style="margin-bottom: 8px;">
-                <button id="aiRefineBtn" class="btn-primary full-width" style="height: 30px; font-size: 11px;">
-                    <span class="material-icons" style="font-size: 14px;">magic_button</span> REFINAR
-                </button>
-            </div>
-            <div id="aiLoading" style="display: none; color: #888; font-size: 11px; margin-top: 5px; text-align: center;">
-                <span class="material-icons spin" style="font-size: 11px;">autorenew</span> Procesando...
+            <style>
+                .ai-card {
+                    background: linear-gradient(135deg, rgba(0,217,255,0.03), rgba(0,102,255,0.03));
+                    border: 1px solid rgba(0,217,255,0.15);
+                    border-radius: 10px;
+                    padding: 16px;
+                    position: relative;
+                    overflow: hidden;
+                }
+                .ai-card::before {
+                    content: '';
+                    position: absolute;
+                    top: 0; left: 0; right: 0;
+                    height: 2px;
+                    background: linear-gradient(90deg, transparent, #00D9FF, #0066FF, transparent);
+                }
+                .ai-card-header {
+                    display: flex; align-items: center; gap: 10px;
+                    margin-bottom: 14px;
+                    padding-bottom: 10px;
+                    border-bottom: 1px solid rgba(255,255,255,0.06);
+                }
+                .ai-card-header .ai-icon {
+                    width: 28px; height: 28px;
+                    border-radius: 8px;
+                    background: linear-gradient(135deg, rgba(0,217,255,0.15), rgba(0,102,255,0.15));
+                    display: flex; align-items: center; justify-content: center;
+                    border: 1px solid rgba(0,217,255,0.25);
+                }
+                .ai-card-header .ai-icon .material-icons {
+                    font-size: 15px; color: #00D9FF;
+                }
+                .ai-card-header span:last-child {
+                    font-size: 10px; font-weight: 700;
+                    letter-spacing: 1.5px; color: #00D9FF;
+                    text-transform: uppercase;
+                }
+                .ai-input-row {
+                    display: flex; flex-direction: column; gap: 8px;
+                }
+                .ai-input-row input {
+                    background: rgba(0,0,0,0.4) !important;
+                    border: 1px solid rgba(255,255,255,0.08) !important;
+                    border-radius: 8px;
+                    padding: 10px 12px;
+                    font-size: 11px;
+                    color: #aaa !important;
+                    transition: all 0.2s;
+                }
+                .ai-input-row input:focus {
+                    border-color: rgba(0,217,255,0.4) !important;
+                    background: rgba(0,0,0,0.6) !important;
+                    box-shadow: 0 0 0 2px rgba(0,217,255,0.08);
+                }
+                .ai-refine-btn {
+                    display: flex; align-items: center; justify-content: center;
+                    gap: 8px; width: 100%;
+                    padding: 10px 16px;
+                    border: none; border-radius: 8px;
+                    background: linear-gradient(135deg, #00D9FF, #0066FF);
+                    color: #000; font-weight: 800;
+                    font-size: 11px; letter-spacing: 1px;
+                    cursor: pointer;
+                    transition: all 0.25s ease;
+                    box-shadow: 0 4px 15px rgba(0,217,255,0.2);
+                    text-transform: uppercase;
+                }
+                .ai-refine-btn:hover {
+                    filter: brightness(1.15);
+                    box-shadow: 0 6px 20px rgba(0,217,255,0.3);
+                    transform: translateY(-1px);
+                }
+                .ai-refine-btn:disabled {
+                    opacity: 0.5; cursor: not-allowed;
+                    transform: none; filter: none;
+                }
+                .ai-refine-btn .material-icons {
+                    font-size: 14px; color: #000;
+                }
+                .ai-loading-bar {
+                    display: none;
+                    align-items: center; justify-content: center;
+                    gap: 6px; margin-top: 8px;
+                    padding: 6px;
+                    border-radius: 6px;
+                    background: rgba(0,217,255,0.05);
+                    border: 1px solid rgba(0,217,255,0.1);
+                    color: #00D9FF;
+                    font-size: 10px; font-weight: 600;
+                    letter-spacing: 0.5px;
+                }
+                .ai-loading-bar .material-icons { font-size: 12px; }
+            </style>
+            <div class="ai-card">
+                <div class="ai-card-header">
+                    <div class="ai-icon">
+                        <span class="material-icons">auto_fix_high</span>
+                    </div>
+                    <span>AI Design Assistant</span>
+                </div>
+                <div class="ai-input-row">
+                    <input type="text" id="aiRefineInput" placeholder="Ej: 'Resumir texto', 'Corregir ortografía'...">
+                    <button id="aiRefineBtn" class="ai-refine-btn">
+                        <span class="material-icons">auto_awesome</span>
+                        REFINAR CON IA
+                    </button>
+                </div>
+                <div id="aiLoading" class="ai-loading-bar">
+                    <span class="material-icons spin">autorenew</span> Procesando con IA...
+                </div>
             </div>
         `;
         this.container.appendChild(aiSection);
@@ -64,7 +162,7 @@ export class DataEditor {
             if (!instruction) return;
 
             if (this.onAIRefine) {
-                loading.style.display = 'block';
+                loading.style.display = 'flex';
                 btn.disabled = true;
                 this.onAIRefine(instruction).finally(() => {
                     loading.style.display = 'none';
@@ -73,6 +171,11 @@ export class DataEditor {
                 });
             }
         };
+
+        // Allow Enter key to trigger refine
+        input.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') btn.click();
+        });
     }
 
     /**

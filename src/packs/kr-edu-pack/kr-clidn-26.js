@@ -31,7 +31,7 @@ export function render(data) {
             statusTxt = '🎯 TARGET';
         } else if (isOffline) {
             borderClr = 'rgba(255,255,255,0.05)';
-            statusClr = '#666';
+            statusClr = '#ffffff';
             statusTxt = 'OFFLINE';
         }
 
@@ -76,10 +76,7 @@ export function render(data) {
         </div>
 
         <!-- Footer -->
-        <div style="display:flex; align-items:center; opacity:0.5;">
-            <div style="width:40px; height:4px; background:var(--accent-color); margin-right:16px;"></div>
-            <span class="mono" style="letter-spacing:2px; font-size:14px;">CYBER-CANVAS // NETWORK</span>
-        </div>
+        
     </div>
 
     ${TemplateUtils.getAutoFitScript()}

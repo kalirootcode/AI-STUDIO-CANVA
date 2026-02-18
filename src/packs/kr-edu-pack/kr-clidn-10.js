@@ -66,7 +66,7 @@ export function render(data) {
         </div>
 
         <!-- Install -->
-        <div class="mono" style="font-size:18px; color:#666; letter-spacing:2px; margin-bottom:8px;">INSTALACIÓN</div>
+        <div class="mono" style="font-size:18px; color:#ffffff; letter-spacing:2px; margin-bottom:8px;">INSTALACIÓN</div>
         <div class="terminal-window">
             <div class="term-header">
                 <div class="term-dot red"></div><div class="term-dot yellow"></div><div class="term-dot green"></div>
@@ -75,7 +75,7 @@ export function render(data) {
         </div>
 
         <!-- Usage -->
-        <div class="mono" style="font-size:18px; color:#666; letter-spacing:2px; margin-bottom:8px;">USO</div>
+        <div class="mono" style="font-size:18px; color:#ffffff; letter-spacing:2px; margin-bottom:8px;">USO</div>
         <div class="terminal-window">
             <div class="term-header">
                 <div class="term-dot red"></div><div class="term-dot yellow"></div><div class="term-dot green"></div>
@@ -85,11 +85,7 @@ export function render(data) {
 
         <!-- Features -->
         ${featsHTML}
-
-        <!-- Footer -->
-        <div style="margin-top:auto; display:flex; align-items:center; opacity:0.5;">
-            <div style="width:40px; height:4px; background:var(--accent-color); margin-right:16px;"></div>
-            <span class="mono" style="letter-spacing:2px; font-size:14px;">CYBER-CANVAS // TOOL</span>
+            
         </div>
     </div>
 

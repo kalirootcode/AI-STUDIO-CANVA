@@ -114,6 +114,8 @@ body {
 .studio-layout {
     display: flex;
     height: 100%;
+    overflow: hidden;
+    /* Ensure layout doesn't break page */
 }
 
 .panel-left,
@@ -124,6 +126,10 @@ body {
     border-left: 1px solid var(--border-color);
     display: flex;
     flex-direction: column;
+    height: 100%;
+    /* Explicit height */
+    overflow: hidden;
+    /* Container fixed */
 }
 
 .panel-right {
@@ -168,10 +174,13 @@ body {
 
 .panel-content {
     flex: 1;
-    overflow-y: auto;
+    min-height: 0;
+    /* CRITICAL for flex scrolling */
+    overflow-y: auto !important;
+    /* Allow scroll */
     overflow-x: hidden;
-    /* Prevent horizontal scroll */
     padding: 20px;
+    padding-bottom: 40px;
     display: flex;
     flex-direction: column;
     gap: 20px;
@@ -361,7 +370,7 @@ select:focus {
 .editor-wrapper {
     display: flex;
     flex-direction: column;
-    flex: 1;
+    flex: 0 0 auto;
     border: 1px solid #222;
     border-radius: 6px;
     overflow: hidden;
@@ -380,10 +389,11 @@ select:focus {
     border-right: 1px solid #222 !important;
 }
 
-/* ── SCROLLBARS ── */
+/* ── SCROLLBARS (Subtle but functional) ── */
 ::-webkit-scrollbar {
     width: 6px;
     height: 6px;
+    background: transparent;
 }
 
 ::-webkit-scrollbar-track {

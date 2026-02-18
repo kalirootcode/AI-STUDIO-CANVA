@@ -21,7 +21,7 @@ export function render(data) {
     const checksHTML = d.CHECK_ITEMS.map(c => `
         <div class="glass-panel" style="display:flex; align-items:center; gap:16px; padding:14px 18px; ${c.CHECKED ? 'border-color:rgba(0,255,136,0.15);' : ''}">
             <span style="font-size:24px; color:${c.CHECKED ? 'var(--success-color)' : 'rgba(255,255,255,0.2)'};">${c.CHECKED ? '☑' : '☐'}</span>
-            <span style="font-size:22px; color:${c.CHECKED ? '#e2e8f0' : '#94a3b8'}; line-height:1.4;">${esc(c.TEXT)}</span>
+            <span style="font-size:22px; color:${c.CHECKED ? '#e2e8f0' : '#ffffff'}; line-height:1.4;">${esc(c.TEXT)}</span>
         </div>`).join('\n');
 
     return `<!DOCTYPE html>
@@ -48,13 +48,9 @@ export function render(data) {
         <!-- Note -->
         <div class="glass-panel" style="display:flex; gap:12px; align-items:center; border-color:rgba(37,99,235,0.15);">
             <span style="font-size:24px;">ℹ️</span>
-            <span style="font-size:20px; color:#94a3b8;">${esc(d.NOTE)}</span>
+            <span style="font-size:20px; color:#ffffff;">${esc(d.NOTE)}</span>
         </div>
-
-        <!-- Footer -->
-        <div style="margin-top:auto; display:flex; align-items:center; opacity:0.5;">
-            <div style="width:40px; height:4px; background:var(--accent-color); margin-right:16px;"></div>
-            <span class="mono" style="letter-spacing:2px; font-size:14px;">CYBER-CANVAS // CHECK</span>
+            
         </div>
     </div>
 

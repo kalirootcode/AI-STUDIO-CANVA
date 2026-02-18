@@ -69,7 +69,7 @@ export function render(data) {
             <div class="terminal-window">
                 <div class="term-header">
                     <div class="term-dot red"></div><div class="term-dot yellow"></div><div class="term-dot green"></div>
-                    <span class="mono" style="margin-left:auto; font-size:16px; color:#666;">ejemplo</span>
+                    <span class="mono" style="margin-left:auto; font-size:16px; color:#ffffff;">ejemplo</span>
                 </div>
                 <div class="term-body" style="font-family:var(--font-mono); font-size:24px; color:var(--primary-color);">
                     $ ${esc(d.EXAMPLE_CMD)}
@@ -81,19 +81,13 @@ export function render(data) {
                 <span style="font-size:22px;">🎯</span>
                 <div>
                     <div class="mono" style="font-size:16px; color:var(--warning-color); letter-spacing:2px; margin-bottom:6px;">¿POR QUÉ?</div>
-                    <span style="font-size:22px; color:#94a3b8; line-height:1.5;">${esc(d.WHY_TEXT)}</span>
+                    <span style="font-size:22px; color:#ffffff; line-height:1.5;">${esc(d.WHY_TEXT)}</span>
                 </div>
             </div>
         </div>
 
         <!-- Footer -->
-        <div style="display:flex; align-items:center; justify-content:space-between; opacity:0.5;">
-            <div style="display:flex; align-items:center;">
-                <div style="width:40px; height:4px; background:var(--warning-color); margin-right:16px;"></div>
-                <span class="mono" style="letter-spacing:2px; font-size:14px;">CYBER-CANVAS // TIP</span>
-            </div>
-            <span class="mono" style="font-size:14px; color:#555;">${esc(d.CATEGORY)}</span>
-        </div>
+
     </div>
 
     ${TemplateUtils.getAutoFitScript()}

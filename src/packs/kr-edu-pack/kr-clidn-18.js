@@ -31,7 +31,7 @@ export function render(data) {
         .quote-text {
             font-size: 32px; font-weight: 700; line-height: 1.5;
             max-width: 850px; margin-bottom: 24px;
-            background: linear-gradient(135deg, #fff, #94a3b8);
+            background: linear-gradient(135deg, #fff, #ffffff);
             -webkit-background-clip: text; -webkit-text-fill-color: transparent;
             background-clip: text;
         }
@@ -57,21 +57,18 @@ export function render(data) {
             <div class="quote-mark">❝</div>
             <div class="quote-text">${TemplateUtils.renderEditable('QUOTE_TEXT', `${esc(d.QUOTE_TEXT)}`, data._overrides)}</div>
             <div class="quote-author">— ${TemplateUtils.renderEditable('QUOTE_AUTHOR', `${esc(d.QUOTE_AUTHOR)}`, data._overrides)}</div>
-            <div style="font-size:22px; color:#94a3b8;">${TemplateUtils.renderEditable('CONTEXT', `${esc(d.CONTEXT)}`, data._overrides)}</div>
+            <div style="font-size:22px; color:#ffffff;">${TemplateUtils.renderEditable('CONTEXT', `${esc(d.CONTEXT)}`, data._overrides)}</div>
             <div class="divider-line"></div>
         </div>
 
         <!-- Extra Fact -->
         <div class="glass-panel" style="display:flex; gap:14px; align-items:center; border-color:rgba(168,85,247,0.15);">
             <span style="font-size:24px;">💡</span>
-            <span style="font-size:22px; color:#94a3b8; line-height:1.4;">${esc(d.EXTRA_FACT)}</span>
+            <span style="font-size:22px; color:#ffffff; line-height:1.4;">${esc(d.EXTRA_FACT)}</span>
         </div>
 
         <!-- Footer -->
-        <div style="display:flex; align-items:center; opacity:0.5;">
-            <div style="width:40px; height:4px; background:var(--accent-color); margin-right:16px;"></div>
-            <span class="mono" style="letter-spacing:2px; font-size:14px;">CYBER-CANVAS // QUOTE</span>
-        </div>
+        
     </div>
 
     ${TemplateUtils.getAutoFitScript()}

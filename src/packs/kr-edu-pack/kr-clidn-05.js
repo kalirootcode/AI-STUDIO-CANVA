@@ -50,7 +50,7 @@ export function render(data) {
                 </div>
                 <div class="term-body">
                     <span style="color:var(--success-color)">➜</span> <span style="color:#fff">${TemplateUtils.renderEditable('COMMAND', `${esc(d.COMMAND)}`, data._overrides)}</span>
-                    <div style="margin-top:8px; color:#aaa; font-size:0.9em;">
+                    <div style="margin-top:8px; color:#ffffff; font-size:0.9em;">
                         ${d.OUTPUT_LINES.map(l => `<div>${esc(l.TEXT)}</div>`).join('')}
                     </div>
                 </div>
@@ -80,9 +80,7 @@ export function render(data) {
         </div>
 
         <!-- FOOTER / BRAND -->
-        <div style="margin-top: auto; display:flex; align-items:center; opacity:0.6;">
-            <div style="width:40px; height:4px; background:var(--accent-color); margin-right:16px;"></div>
-            <span class="mono" style="letter-spacing:2px; font-size:14px;">CYBER-CANVAS // SECURITY RESEARCH</span>
+            
         </div>
     </div>
 

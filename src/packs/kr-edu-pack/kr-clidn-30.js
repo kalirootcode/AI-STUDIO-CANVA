@@ -27,7 +27,7 @@ export function render(data) {
                 <div style="font-family:var(--font-mono); font-size:20px; color:var(--primary-color); background:#0a0a0a; padding:8px 14px; border-radius:6px; border:1px solid rgba(0,217,255,0.1); margin-bottom:8px; display:inline-block;">
                     ${esc(s.CMD)}
                 </div>
-                <div style="font-size:18px; color:#64748b; display:flex; align-items:center; gap:8px;">
+                <div style="font-size:18px; color:#ffffff; display:flex; align-items:center; gap:8px;">
                     <span style="color:var(--success-color);">→</span> ${esc(s.RESULT)}
                 </div>
             </div>
@@ -62,10 +62,7 @@ export function render(data) {
         </div>
 
         <!-- Footer -->
-        <div style="display:flex; align-items:center; opacity:0.5;">
-            <div style="width:40px; height:4px; background:var(--accent-color); margin-right:16px;"></div>
-            <span class="mono" style="letter-spacing:2px; font-size:14px;">CYBER-CANVAS // TUTORIAL</span>
-        </div>
+        
     </div>
 
     ${TemplateUtils.getAutoFitScript()}

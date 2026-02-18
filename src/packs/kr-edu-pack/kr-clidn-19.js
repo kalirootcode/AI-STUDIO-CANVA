@@ -50,13 +50,9 @@ export function render(data) {
         <!-- Total -->
         <div class="glass-panel" style="display:flex; align-items:center; justify-content:center; gap:10px; border-color:rgba(37,99,235,0.12);">
             <span style="font-size:24px;">📄</span>
-            <span class="mono" style="font-size:22px; color:#94a3b8;">Total: <strong style="color:var(--primary-color);">${esc(d.TOTAL_SLIDES)} slides</strong></span>
+            <span class="mono" style="font-size:22px; color:#ffffff;">Total: <strong style="color:var(--primary-color);">${esc(d.TOTAL_SLIDES)} slides</strong></span>
         </div>
-
-        <!-- Footer -->
-        <div style="margin-top:auto; display:flex; align-items:center; opacity:0.5;">
-            <div style="width:40px; height:4px; background:var(--accent-color); margin-right:16px;"></div>
-            <span class="mono" style="letter-spacing:2px; font-size:14px;">CYBER-CANVAS // TOC</span>
+            
         </div>
     </div>
 

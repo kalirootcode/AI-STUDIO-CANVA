@@ -97,37 +97,6 @@ export function render(data) {
     <div class="bg-grid"></div>
     <div class="bg-glow"></div>
 
-    <div class="safe-zone">
-        <!-- No standard header here, we want big logo -->
-        
-        <div class="conclusion-hero">
-            <!-- 1. BIG LOGO -->
-            <img src="../assets/kr-clidn-logo.png" class="big-logo" alt="KR-CLIDN" />
-            
-            <div style="font-family: var(--font-mono); font-size: 32px; font-weight: 800; letter-spacing: 8px;">KR-CLIDN</div>
-
-            <!-- 2. Final Questions -->
-            <div class="flex-col" style="gap: 20px; margin-top: 20px;">
-                <h2 class="cyber-title" style="font-size: 38px;">${TemplateUtils.renderEditable('TITLE', esc(d.TITLE), data._overrides)}</h2>
-                <div class="cyber-subtitle" style="font-size: 28px; color: var(--primary-color);">${TemplateUtils.renderEditable('SUBTITLE', esc(d.DESCRIPTION), data._overrides)}</div>
-            </div>
-
-            <!-- 3. CTA -->
-            <div class="cta-box">
-                <div class="profile-pic">👨‍💻</div>
-                <div style="font-size: 24px; color: #fff; line-height: 1.5;">
-                    Sígueme para más tutoriales de <br>
-                    <span style="color: var(--accent-color); font-weight: 700;">Ciberseguridad Defensiva y Ofensiva</span>.
-                </div>
-            </div>
-        </div>
-
-        <!-- Minimal Footer -->
-        <div style="margin-top: auto; opacity: 0.4; font-size: 14px; letter-spacing: 2px;" class="mono">
-            POWERED BY CYBER-CANVAS
-        </div>
-    </div>
-
     ${TemplateUtils.getAutoFitScript()}
 </body>
 </html>`;

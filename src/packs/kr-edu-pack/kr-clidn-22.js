@@ -30,7 +30,7 @@ export function render(data) {
                 ${connector}
                 <span style="font-size:24px;">${icon}</span>
                 <span style="font-family:var(--font-mono); font-size:24px; font-weight:600; color:${nameColor};">${esc(item.NAME)}</span>
-                <span style="font-size:18px; color:#64748b; margin-left:auto;">${esc(item.DETAIL)}</span>
+                <span style="font-size:18px; color:#ffffff; margin-left:auto;">${esc(item.DETAIL)}</span>
             </div>`;
     }).join('');
 
@@ -59,7 +59,7 @@ export function render(data) {
         <div class="terminal-window" style="flex:1;">
             <div class="term-header">
                 <div class="term-dot red"></div><div class="term-dot yellow"></div><div class="term-dot green"></div>
-                <span class="mono" style="margin-left:auto; font-size:16px; color:#666;">tree</span>
+                <span class="mono" style="margin-left:auto; font-size:16px; color:#ffffff;">tree</span>
             </div>
             <div class="term-body" style="padding:16px 20px;">
                 ${treeHTML}
@@ -71,11 +71,7 @@ export function render(data) {
             <span style="font-size:24px;">📂</span>
             <span style="font-size:22px; color:#e2e8f0; line-height:1.5;">${TemplateUtils.renderEditable('DESCRIPTION', `${esc(d.DESCRIPTION)}`, data._overrides)}</span>
         </div>
-
-        <!-- Footer -->
-        <div style="margin-top:auto; display:flex; align-items:center; opacity:0.5;">
-            <div style="width:40px; height:4px; background:var(--accent-color); margin-right:16px;"></div>
-            <span class="mono" style="letter-spacing:2px; font-size:14px;">CYBER-CANVAS // TREE</span>
+            
         </div>
     </div>
 

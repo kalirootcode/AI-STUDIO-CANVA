@@ -17,19 +17,24 @@ export const TemplateUtils = {
         `;
     },
 
-    // Returns the centered Logo + Text structure for standard templates
+    // Returns the centered Logo + Text structure for standard templates (Standardized v2)
     renderBrandHeader() {
         return `
             <div class="brand-header-global" style="
                 display: flex; flex-direction: column; align-items: center; justify-content: center;
-                margin-bottom: 20px; width: 100%; padding-top: 10px;
+                width: 100%; 
+                height: 150px; /* Fixed height for consistency */
+                padding-top: 30px; 
+                margin-bottom: 20px;
+                box-sizing: border-box;
             ">
-                <img src="../assets/kr-clidn-logo.png" style="width: 70px; height: 70px; margin-bottom: 8px; filter: drop-shadow(0 0 10px rgba(0,217,255,0.5));" />
+                <img src="../assets/kr-clidn-logo.png" style="width: 80px; height: 80px; margin-bottom: 12px; filter: drop-shadow(0 0 15px rgba(0,217,255,0.6)); object-fit: contain;" />
                 <!-- Text -->
                 <div style="
                     font-family: 'JetBrains Mono', monospace; font-weight: 800; 
-                    font-size: 20px; letter-spacing: 4px; color: #fff;
-                    text-shadow: 0 0 15px rgba(0,217,255,0.4);
+                    font-size: 24px; letter-spacing: 6px; color: #fff;
+                    text-shadow: 0 0 20px rgba(0,217,255,0.5);
+                    text-transform: uppercase;
                 ">KR-CLIDN</div>
             </div>
         `;
@@ -206,6 +211,84 @@ export const TemplateUtils = {
                     document.removeEventListener('mouseup', onMouseUp);
                 }
             })();
+        </script>
+        `;
+    },
+
+    // 6. Cyber Effects Script (Matrix Rain)
+    getCyberEffectsScript() {
+        return `
+        <script>
+            window.startMatrixRain = function(containerId, useThemeColor = true) {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+
+                const canvas = document.createElement('canvas');
+                canvas.style.position = 'absolute';
+                canvas.style.top = '0';
+                canvas.style.left = '0';
+                canvas.style.width = '100%';
+                canvas.style.height = '100%';
+                canvas.style.zIndex = '0'; // Behind content but in front of bg
+                container.appendChild(canvas);
+
+                const ctx = canvas.getContext('2d');
+                let width, height;
+                let drops = [];
+
+                function resize() {
+                    width = canvas.width = container.offsetWidth;
+                    height = canvas.height = container.offsetHeight;
+                    const fontSize = 16;
+                    const columns = Math.ceil(width / fontSize);
+                    drops = [];
+                    for (let i = 0; i < columns; i++) {
+                        drops[i] = Math.random() * -100;
+                    }
+                }
+                
+                new ResizeObserver(resize).observe(container);
+                resize();
+
+                const chars = "0123456789ABCDEF<>/{}[]*&^%$#@!qwertyuiopasdfghjklzxcvbnm";
+                const fontSize = 16;
+                // Cache computed style helper
+                const docStyle = getComputedStyle(document.documentElement);
+
+                function draw() {
+                    ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+                    ctx.fillRect(0, 0, width, height);
+
+                    // Dynamic Color
+                    let color = '#00D9FF';
+                    if (useThemeColor) {
+                        color = docStyle.getPropertyValue('--primary-color').trim() || '#00D9FF';
+                    } else if (typeof useThemeColor === 'string') {
+                         color = useThemeColor;
+                    }
+
+                    ctx.fillStyle = color;
+                    ctx.font = \`\${fontSize}px monospace\`;
+
+                    for (let i = 0; i < drops.length; i++) {
+                        const text = chars.charAt(Math.floor(Math.random() * chars.length));
+                        const x = i * fontSize;
+                        const y = drops[i] * fontSize;
+
+                        if (Math.random() > 0.98) {
+                             ctx.fillStyle = '#fff'; // Sparkle
+                        } else {
+                             ctx.fillStyle = color;
+                        }
+                        ctx.fillText(text, x, y);
+
+                        if (y > height && Math.random() > 0.975) drops[i] = 0;
+                        drops[i]++;
+                    }
+                    requestAnimationFrame(draw);
+                }
+                draw();
+            };
         </script>
         `;
     }

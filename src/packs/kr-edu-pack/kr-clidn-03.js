@@ -44,20 +44,16 @@ export function render(data) {
                     <span class="mono" style="font-size: 28px; font-weight: 800; color: var(--primary-color);">${esc(o.FLAG)}</span>
                 </div>
                 <div class="mono" style="font-size: 24px; font-weight: 700; color: #fff; margin-bottom: 8px;">${esc(o.NAME)}</div>
-                <div style="font-size: 20px; color: #94a3b8; line-height: 1.4;">${esc(o.DESCRIPTION)}</div>
+                <div style="font-size: 20px; color: #ffffff; line-height: 1.4;">${esc(o.DESCRIPTION)}</div>
             </div>`).join('')}
         </div>
 
         <!-- Tip -->
         <div class="glass-panel" style="border-color: var(--warning-color);">
             <div class="mono" style="font-size: 22px; font-weight: 700; color: var(--warning-color); margin-bottom: 8px;">💡 ${esc(d.TIP_TITLE)}</div>
-            <div style="font-size: 20px; color: #94a3b8;">${esc(d.TIP_CONTENT)}</div>
+            <div style="font-size: 20px; color: #ffffff;">${esc(d.TIP_CONTENT)}</div>
         </div>
-
-        <!-- Footer -->
-        <div style="margin-top: auto; display:flex; align-items:center; opacity:0.5;">
-            <div style="width:40px; height:4px; background:var(--accent-color); margin-right:16px;"></div>
-            <span class="mono" style="letter-spacing:2px; font-size:14px;">CYBER-CANVAS // OPTIONS</span>
+            
         </div>
     </div>
 

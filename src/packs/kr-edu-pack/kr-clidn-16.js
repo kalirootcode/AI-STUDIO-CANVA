@@ -22,7 +22,7 @@ export function render(data) {
     const renderList = (items, icon, color) => items.map(i => `
         <div style="display:flex; align-items:flex-start; gap:10px; margin-bottom:10px;">
             <span style="color:${color}; font-size:22px; margin-top:2px;">${icon}</span>
-            <span style="font-size:22px; color:#94a3b8; line-height:1.4;">${esc(i.TEXT)}</span>
+            <span style="font-size:22px; color:#ffffff; line-height:1.4;">${esc(i.TEXT)}</span>
         </div>`).join('');
 
     return `<!DOCTYPE html>
@@ -71,11 +71,7 @@ export function render(data) {
             <span style="font-size:24px;">⚖️</span>
             <span style="font-size:22px; color:#e2e8f0; line-height:1.4;">${esc(d.BOTTOM_TIP)}</span>
         </div>
-
-        <!-- Footer -->
-        <div style="margin-top:auto; display:flex; align-items:center; opacity:0.5;">
-            <div style="width:40px; height:4px; background:var(--accent-color); margin-right:16px;"></div>
-            <span class="mono" style="letter-spacing:2px; font-size:14px;">CYBER-CANVAS // PRÁCTICAS</span>
+            
         </div>
     </div>
 

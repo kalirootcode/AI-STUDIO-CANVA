@@ -27,13 +27,13 @@ export function render(data) {
         }
     `;
 
-    const rawTitle = data.TITLE || data.title || '3 HERRAMIENTAS *OCULTAS* DE *KALI*';
+    const rawTitle = data.TITLE || data.title || 'Así un *HACKER* tomó el control sin *DESCARGAR* nada';
     const subtitle = data.SUBTITLE || data.subtitle || 'El <span class="highlight">94%</span> de hackers NUNCA las encuentra';
     const category = data.CATEGORY || data.category || 'CLASIFICADO';
     const slideIndex = data.SLIDE_INDEX || 1;
     const totalSlides = data.TOTAL_SLIDES || 5;
 
-    // Title Formatting Logic (Keep existing logic)
+    // Title Formatting Logic — Clean colon prefixes
     let cleanTitle = rawTitle;
     if (cleanTitle.includes(':')) {
         const parts = cleanTitle.split(':');
@@ -41,62 +41,72 @@ export function render(data) {
     }
     if (!cleanTitle) cleanTitle = rawTitle;
 
+    // ── DYNAMIC FONT SIZE based on word count ──
+    // 5 words → 82px, 8 words → 72px, 12 words → 60px, 15+ words → 52px
+    function calcTitleSize(text) {
+        const wordCount = text.split(/\s+/).filter(w => w.length > 0).length;
+        if (wordCount <= 5) return 82;
+        if (wordCount >= 15) return 52;
+        // Linear interpolation between 82px (5 words) and 52px (15 words)
+        return Math.round(82 - ((wordCount - 5) * 3));
+    }
+
+    const titleFontSize = calcTitleSize(cleanTitle);
+
     function formatTitle(titleStr) {
-        // 0. Robust Decode: Handle multiple levels of escaping (e.g., &amp;amp;#039;)
+        // 0. Robust Decode: Handle multiple levels of escaping
         let decoded = titleStr;
         const txt = document.createElement("textarea");
-
-        // Loop to peel off layers of escaping (max 3 to avoid infinite loops)
         for (let i = 0; i < 3; i++) {
             if (!decoded || !decoded.includes('&')) break;
             txt.innerHTML = decoded;
             decoded = txt.value;
         }
-
-        // Manual cleanup for stubborn entities if browser didn't catch them
         decoded = decoded.replace(/&#039;/g, "'").replace(/&quot;/g, '"').replace(/&amp;/g, '&');
 
-        // 1. Security: Escape HTML first (Fresh start)
+        // 1. Security: Escape HTML
         let safeStr = TemplateUtils.escapeHTML(decoded);
-
-        const words = safeStr.split(' ');
-        const lines = [];
-        let currentLine = [];
-
-        // Smart Highlight regex (Removed single letters to avoid breaking HTML attributes)
-        const keywords = /\b(HACKING|HACKER|KALI|LINUX|SHODAN|NMAP|WIFI|PASSWORD|CRACK|HIDDEN|SECRET|DARK|DEEP|WEB|TOR|VPN|PROXY|GOD|MODE|ROOT|ADMIN|SYSTEM|ERROR|BUG|ZERO|DAY|EXPLOIT|PAYLOAD|ATTACK|DEFENSE|CTF|OSINT|SOCIAL|ENGINEERING|PHISHING|WIFI|NETWORK|TRAFFIC|SNIFFING|SPOOFING|MITM|DOS|DDOS|BOTNET|MALWARE|RANSOMWARE|VIRUS|TROJAN|WORM|SPYWARE|KEYLOGGER|BACKDOOR|ROOTKIT|BOOTKIT|RAT|C2|COMMAND|CONTROL|SERVER|CLIENT|DATABASE|SQL|INJECTION|XSS|CSRF|RCE|LFI|RFI|SSRF|XXE|DESERIALIZATION|BUFFER|OVERFLOW|HEAP|STACK|FORMAT|STRING|RACE|CONDITION|LOGIC|FLAW|VULNERABILITY|EXPOSURE|DISCLOSURE|LEAK|BREACH|COMPROMISE|INCIDENT|RESPONSE|FORENSIC|ANALYSIS|REVERSE|ENGINEERING|ASSEMBLY|DEBUGGER|DISASSEMBLER|HEX|BINARY|CODE|SCRIPT|PYTHON|BASH|POWERSHELL|JAVASCRIPT|PHP|JAVA|CPP|GO|RUST|RUBY|PERL|LUA|HTML|CSS|REACT|ANGULAR|VUE|NODE|DENO|EXPRESS|DJANGO|FLASK|SPRING|BOOT|DOTNET|AWS|AZURE|GCP|CLOUD|DOCKER|KUBERNETES|CONTAINER|VIRTUAL|MACHINE|VM|HYPERVISOR|VMWARE|VIRTUALBOX|QEMU|KVM|XEN|ESXI|PROXMOX|OPENVPN|WIREGUARD|IPSEC|SSL|TLS|SSH|FTP|SFTP|SCP|TFTP|TELNET|SMTP|POP3|IMAP|DNS|DHCP|ARP|ICMP|TCP|UDP|IPV4|IPV6|MAC|ADDRESS|SUBNET|MASK|GATEWAY|ROUTER|SWITCH|FIREWALL|IDS|IPS|WAF|SIEM|SOC|NOC|CERT|CSIRT|CISO|CIO|CTO|CEO|CFO|COO|CMO|HR|LEGAL|FINANCE|SALES|MARKETING|SUPPORT|DEV|OPS|DEVOPS|SEC|DEVSEC|AGILE|SCRUM|KANBAN|LEAN|WATERFALL|SDLC|CI|CD|PIPELINE|GIT|GITHUB|GITLAB|BITBUCKET|JIRA|CONFLUENCE|SLACK|DISCORD|TELEGRAM|SIGNAL|WHATSAPP|MESSENGER|FACEBOOK|INSTAGRAM|TWITTER|LINKEDIN|YOUTUBE|TIKTOK|SNAPCHAT|REDDIT|PINTEREST|TUMBLR|MEDIUM|WORDPRESS|JOOMLA|DRUPAL|MAGENTO|SHOPIFY|PRESTASHOP|WIX|SQUARESPACE|WEEBLY|GHOST|STRAPI|NETLIFY|VERCEL|HEROKU|DIGITALOCEAN|LINODE|VULTR|HETZNER|OVH|AMAZON|GOOGLE|IBM|MICROSOFT|ORACLE)\b/i;
 
         // Check for manual stars *before* processing lines
         const hasManualHighlight = safeStr.includes('*');
 
+        // 2. Smart Line Breaking — max 4 words per line, break on long words
+        const words = safeStr.split(/\s+/).filter(w => w.length > 0);
+        const maxWordsPerLine = words.length <= 6 ? 3 : 4;
+        const lines = [];
+        let currentLine = [];
+
         for (let i = 0; i < words.length; i++) {
             currentLine.push(words[i]);
-            if (currentLine.length === 3 || (words[i].length > 8 && currentLine.length >= 2)) {
+            if (currentLine.length >= maxWordsPerLine ||
+                (words[i].length > 10 && currentLine.length >= 2)) {
                 lines.push(currentLine.join(' '));
                 currentLine = [];
             }
         }
         if (currentLine.length > 0) lines.push(currentLine.join(' '));
 
-        let joinedLines = lines.join('<br>'); // Note: using <br> which is HTML, so we must be careful with subsequent replaces
+        let joinedLines = lines.join('<br>');
 
+        // 3. Keyword Highlighting
         if (hasManualHighlight) {
+            // AI marked keywords with *asterisks*
             return joinedLines.replace(/\*([^\*]+)\*/g, '<span class="highlight">$1</span>');
         } else {
-            // ORDER MATTERS:
-            // 1. Highlight Keywords FIRST (on safe text).
-            // 2. Highlight Numbers SECOND.
+            // Auto-detect keywords
+            const keywords = /\b(HACKING|HACKER|KALI|LINUX|SHODAN|NMAP|WIFI|PASSWORD|CRACK|HIDDEN|SECRET|DARK|DEEP|WEB|TOR|VPN|PROXY|ROOT|ADMIN|SYSTEM|ERROR|ZERO|DAY|EXPLOIT|PAYLOAD|ATTACK|DEFENSE|CTF|OSINT|PHISHING|MALWARE|RANSOMWARE|VIRUS|TROJAN|BACKDOOR|ROOTKIT|INJECTION|XSS|CSRF|RCE|VULNERABILITY|BREACH|FORENSIC|PYTHON|BASH|POWERSHELL|CODE|SCRIPT|DOCKER|FIREWALL|SIEM|CONTROL|INVISIBLE|INDETECTABLE|PELIGRO|SECRETO|OCULTO)\b/i;
+
             let html = joinedLines.replace(new RegExp(keywords, 'gi'), match => `<span class="highlight">${match}</span>`);
             html = html.replace(/(\d+%?)/g, match => `<span class="highlight">${match}</span>`);
 
-            // 3. FALLBACK: If no highlights were applied, highlight the longest/most impactful words
+            // FALLBACK: If no highlights, pick the 2-3 most impactful words
             if (!html.includes('class="highlight"')) {
-                const plainWords = safeStr.split(/\s+/).filter(w => w.length > 3);
-                // Sort by length (longer = more impactful) and highlight top 2-3
+                const plainWords = safeStr.replace(/\*/g, '').split(/\s+/).filter(w => w.length > 3);
                 const sorted = [...plainWords].sort((a, b) => b.length - a.length);
                 const toHighlight = sorted.slice(0, Math.min(3, sorted.length));
                 for (const word of toHighlight) {
-                    html = html.replace(new RegExp(`\\b${word}\\b`, 'i'), `<span class="highlight">${word}</span>`);
+                    const escaped = word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                    html = html.replace(new RegExp(`\\b${escaped}\\b`, 'i'), `<span class="highlight">${word}</span>`);
                 }
             }
 
@@ -140,96 +150,111 @@ export function render(data) {
     <div class="bg-grid"></div>
     <div class="bg-glow"></div>
 
-    <div class="safe-zone" style="align-items: center; justify-content: center; --safe-bottom: 120px;">
-        
-        <!-- Main Content Group (Centered) -->
-        <div style="display: flex; flex-direction: column; align-items: center; width: 100%;">
-            
-            <!-- Military Header Card -->
-            <div class="military-card" style="
-                background: rgba(10,10,10,0.9);
-                border: 1px solid var(--glass-border);
-                border-top: 4px solid var(--primary-color);
-                padding: 20px 30px;
-                display: flex; align-items: center; justify-content: space-between; gap: 16px;
-                font-family: var(--font-mono);
-                box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-                width: 100%; margin: 0 auto;
-                border-radius: 4px;
-                box-sizing: border-box;
-            ">
-                <div style="font-weight: 800; letter-spacing: 2px; color: #fff; display:flex; align-items:center; gap:12px; font-size: 22px;">
-                    <img src="../assets/kr-clidn-logo-small.png" style="height:36px; width:auto;"/>
-                    KR-CLIDN
-                </div>
-                <div style="color: #333; font-size: 20px;">//</div>
-                <div style="font-weight: 700; color: var(--accent-color); letter-spacing: 1px; flex: 1; text-align: center; font-size: 20px;">⚠️ ${category}</div>
-                <div style="color: #333; font-size: 20px;">//</div>
-                <div style="color: var(--success-color); font-weight: 700; display: flex; align-items: center; gap: 8px; font-size: 18px;">
-                    <span style="font-size: 14px;">●</span> ACTIVO
+    <!-- 0. EFFECT ZONES (Top & Bottom) -->
+    <div id="cyber-rain-top" style="position: absolute; top: 0; left: 0; width: 100%; height: 500px; z-index: 5; opacity: 0.8; mask-image: linear-gradient(to bottom, black 80%, transparent);"></div>
+    <div id="cyber-rain-bottom" style="position: absolute; bottom: 0; left: 0; width: 100%; height: 500px; z-index: 5; opacity: 0.8; mask-image: linear-gradient(to top, black 80%, transparent);"></div>
+
+    <!-- 1. TOP BLOCK: Military Header (Fixed at 500px from Top) -->
+    <div style="position: absolute; top: 500px; left: 50%; transform: translateX(-50%); width: calc(100% - 100px); z-index: 10;">
+        <div class="military-card" style="
+            background: rgba(10,10,10,0.9);
+            border: 1px solid var(--glass-border);
+            border-top: 4px solid var(--primary-color);
+            padding: 20px 30px;
+            display: flex; align-items: center; justify-content: space-between; gap: 16px;
+            font-family: var(--font-mono);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            width: 100%;
+            border-radius: 4px;
+            box-sizing: border-box;
+        ">
+            <div style="font-weight: 800; letter-spacing: 2px; color: #fff; display:flex; align-items:center; gap:12px; font-size: 22px;">
+                <img src="../assets/kr-clidn-logo-small.png" style="height:50px; width:auto;"/>
+                KR-CLIDN
+            </div>
+            <div style="color: #333; font-size: 20px;">//</div>
+            <div style="font-weight: 700; color: var(--accent-color); letter-spacing: 1px; flex: 1; text-align: center; font-size: 20px;">⚠️ ${category}</div>
+            <div style="color: #333; font-size: 20px;">//</div>
+            <div style="color: var(--success-color); font-weight: 700; display: flex; align-items: center; gap: 8px; font-size: 18px;">
+                <span style="font-size: 14px;">●</span> ACTIVO
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. CENTER BLOCK: Title (Vertically & Horizontally Centered) -->
+    <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 95%; text-align: center; z-index: 20;">
+        <h1 class="cyber-title" style="
+            text-align: center; 
+            text-transform: uppercase; 
+            font-family: var(--font-military); 
+            font-size: ${titleFontSize}px;
+            line-height: 1.1;
+            margin: 0;
+            padding: 0 20px;
+            text-shadow: 4px 4px 0px #000;
+            color: #fff;
+            letter-spacing: 2px;
+        ">
+            ${TemplateUtils.renderEditable('TITLE', titleHtml, data._overrides)}
+        </h1>
+    </div>
+
+    <!-- 3. BOTTOM BLOCK: Terminal & Hex (Fixed at 500px from Bottom) -->
+    <div style="position: absolute; bottom: 500px; left: 50%; transform: translateX(-50%); width: calc(100% - 100px); z-index: 10;">
+        <!-- Terminal Preview -->
+        <div class="terminal-window" style="
+            border: 2px solid var(--primary-color);
+            box-shadow: 0 0 20px color-mix(in srgb, var(--primary-color) 20%, transparent), inset 0 0 20px color-mix(in srgb, var(--primary-color) 5%, transparent);
+            background: rgba(5, 5, 5, 0.95);
+        ">
+            <div class="term-header" style="border-bottom: 1px solid var(--primary-color); background: color-mix(in srgb, var(--primary-color) 10%, transparent);">
+                <div class="term-dot red"></div>
+                <div class="term-dot yellow"></div>
+                <div class="term-dot green"></div>
+                <span style="margin-left: 10px; color: var(--primary-color); font-family: var(--font-mono); font-weight:bold; letter-spacing:1px;">kali_secrets.sh</span>
+            </div>
+            <div class="term-body" style="text-align: center; color: #ffffff; padding: 30px;">
+                <div style="font-size: 24px; line-height: 1.5; font-family: var(--font-mono);">
+                    ${TemplateUtils.renderEditable('SUBTITLE', `<div>${subtitle}</div>`, data._overrides)}
                 </div>
             </div>
-
-            <!-- Main Title (Sharp & Static) -->
-            <h1 class="cyber-title" style="
-                text-align: center; 
-                text-transform: uppercase; 
-                font-family: var(--font-military); 
-                font-size: 80px;
-                line-height: 1;
-                margin: 120px 0;
-                max-width: 95%;
-                text-shadow: 4px 4px 0px #000; /* Sharp solid shadow for contrast */
-                color: #fff;
-                letter-spacing: 2px;
-            ">
-                ${TemplateUtils.renderEditable('TITLE', titleHtml, data._overrides)}
-            </h1>
-
-            <!-- Terminal Preview (Cyan Border + White Text) -->
-            <div class="terminal-window" style="
-                border: 2px solid var(--primary-color);
-                box-shadow: 0 0 20px color-mix(in srgb, var(--primary-color) 20%, transparent), inset 0 0 20px color-mix(in srgb, var(--primary-color) 5%, transparent);
-                background: rgba(5, 5, 5, 0.95);
-            ">
-                <div class="term-header" style="border-bottom: 1px solid var(--primary-color); background: color-mix(in srgb, var(--primary-color) 10%, transparent);">
-                    <div class="term-dot red"></div>
-                    <div class="term-dot yellow"></div>
-                    <div class="term-dot green"></div>
-                    <span style="margin-left: 10px; color: var(--primary-color); font-family: var(--font-mono); font-weight:bold; letter-spacing:1px;">kali_secrets.sh</span>
-                </div>
-                <div class="term-body" style="text-align: center; color: #ffffff; padding: 30px;">
-                    <div style="font-size: 24px; line-height: 1.5; font-family: var(--font-mono);">
-                        ${TemplateUtils.renderEditable('SUBTITLE', `<div>${subtitle}</div>`, data._overrides)}
-                    </div>
-                </div>
-            </div>
-
-            <!-- Hex Ornament -->
-            <div style="
-                display: flex; align-items: center; justify-content: center; gap: 15px; 
-                font-family: var(--font-mono); font-size: 14px; 
-                color: var(--primary-color); opacity: 0.6;
-                margin-top: 30px;
-            ">
-                <div style="height: 1px; width: 40px; background: var(--primary-color);"></div>
-                <div style="letter-spacing: 2px;">0x4B414C49</div> 
-                <div style="width: 6px; height: 6px; background: var(--accent-color); transform: rotate(45deg);"></div>
-                <div style="letter-spacing: 2px;">0x534543</div>
-                <div style="height: 1px; width: 40px; background: var(--primary-color);"></div>
-            </div>
-
         </div>
 
-        <!-- System Footer (Absolute, ignored by flex center) -->
-        <div style="position: absolute; bottom: 40px; opacity: 0.5; font-size: 12px; font-family: var(--font-mono); letter-spacing: 4px; text-align: center; width: 100%;">
-            AWAITING INPUT...
+        <!-- Hex Ornament -->
+        <div style="
+            display: flex; align-items: center; justify-content: center; gap: 15px; 
+            font-family: var(--font-mono); font-size: 14px; 
+            color: var(--primary-color); opacity: 0.6;
+            margin-top: 20px;
+        ">
+            <div style="height: 1px; width: 40px; background: var(--primary-color);"></div>
+            <div style="letter-spacing: 2px;">0x4B414C49</div> 
+            <div style="width: 6px; height: 6px; background: var(--accent-color); transform: rotate(45deg);"></div>
+            <div style="letter-spacing: 2px;">0x534543</div>
+            <div style="height: 1px; width: 40px; background: var(--primary-color);"></div>
         </div>
+    </div>
 
+    <!-- System Footer (Absolute, ignored by flex center) -->
+    <div style="position: absolute; bottom: 40px; opacity: 0.5; font-size: 12px; font-family: var(--font-mono); letter-spacing: 4px; text-align: center; width: 100%;">
+        AWAITING INPUT...
     </div>
 
     <!-- Auto Fit Script -->
     ${TemplateUtils.getAutoFitScript()}
+    
+    <!-- Matrix Rain Inject -->
+    ${TemplateUtils.getCyberEffectsScript()}
+    <script>
+        window.addEventListener('load', () => {
+             if(window.startMatrixRain) {
+                 // Top: Dynamic Theme Color
+                 window.startMatrixRain('cyber-rain-top', true); 
+                 // Bottom: Dynamic Theme Color
+                 window.startMatrixRain('cyber-rain-bottom', true);
+             }
+        });
+    </script>
 
 </body>
 </html>`;

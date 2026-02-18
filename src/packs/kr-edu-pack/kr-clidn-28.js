@@ -25,7 +25,7 @@ export function render(data) {
     const cmdsHTML = d.COMMANDS.map(c => `
         <div style="display:flex; justify-content:space-between; align-items:center; padding:16px 20px; background:#0a0a0a; border:1px solid rgba(0,217,255,0.08); border-radius:10px;">
             <code style="font-family:var(--font-mono); font-size:24px; color:var(--primary-color); font-weight:700;">${esc(c.CMD)}</code>
-            <span style="font-size:20px; color:#64748b;">${esc(c.DESC)}</span>
+            <span style="font-size:20px; color:#ffffff;">${esc(c.DESC)}</span>
         </div>`).join('');
 
     return `<!DOCTYPE html>
@@ -60,14 +60,11 @@ export function render(data) {
         <!-- Note -->
         <div class="glass-panel" style="display:flex; gap:14px; align-items:flex-start;">
             <span style="font-size:22px;">💾</span>
-            <span style="font-size:20px; color:#94a3b8; line-height:1.5;">${esc(d.NOTE)}</span>
+            <span style="font-size:20px; color:#ffffff; line-height:1.5;">${esc(d.NOTE)}</span>
         </div>
 
         <!-- Footer -->
-        <div style="display:flex; align-items:center; opacity:0.5;">
-            <div style="width:40px; height:4px; background:var(--accent-color); margin-right:16px;"></div>
-            <span class="mono" style="letter-spacing:2px; font-size:14px;">CYBER-CANVAS // CHEATSHEET</span>
-        </div>
+        
     </div>
 
     ${TemplateUtils.getAutoFitScript()}

@@ -266,19 +266,56 @@ class App {
 
             // 4. Parse JSON
             let slidesData;
+            let seoData = {};
             try {
-                // Remove potential markdown fences if backend didn't clean them
+                // Remove potential markdown fences using Regex (Robust)
                 let cleanCode = result.code;
-                if (cleanCode.startsWith('```json')) cleanCode = cleanCode.slice(7);
-                if (cleanCode.startsWith('```')) cleanCode = cleanCode.slice(3);
-                if (cleanCode.endsWith('```')) cleanCode = cleanCode.slice(0, -3);
+                const jsonMatch = cleanCode.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
+                if (jsonMatch) {
+                    cleanCode = jsonMatch[1];
+                } else {
+                    // Fallback: Try to find the first { or [ 
+                    const firstCurly = cleanCode.indexOf('{');
+                    const firstBracket = cleanCode.indexOf('[');
 
-                slidesData = JSON.parse(cleanCode);
+                    if (firstCurly !== -1 && (firstBracket === -1 || firstCurly < firstBracket)) {
+                        // Object wrapper (has seo + slides)
+                        const lastCurly = cleanCode.lastIndexOf('}');
+                        if (lastCurly !== -1) {
+                            cleanCode = cleanCode.substring(firstCurly, lastCurly + 1);
+                        }
+                    } else if (firstBracket !== -1) {
+                        const lastBracket = cleanCode.lastIndexOf(']');
+                        if (lastBracket !== -1) {
+                            cleanCode = cleanCode.substring(firstBracket, lastBracket + 1);
+                        }
+                    }
+                }
 
-                if (!Array.isArray(slidesData)) throw new Error("La respuesta no es un array.");
+                const responseData = JSON.parse(cleanCode);
+
+                // Handle new Object structure { seo, slides } vs legacy Array
+                slidesData = [];
+
+                if (Array.isArray(responseData)) {
+                    slidesData = responseData;
+                } else if (responseData.slides && Array.isArray(responseData.slides)) {
+                    slidesData = responseData.slides;
+                    seoData = responseData.seo || {};
+                } else {
+                    throw new Error("La respuesta no es válida (Falta array de slides).");
+                }
+
             } catch (jsonErr) {
-                console.error("JSON Parse Error:", result.code);
+                console.error("JSON Parse Error:", jsonErr, result.code);
                 throw new Error("La IA no devolvió un JSON válido. Intenta de nuevo.");
+            }
+
+            // Update SEO UI (outside try so it always runs after successful parse)
+            console.log("📝 SEO Data:", JSON.stringify(seoData));
+            const studio = this.viewManager.views['studio'];
+            if (studio && studio.updateSEO) {
+                studio.updateSEO(seoData);
             }
 
             // 5. Render Slides
@@ -419,11 +456,20 @@ class App {
 
             if (!result.success) throw new Error(result.error);
 
-            // 3. Parse Result
+            // 3. Parse Result (Robust)
             let cleanCode = result.code;
-            if (cleanCode.startsWith('```json')) cleanCode = cleanCode.slice(7);
-            if (cleanCode.startsWith('```')) cleanCode = cleanCode.slice(3);
-            if (cleanCode.endsWith('```')) cleanCode = cleanCode.slice(0, -3);
+            const jsonMatch = cleanCode.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
+            if (jsonMatch) {
+                cleanCode = jsonMatch[1];
+            } else {
+                // Fallback: Try to find the first { and last } (assuming object for refine)
+                // Refine usually returns an object, not array.
+                const firstBracket = cleanCode.indexOf('{');
+                const lastBracket = cleanCode.lastIndexOf('}');
+                if (firstBracket !== -1 && lastBracket !== -1) {
+                    cleanCode = cleanCode.substring(firstBracket, lastBracket + 1);
+                }
+            }
 
             const updatedData = JSON.parse(cleanCode);
 

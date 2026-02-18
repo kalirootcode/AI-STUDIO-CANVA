@@ -43,7 +43,7 @@ export function render(data) {
             filter: drop-shadow(0 0 30px rgba(0,217,255,0.4));
         }
         .stat-label {
-            font-size: 24px; color: #94a3b8; margin-top: 12px;
+            font-size: 24px; color: #ffffff; margin-top: 12px;
             position: relative;
         }
     </style>
@@ -77,7 +77,7 @@ export function render(data) {
             </div>
         </div>
 
-        <div style="font-size: 22px; color: #94a3b8; margin-bottom: 20px; line-height: 1.5;">${esc(d.RESULT_TEXT)}</div>
+        <div style="font-size: 22px; color: #ffffff; margin-bottom: 20px; line-height: 1.5;">${esc(d.RESULT_TEXT)}</div>
 
         <!-- Big Stat -->
         <div class="stat-hero">
@@ -90,14 +90,10 @@ export function render(data) {
             <span style="font-size: 26px;">💡</span>
             <div>
                 <div class="mono" style="font-size: 20px; font-weight: 600; color: var(--primary-color); margin-bottom: 4px;">${esc(d.TIP_TITLE)}</div>
-                <div style="font-size: 20px; color: #94a3b8; line-height: 1.5;">${esc(d.TIP_CONTENT)}</div>
+                <div style="font-size: 20px; color: #ffffff; line-height: 1.5;">${esc(d.TIP_CONTENT)}</div>
             </div>
         </div>
-
-        <!-- Footer -->
-        <div style="margin-top: auto; display:flex; align-items:center; opacity:0.5;">
-            <div style="width:40px; height:4px; background:var(--accent-color); margin-right:16px;"></div>
-            <span class="mono" style="letter-spacing:2px; font-size:14px;">CYBER-CANVAS // STATS</span>
+            
         </div>
     </div>
 

@@ -15,7 +15,7 @@ class ContentEngine {
             COVER: {
                 id: 'kr-clidn-01',
                 desc: 'Portada viral',
-                schema: `"TITLE": "Título agresivo", "SUBTITLE": "Promesa o dato", "CATEGORY": "Categoría"`
+                schema: `"TITLE": "Título GANCHO de 5-15 palabras que genere CURIOSIDAD y RETENCIÓN. Usa *asteriscos* alrededor de 2-3 palabras clave para resaltarlas. Ej: 'Así un *HACKER* tomó el control sin *DESCARGAR* nada'", "SUBTITLE": "Promesa o dato impactante con número", "CATEGORY": "Categoría"`
             },
             HOOK: {
                 id: 'kr-clidn-19',
@@ -361,15 +361,23 @@ OBJETIVO: Generar un post tipo "${mode}" con estructura narrativa perfecta.
 
 ${indexConfig}
 
-ESTRUCTURA DEL ARRAY JSON SOLICITADO (NO CAMBIES EL ORDEN):
-[${slideInstructions}
-]
+ESTRUCTURA DEL OBJETO JSON SOLICITADO (NO CAMBIES EL ORDEN):
+{
+    "seo": {
+        "description": "Escribe aquí una descripción VIRAL para Instagram/LinkedIn/TikTok sobre este post. Usa ganchos, dolor y solución. Máximo 300 caracteres.",
+        "hashtags": "#Ciberseguridad #Hacking #KaliLinux #..."
+    },
+    "slides": [
+        ${slideInstructions}
+    ]
+}
 
 REGLAS:
 1. Genera JSON válido.
 2. Contenido 100% en Español.
 3. Se profundo y técnico.
 4. Asegura que el Slide 2 (Índice) refleje REALMENTE lo que viene después.
+5. NO incluyas markdown fences (\`\`\`) si es posible, o asegúrate de que sea JSON puro.
 
 RETORNA SOLO EL JSON.`;
     }

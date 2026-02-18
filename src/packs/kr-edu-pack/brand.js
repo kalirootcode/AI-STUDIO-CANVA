@@ -14,11 +14,11 @@ export const COLORS = {
     primaryDark: '#1E3A8A',   // Dark blue
     accent: '#4DD9C0',        // Teal/cyan (jaw)
     accentDark: '#2DD4A8',    // Darker teal
-    grayBlue: '#64748B',      // Gray-blue (accent lines)
+    grayBlue: '#ffffff',      // Gray-blue (accent lines)
     bg: '#000000',            // Pure black background
     surface: '#0a0a12',       // Slightly lighter surface
     text: '#FFFFFF',          // White text
-    textMuted: '#94A3B8',     // Muted text
+    textMuted: '#ffffff',     // Muted text
     textDim: 'rgba(255,255,255,0.3)', // Dim text
     success: '#00FF88',       // Green for success/terminal
     warning: '#FF9500',       // Orange warning
