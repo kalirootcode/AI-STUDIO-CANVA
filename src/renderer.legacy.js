@@ -34,6 +34,9 @@ async function initTemplates() {
     console.log("Iniciando carga de packs y templates...");
     templateEngine = new TemplateEngine();
 
+    // Load shared CSS first (inline injection for srcdoc iframes)
+    await templateEngine.loadSharedAssets();
+
     // Cargar packs desde el sistema de archivos (nueva estructura plana)
     const packsMeta = await templateEngine.loadFromPacks();
 
@@ -98,9 +101,33 @@ function selectPack(packId) {
 // GENERACIÓN DE CARRUSEL CON IA
 // ═══════════════════════════════════════════════════════════════════════════
 
+// Cargar API Key al inicio
+document.addEventListener('DOMContentLoaded', async () => {
+    const providerSelect = document.getElementById('aiProvider');
+    const keyInput = document.getElementById('apiKey');
+
+    async function loadKey() {
+        const provider = providerSelect.value;
+        const key = await window.cyberCanvas.getEnvKey(provider);
+        if (key) {
+            keyInput.value = key;
+            console.log(`API Key para ${provider} cargada desde .env`);
+        } else {
+            keyInput.value = '';
+        }
+    }
+
+    // Cargar inicial
+    await loadKey();
+
+    // Recargar al cambiar proveedor
+    providerSelect.addEventListener('change', loadKey);
+});
+
 async function generateWithAI() {
     console.log("Iniciando generateWithAI...");
     const theme = document.getElementById('themeInput').value.trim();
+    console.log("DEBUG - THEME INPUT VALUE:", theme);
     const provider = document.getElementById('aiProvider').value;
     const apiKey = document.getElementById('apiKey').value.trim();
 
@@ -140,8 +167,22 @@ async function generateWithAI() {
         showProgress(5, '🧠 Analizando tema y eligiendo plantillas...');
 
         // 1. Construir prompt MAESTRO v2
-        const prompt = carouselEngine.buildCarouselPrompt(theme, selectedPackId);
+        let prompt;
+        const slideCount = document.getElementById('slideCount').value || 10;
+
+        // Check if ContentEngine is available (Professional Logic)
+        if (typeof ContentEngine !== 'undefined') {
+            console.log(`🚀 Usando ContentEngine (Logic Prop: ${slideCount} slides)...`);
+            if (!window.contentEngine) window.contentEngine = new ContentEngine();
+            prompt = window.contentEngine.generatePrompt(theme, slideCount);
+        } else {
+            console.warn("⚠️ ContentEngine no encontrado, usando lógica legacy...");
+            prompt = carouselEngine.buildCarouselPrompt(theme, selectedPackId);
+        }
         console.log("Prompt Carrusel (tamaño):", prompt.length, "chars");
+
+        // Guardar Key automáticamente
+        window.cyberCanvas.saveEnvKey({ provider, key: apiKey });
 
         showProgress(15, `📡 Enviando a ${provider.toUpperCase()} (esto toma ~15s)...`);
 

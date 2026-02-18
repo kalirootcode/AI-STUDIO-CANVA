@@ -15,7 +15,12 @@ contextBridge.exposeInMainWorld('cyberCanvas', {
 
     // Generar SEO Viral
     generateSEO: (options) => ipcRenderer.invoke('generate-seo', options),
+    log: (level, message, ...args) => ipcRenderer.send('log-message', { level, message, args }),
 
     // Cargar packs de templates
-    loadPacks: () => ipcRenderer.invoke('load-packs')
+    loadPacks: () => ipcRenderer.invoke('load-packs'),
+
+    // Persistencia API Keys
+    getEnvKey: (provider) => ipcRenderer.invoke('get-env-key', provider),
+    saveEnvKey: (options) => ipcRenderer.invoke('save-env-key', options)
 });

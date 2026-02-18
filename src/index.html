@@ -4,205 +4,64 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cyber-Canvas AI Studio</title>
+    <title>Cyber-Canvas AI Studio v2</title>
+
+    <!-- Fonts -->
+    <script>
+        window.onerror = function (message, source, lineno, colno, error) {
+            if (window.cyberCanvas && window.cyberCanvas.log) {
+                window.cyberCanvas.log('error', 'Uncaught Exception:', { message, source, lineno, colno, stack: error ? error.stack : 'No stack' });
+            } else {
+                console.error('Uncaught Exception (Pre-Bridge):', message, source, lineno, colno, error);
+            }
+        };
+        window.onunhandledrejection = function (event) {
+            if (window.cyberCanvas && window.cyberCanvas.log) {
+                window.cyberCanvas.log('error', 'Unhandled Rejection:', { reason: event.reason });
+            } else {
+                console.error('Unhandled Rejection (Pre-Bridge):', event.reason);
+            }
+        };
+    </script>
     <link
         href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
         rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+    <!-- Styles -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.css">
     <link rel="stylesheet"
         href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/theme/material-darker.min.css">
-    <link rel="stylesheet" href="styles.css">
-    <style>
-        .provider-select {
-            background: #1a1a1a;
-            color: #fff;
-            border: 1px solid #333;
-            padding: 8px;
-            border-radius: 6px;
-            margin-right: 8px;
-            font-family: 'Inter', sans-serif;
-            font-size: 14px;
-        }
-
-        .provider-select:focus {
-            border-color: #00D4FF;
-            outline: none;
-        }
-    </style>
+    <link rel="stylesheet" href="styles/shell.css">
+    <!-- Legacy styles migrated to shell.css -->
 </head>
 
 <body>
-    <!-- Header -->
-    <header class="header">
-        <div class="header-left">
-            <img src="../assets/logo.png" alt="Logo" class="logo">
-            <div class="brand">
-                <span class="brand-name">CYBER<span class="accent">-CANVAS</span></span>
-                <span class="brand-subtitle">AI STUDIO</span>
-            </div>
-        </div>
-        <div class="header-right">
-            <div class="api-input-group">
-                <select id="aiProvider" class="provider-select"
-                    onchange="document.getElementById('apiKey').placeholder = this.value === 'gemini' ? 'GEMINI API KEY' : 'GROQ API KEY'">
-                    <option value="groq">GROQ (Llama 3)</option>
-                    <option value="gemini">GEMINI (Pro 1.5)</option>
-                </select>
-                <input type="password" id="apiKey" placeholder="GROQ API KEY" class="api-input">
-            </div>
-        </div>
-    </header>
 
-    <!-- Main Content -->
-    <main class="main-content">
-        <!-- Editor Panel -->
-        <!-- Left Column (Data + Code) -->
-        <div class="left-column">
-            <!-- Data Editor Panel -->
-            <section class="panel data-panel">
-                <div class="panel-header">
-                    <span class="panel-icon">⚡</span>
-                    <span class="panel-title">DATA EDITOR</span>
-                </div>
-                <div id="dataEditorPanel" class="panel-content">
-                    <!-- Dynamic Inputs -->
-                </div>
-            </section>
+    <!-- App Container will be injected here by Sidebar + ViewManager -->
+    <div id="app-shell" style="display: flex; width: 100vw; height: 100vh;">
+        <!-- Sidebar injected here -->
+        <main id="main-view-container">
+            <!-- Views injected here -->
+        </main>
+    </div>
 
-            <!-- Code Editor Panel -->
-            <section class="panel editor-panel">
-                <div class="panel-header">
-                    <span class="panel-icon">&lt;/&gt;</span>
-                    <span class="panel-title">CODE HTML</span>
-                    <button id="clearBtn" class="btn-icon" title="Limpiar">✕</button>
-                </div>
-                <div class="panel-content">
-                    <textarea id="editor"></textarea>
-                </div>
-            </section>
-        </div>
-
-        <!-- Preview Panel -->
-        <section class="panel preview-panel">
-            <div class="panel-header">
-                <span class="panel-icon">👁</span>
-                <span class="panel-title">PREVIEW</span>
-                <span id="previewSize" class="size-badge">1920 × 1080</span>
-            </div>
-            <div class="panel-content preview-container">
-                <iframe id="previewFrame" class="preview-frame"></iframe>
-                <div id="previewPlaceholder" class="preview-placeholder">
-                    <span class="placeholder-icon">🖼️</span>
-                    <span class="placeholder-text">Escribe código o usa AI para generar</span>
-                </div>
-            </div>
-        </section>
-
-        <!-- Controls Panel -->
-        <section class="panel controls-panel">
-            <div class="panel-header">
-                <span class="panel-icon">⚙️</span>
-                <span class="panel-title">CONTROLES</span>
-            </div>
-            <div class="panel-content controls-content">
-                <!-- Templates Gallery -->
-                <div class="control-group">
-                    <label class="control-label">📦 TEMPLATES</label>
-                    <div id="templatesGallery" class="templates-gallery">
-                        <!-- Templates se cargan dinámicamente -->
-                    </div>
-                </div>
-
-                <!-- Theme Input -->
-                <div class="control-group">
-                    <label class="control-label">🎯 TEMA</label>
-                    <textarea id="themeInput" class="textarea-input theme-input"
-                        placeholder="Ej: Técnicas de Growth Hacking para startups..."></textarea>
-                </div>
-
-                <!-- Generate Button -->
-                <button id="generateBtn" class="btn btn-ai">
-                    <span>🤖</span> GENERAR CON IA
-                </button>
-
-                <!-- SEO Viral Engine Section -->
-                <div class="control-group" style="margin-top: 20px;">
-                    <label class="control-label">🚀 SEO VIRAL ENGINE</label>
-                    <textarea id="seoOutput" class="textarea-input seo-output"
-                        placeholder="Aquí aparecerá el título, descripción y hashtags optimizados para TikTok..."
-                        readonly
-                        style="min-height: 180px; font-family: 'JetBrains Mono', monospace; font-size: 13px; line-height: 1.6;"></textarea>
-                    <div style="display: flex; gap: 10px; margin-top: 10px;">
-                        <button id="generateSEOBtn" class="btn btn-secondary" style="flex: 1;">
-                            <span>✨</span> GENERAR SEO
-                        </button>
-                        <button id="copySEOBtn" class="btn btn-accent" style="flex: 1;">
-                            <span>📋</span> COPIAR
-                        </button>
-                    </div>
-                </div>
-
-                <div class="divider"></div>
-
-                <!-- Aspect Ratio -->
-                <div class="control-group">
-                    <label class="control-label">📐 ASPECTO</label>
-                    <select id="aspectRatio" class="select-input">
-                        <option value="1920x1080">16:9 Desktop → 1920×1080</option>
-                        <option value="1080x1920" selected>9:16 Story/Reels → 1080×1920</option>
-                        <option value="1080x1080">1:1 Square → 1080×1080</option>
-                        <option value="1080x1350">4:5 Portrait → 1080×1350</option>
-                    </select>
-                </div>
-
-                <!-- Format -->
-                <div class="control-group">
-                    <label class="control-label">📁 FORMATO</label>
-                    <select id="format" class="select-input">
-                        <option value="PNG">PNG (Alta Calidad)</option>
-                        <option value="JPG">JPG</option>
-                        <option value="WEBP">WEBP</option>
-                        <option value="MP4">MP4 (Video)</option>
-                    </select>
-                </div>
-
-                <div class="divider"></div>
-
-                <div class="export-buttons-group" style="display: flex; gap: 10px;">
-                    <button id="exportSingleBtn" class="btn btn-secondary" style="flex: 1;">
-                        <span>🖼️</span> ACTUAL
-                    </button>
-                    <button id="exportBatchBtn" class="btn btn-accent" style="flex: 1;">
-                        <span>📦</span> TODO
-                    </button>
-                </div>
-
-                <!-- Progress -->
-                <div id="progressContainer" class="progress-container hidden">
-                    <div class="progress-bar">
-                        <div id="progressFill" class="progress-fill"></div>
-                    </div>
-                    <span id="progressText" class="progress-text">Procesando...</span>
-                </div>
-
-                <!-- Status -->
-                <div id="status" class="status"></div>
-            </div>
-        </section>
-    </main>
-
-    <!-- Scripts -->
+    <!-- Core Scripts -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/htmlmixed/htmlmixed.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/xml/xml.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/css/css.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/javascript/javascript.min.js"></script>
+
+    <!-- Legacy Services (Global Scope) -->
     <script type="module" src="services/IconSystem.js"></script>
     <script src="services/TemplateEngine.js"></script>
     <script src="services/CarouselEngine.js"></script>
-    <script src="renderer.js"></script>
-    <script type="module" src="services/DataEditor.js"></script>
-    <script src="seo-frontend.js"></script>
+    <script src="services/ContentEngine.js"></script>
+
+    <!-- Modular App Entry -->
+    <script type="module" src="app.js"></script>
+
 </body>
 
 </html>

@@ -27,7 +27,16 @@ function createWindow() {
 
     // Quitar menú en producción
     Menu.setApplicationMenu(null);
+
+    // DEBUG: DevTools deshabilitado para producción
+    // mainWindow.webContents.openDevTools({ mode: 'detach' });
 }
+
+// IPC: Log from Renderer to Terminal
+ipcMain.on('log-message', (event, { level, message, args }) => {
+    const timestamp = new Date().toISOString().split('T')[1].slice(0, -1);
+    console.log(`[R-${level.toUpperCase()} ${timestamp}]`, message, ...args);
+});
 
 app.whenReady().then(createWindow);
 
@@ -41,6 +50,38 @@ app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) {
         createWindow();
     }
+});
+
+// ─── DOTENV Persistencia ───
+require('dotenv').config();
+
+ipcMain.handle('get-env-key', async (event, provider) => {
+    const keyName = provider === 'gemini' ? 'GEMINI_API_KEY' : 'GROQ_API_KEY';
+    return process.env[keyName] || '';
+});
+
+ipcMain.handle('save-env-key', async (event, { provider, key }) => {
+    const keyName = provider === 'gemini' ? 'GEMINI_API_KEY' : 'GROQ_API_KEY';
+    const envPath = path.join(__dirname, '.env');
+
+    let envContent = '';
+    if (fs.existsSync(envPath)) {
+        envContent = fs.readFileSync(envPath, 'utf8');
+    }
+
+    // Check if key exists
+    const regex = new RegExp(`^${keyName}=.*`, 'm');
+    if (regex.test(envContent)) {
+        envContent = envContent.replace(regex, `${keyName}=${key}`);
+    } else {
+        envContent += `\n${keyName}=${key}`;
+    }
+
+    fs.writeFileSync(envPath, envContent.trim() + '\n');
+
+    // Update current process env
+    process.env[keyName] = key;
+    return true;
 });
 
 // ─── Helper: Preparar HTML para exportación (idéntico al previsualizador) ───
@@ -179,7 +220,7 @@ ipcMain.handle('export-batch', async (event, { slides, width, height, format, ti
         const safeTitle = (title || 'Post_Sin_Titulo')
             .replace(/[<>:"/\\|?*]/g, '')  // Eliminar caracteres no válidos
             .replace(/\s+/g, '_')           // Espacios → guiones bajos
-            .substring(0, 80);              // Limitar longitud
+            .substring(0, 50);              // Limitar longitud a 50 caracteres para evitar errores de path
 
         const outputDir = path.join(require('os').homedir(), 'Pictures', 'CyberCanvas', safeTitle);
 
@@ -219,7 +260,8 @@ ipcMain.handle('export-batch', async (event, { slides, width, height, format, ti
             // ─── Renderizado directo (idéntico al previsualizador) ───
             const finalHTML = prepareExportHTML(html, width, height);
 
-            await page.setContent(finalHTML, { waitUntil: 'networkidle0', timeout: 60000 });
+            // Optimización: Usar 'domcontentloaded' + espera explícita de fuentes es más seguro que 'networkidle0' para evitar timeouts
+            await page.setContent(finalHTML, { waitUntil: 'domcontentloaded', timeout: 30000 });
 
             // Esperar carga de fuentes y renderizado completo
             await page.evaluate(async () => {
@@ -230,8 +272,9 @@ ipcMain.handle('export-batch', async (event, { slides, width, height, format, ti
                 await new Promise(r => setTimeout(r, 1000));
             }).catch(() => { });
 
-            if (i === 0) await new Promise(resolve => setTimeout(resolve, 5000)); // Primera vez: 5s para asegurar fuentes
-            else await new Promise(resolve => setTimeout(resolve, 1500));  // Siguientes: más rápido
+            // Optimización de tiempos de espera
+            if (i === 0) await new Promise(resolve => setTimeout(resolve, 3000)); // Primera vez: 3s suficentes
+            else await new Promise(resolve => setTimeout(resolve, 500));  // Siguientes: 0.5s (muy rápido)
 
             await page.screenshot({
                 path: outputPath,
@@ -543,8 +586,11 @@ ipcMain.handle('generate-seo', async (event, { tema, nicho, apiKey }) => {
 });
 
 // IPC: Cargar Packs (nueva estructura plana)
+// IPC: Cargar Packs (nueva estructura plana) - Robustez mejorada
 ipcMain.handle('load-packs', async () => {
     try {
+        // En producción (asar) o desarrollo, ajustar ruta correctamente
+        // Se asume que src/packs está al mismo nivel que main.js o dentro de resources
         const packsDir = path.join(__dirname, 'src', 'packs');
 
         if (!fs.existsSync(packsDir)) {
@@ -561,29 +607,32 @@ ipcMain.handle('load-packs', async () => {
             const packPath = path.join(packsDir, folder.name);
             const packJsonPath = path.join(packPath, 'pack.json');
 
-            // Cada pack DEBE tener un pack.json
+            // 1. Cada pack DEBE tener un pack.json
             if (!fs.existsSync(packJsonPath)) {
-                console.warn(`Pack ${folder.name} no tiene pack.json, saltando.`);
+                // Silencioso para capetas irrelevantes, pero útil para debug
+                // console.warn(`Pack ${folder.name} ignorado (sin pack.json).`);
                 continue;
             }
 
             try {
                 const packMeta = JSON.parse(fs.readFileSync(packJsonPath, 'utf8'));
+                // Validar ID
+                if (!packMeta.id) packMeta.id = folder.name;
 
-                // Escanear archivos .json (excepto pack.json) para encontrar templates
+                // 2. Escanear templates (.json + .js)
                 const files = fs.readdirSync(packPath);
-                const templateIds = files
-                    .filter(f => f.endsWith('.json') && f !== 'pack.json')
-                    .map(f => f.replace('.json', ''));
+                // Buscar archivos .json que NO sean pack.json
+                const templateManifests = files.filter(f => f.endsWith('.json') && f !== 'pack.json');
 
                 const templates = [];
 
-                for (const tid of templateIds) {
-                    const manifestPath = path.join(packPath, `${tid}.json`);
+                for (const manifestFile of templateManifests) {
+                    const tid = manifestFile.replace('.json', '');
+                    const manifestPath = path.join(packPath, manifestFile);
                     const jsPath = path.join(packPath, `${tid}.js`);
 
                     if (!fs.existsSync(jsPath)) {
-                        console.warn(`Template ${tid} tiene .json pero no .js, saltando.`);
+                        console.warn(`Template ${tid} tiene manifiesto pero falta el JS.`);
                         continue;
                     }
 
@@ -597,28 +646,29 @@ ipcMain.handle('load-packs', async () => {
                             code: jsContent
                         });
                     } catch (err) {
-                        console.error(`Error cargando template ${tid}:`, err);
+                        console.error(`Error leyendo template ${tid} en ${packMeta.name}:`, err.message);
                     }
                 }
 
+                // Solo añadir packs con al menos 1 template o si es intencional
                 packs.push({
-                    id: packMeta.id || folder.name,
+                    id: packMeta.id,
                     name: packMeta.name || folder.name,
                     description: packMeta.description || '',
                     icon: packMeta.icon || 'layers',
                     templates: templates
                 });
 
-                console.log(`Pack "${packMeta.name}" cargado con ${templates.length} templates.`);
+                console.log(`[Main] Pack cargado: "${packMeta.name}" (${templates.length} templates)`);
 
             } catch (err) {
-                console.error(`Error cargando pack ${folder.name}:`, err);
+                console.error(`Error procesando pack ${folder.name}:`, err.message);
             }
         }
 
         return packs;
     } catch (error) {
-        console.error('Error loading packs:', error);
+        console.error('[Main] Error crítico cargando packs:', error);
         return [];
     }
 });

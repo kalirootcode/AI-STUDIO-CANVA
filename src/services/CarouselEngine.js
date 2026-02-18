@@ -584,11 +584,12 @@ EJEMPLO: ${JSON.stringify(entry.json_example, null, 2)}
         }).join('\n');
 
         return `
-Eres un PROFESOR EXPERTO en ciberseguridad y Linux que crea contenido educativo ULTRA-DETALLADO.
+Eres un PROFESOR EXPERTO en ciberseguridad y Linux que crea contenido educativo ULTRA-DETALLADO y VISUALMENTE IMPACTANTE.
 Especialidad: carruseles tipo LIBRO DIDÁCTICO sobre cyberseguridad, Linux, hacking ético y herramientas GitHub.
 
-TU MISIÓN: Crear contenido que ENSEÑE de verdad. Cada slide es una PÁGINA DE LIBRO.
+TU MISIÓN: Crear contenido que ENSEÑE de verdad con PROFUNDIDAD TEÓRICA y PRECISIÓN TÉCNICA. 
 El lector debe terminar ENTENDIENDO el tema completamente, no solo viendo un resumen.
+CADA SLIDE DEBE ESTAR CARGADO DE VALOR. NO dejes espacios vacíos irracionales.
 
 ══════════════════════════════════════════════════════════════
 TEMA: "${topic}"
@@ -598,109 +599,68 @@ PLANTILLAS DISPONIBLES (31 templates):
 ${templateDocs}
 
 ══════════════════════════════════════════════════════════════
-📝 CALIDAD DEL CONTENIDO — ESTO ES LO MÁS IMPORTANTE
+📝 CALIDAD Y DENSIDAD DEL CONTENIDO — PRIORIDAD #1
 ══════════════════════════════════════════════════════════════
 
-REGLA DE ORO: Escribe como un LIBRO DE TEXTO, no como un tweet.
+REGLA DE ORO: Escribe como un LIBRO DE TEXTO TÉCNICO AVANZADO, no como un tweet.
+Queremos "Information Density". Los slides deben sentirse LLENOS de conocimiento útil.
 
 PARA CADA CAMPO DE TEXTO:
-- DESCRIPTION / INTRO_TEXT / DEFINITION: Escribe párrafos completos y detallados.
-  ❌ MAL: "Lista archivos"
-  ✅ BIEN: "Lista el contenido de un directorio mostrando nombres de archivos y subdirectorios. Es el comando más básico y fundamental para navegar el sistema de archivos de Linux."
+- DESCRIPTION / INTRO_TEXT / DEFINITION:
+  ❌ MAL: "Lista archivos" (Muy corto, desperdicia espacio)
+  ✅ BIEN: "El comando ls lista el contenido de un directorio, mostrando nombres de archivos, permisos, propietarios y fechas de modificación. Es fundamental para la navegación y auditoría del sistema de archivos en entornos Linux/Unix."
+  (Usa todo el espacio disponible. Explica el QUÉ, el CÓMO y el POR QUÉ).
 
-- EXAMPLE_OUTPUT / TERMINAL_LINES: Muestra output REALISTA y completo.
+- EXAMPLE_OUTPUT / TERMINAL_LINES: Muestra output REALISTA y COMPLETO.
   ❌ MAL: "drwxr-xr-x ..."
   ✅ BIEN: "drwxr-xr-x 5 root root 4096 Jan 15 14:30 home"
 
-- FLAG DESC / KEY_FLAGS DESC: Explica QUÉ HACE y POR QUÉ es útil.
-  ❌ MAL: "Formato largo"
-  ✅ BIEN: "Muestra permisos, propietario, tamaño y fecha de cada archivo"
-
-- WARNING_CONTENT / NOTE: Da contexto REAL y específico.
-  ❌ MAL: "Ten cuidado"
-  ✅ BIEN: "Ejecutar escaneos sin autorización escrita viola el artículo 197 del Código Penal y puede conllevar hasta 4 años de prisión"
-
-- EXPLANATION / WHY_IT_WORKS: Explicaciones detalladas de POR QUÉ funciona.
-  ❌ MAL: "Funciona bien"
-  ✅ BIEN: "El prefijo sudo eleva tus privilegios temporalmente usando el mecanismo PAM del kernel, permitiendo ejecutar comandos con acceso root sin iniciar sesión como superusuario"
-
-LONGITUD IDEAL POR CAMPO:
-- Campos cortos (FLAG, COMMAND_NAME, TITLE): Concisos, técnicamente precisos  
-- Campos medios (DESCRIPTION, INTRO_TEXT): 80-150 caracteres, oraciones completas
-- Campos largos (DEFINITION, EXPLANATION, WHY_IT_WORKS): 100-200 caracteres, explicación detallada
-- Campos de ejemplo (EXAMPLE_CMD, TERMINAL_LINES): Realistas, con parámetros reales
+- WARNING_CONTENT / NOTE: Da contexto REAL y LEGISLATIVO/TÉCNICO.
+  ✅ BIEN: "El escaneo de puertos sin autorización escrita explícita es ilegal en la mayoría de jurisdicciones. Asegúrate de tener permiso del propietario de la red antes de ejecutar nmap fuera de tu laboratorio local."
 
 ══════════════════════════════════════════════════════════════
-🎯 SELECCIÓN INTELIGENTE DE TEMPLATES
+🚫 RESTRICCIONES DE USO DE TEMPLATES
 ══════════════════════════════════════════════════════════════
 
-USA LOS NUEVOS TEMPLATES CREATIVAMENTE:
-- 🖥️ kr-clidn-21 (Pro Terminal): Para mostrar sesiones REALES de terminal con output colorizado
-- 📁 kr-clidn-22 (Directory Tree): Para explicar estructura de directorios
-- 🔄 kr-clidn-23 (Process Flow): Para explicar CÓMO funciona algo internamente
-- ⚡ kr-clidn-24 (Before/After): Para mostrar la TRANSFORMACIÓN de un comando
-- 💡 kr-clidn-25 (Pro Tip): Para tips que mejoran productividad
-- 🌐 kr-clidn-26 (Network Diagram): Para topologías y redes
-- 🔒 kr-clidn-27 (Permission Matrix): Para permisos rwx
-- 📋 kr-clidn-28 (Cheat Sheet): Para resumen rápido de comandos
-- 🐛 kr-clidn-29 (Error/Solution): Para errores comunes y cómo solucionarlos
-- 📖 kr-clidn-30 (Mini Tutorial): Para tutoriales compactos de 3 pasos
-- 📝 kr-clidn-31 (Script Editor): Para mostrar scripts completos con syntax highlighting
+1. TERMINALES (kr-clidn-04, 06, 11, 21):
+   - USAR EXCLUSIVAMENTE para COMANDOS y OUTPUTS de consola.
+   - NUNCA usarlos para bloques largos de texto explicativo (usa Definition o Concept para eso).
 
-REGLA PRINCIPAL: Genera TODOS los slides que el contenido necesite, pero NUNCA excedas 35 slides.
-NO hay límite artificial bajo, si requiere 5 slides, genera 5. 
-Pero el MÁXIMO ABSOLUTO es 35 imágenes para que el post no quede demasiado largo. Ajusta el contenido para entrar en este límite.
+2. TEORÍA Y TEXTO (kr-clidn-15 Definition, kr-clidn-03 Feature, kr-clidn-27 Permissions, kr-clidn-25 ProTip):
+   - Estos son tus caballos de batalla para EXPLICAR conceptos.
+   - Usalos para la carga teórica pesada.
 
-ESTRUCTURA OBLIGATORIA — TIPO LIBRO:
-┌──────────────────────────────────────────────────────────┐
-│ 1. SIEMPRE primer slide: "kr-clidn-01" (Portada)        │
-│ 2. Si hay 10+ slides: "kr-clidn-19" (Índice) como #2    │
-│ 3. Si hay secciones: "kr-clidn-20" (Divider) al inicio  │
-│ 4. Contenido: templates que mejor encajen, REPETIDOS     │
-│ 5. SIEMPRE último slide: "kr-clidn-09" (Follow CTA)     │
-└──────────────────────────────────────────────────────────┘
+3. kr-clidn-20 (Chapter Divider):
+   - Úsalo SOLO si cambias drásticamente de subtema (ej: de Teoría a Práctica, o de Instalación a Uso Avanzado).
 
-EJEMPLOS DE VARIEDAD:
-- "20 comandos de Linux" → cover + TOC + [command cards + pro terminals + before/afters + tips] + CTA
-- "Tutorial de Nmap" → cover + steps + pro terminal + network diagram + error/solution + cheat sheet + CTA
-- "Permisos Linux" → cover + concept + directory tree + permission matrices + before/after + CTA
-- "Herramientas GitHub" → cover + TOC + github tools + pro terminals + comparison + CTA
+══════════════════════════════════════════════════════════════
+🎯 ESTRUCTURA OBLIGATORIA DEL CARRUSEL
+══════════════════════════════════════════════════════════════
 
-TEMPLATES REPETIBLES (N veces):
-✅ kr-clidn-11 (Command Card), kr-clidn-13 (Step by Step)
-✅ kr-clidn-21 (Pro Terminal), kr-clidn-22 (Directory Tree)
-✅ kr-clidn-23 (Process Flow), kr-clidn-24 (Before/After)
-✅ kr-clidn-25 (Pro Tip), kr-clidn-26 (Network Diagram)
-✅ kr-clidn-27 (Permission Matrix), kr-clidn-28 (Cheat Sheet)
-✅ kr-clidn-29 (Error/Solution), kr-clidn-30 (Mini Tutorial)
-✅ kr-clidn-31 (Script Editor)
-✅ kr-clidn-03, 04, 05, 06, 07, 08, 10, 12, 14, 15, 16, 20
+Debes seguir este orden ESTRICTO como un guion de película:
 
-TEMPLATES ÚNICOS (máximo 1):
-1️⃣ kr-clidn-01 (Cover), kr-clidn-19 (TOC), kr-clidn-09 (CTA)
-1️⃣ kr-clidn-17 (Checklist), kr-clidn-18 (Quote)
+1. 🟢 PORTADA (Slide 1) -> SIEMPRE "kr-clidn-01". Título gancho.
+2. 🟡 ÍNDICE (Slide 2) -> SIEMPRE "kr-clidn-19". NUNCA lo omitas. Debe listar 4-6 secciones del post con rangos de slides estimados.
+3. 🔵 DESARROLLO (Slides 3 a N-1):
+   - Mezcla VARIEDAD de templates. NO repitas el mismo 3 veces seguidas.
+   - Alterna entre TEORÍA (Definition, Concept) y PRÁCTICA (Terminal, Steps).
+   - Usa Diagramas (26), Flujos (23) y Tablas (28) para romper la monotonía del texto.
+   - Profundiza: Si explicas un comando, usa un slide de Anatomía (02), luego uno de Uso (11), luego uno de Tips (25).
+4. 🔴 CIERRE (Slide N) -> SIEMPRE "kr-clidn-09" (Follow CTA).
 
-REGLAS:
-1. Numerar secuencialmente: COMMAND_NUMBER, STEP_NUMBER, CHAPTER_NUMBER, TIP_NUMBER
-2. Cada slide = contenido ÚNICO y educativo
-3. MEZCLA templates para VARIEDAD visual — no uses el mismo template 10 veces seguidas
-4. ICON: Usa SOLO nombres de iconos Material Design estándar (ej: 'search', 'home', 'lock', 'security', 'bug_report'). NO uses prefijos como 'flat-color-icons:' ni 'fluent-emoji:'. SOLO nombres simples. El sistema los convertirá automáticamente.
-5. El post = LIBRO: portada → índice → contenido detallado → resumen → follow
-6. NO incluyas SLIDE_NUMBER en ningún campo — ya no se usa
+RANGO DE SLIDES: Mínimo 8, Máximo 20. (Calidad sobre cantidad, pero suficiente profundidad).
 
 ══════════════════════════════════════════════════════════════
 FORMATO DE RESPUESTA
 ══════════════════════════════════════════════════════════════
 
 Responde ÚNICAMENTE con un Array JSON válido.
-Sin markdown, sin backticks, sin texto extra.
-IMPORTANTE: Todos los valores de texto deben estar en UNA SOLA LÍNEA — nunca uses saltos de línea dentro de un string JSON.
-NO uses comillas dobles sin escapar dentro de los valores. Si necesitas comillas, usa comillas simples.
+Sin markdown, sin backticks.
+Todo en una línea por string.
 
 [
-  { "templateId": "kr-clidn-01", "content": { ... } },
-  { "templateId": "kr-clidn-19", "content": { ... } },
-  { "templateId": "kr-clidn-21", "content": { ... } },
+  { "templateId": "kr-clidn-01", "content": { "TITLE": "...", "SUBTITLE": "..." } },
+  { "templateId": "kr-clidn-19", "content": { "TITLE": "Índice", "ITEMS": [...] } },
   ...
   { "templateId": "kr-clidn-09", "content": { ... } }
 ]

@@ -1,0 +1,268 @@
+/* ═══════════════════════════════════════════════════════════════════════════ */
+/* CYBER-SYSTEM CORE v1.0 (Shared Template Base) */
+/* ═══════════════════════════════════════════════════════════════════════════ */
+@import url('https://fonts.googleapis.com/css2?family=Black+Ops+One&display=swap');
+
+/* 1. RESET & VARS */
+:root {
+    --primary-color: #00D9FF;
+    /* Cyan Neon */
+    --accent-color: #FF0055;
+    /* Red/Pink Neon */
+    --success-color: #00FF9D;
+    /* Hacker Green */
+    --warning-color: #FFB800;
+    /* Amber */
+    --bg-core: #050505;
+    /* Deep Black */
+    --bg-panel: rgba(15, 15, 15, 0.85);
+    --glass-border: 1px solid rgba(255, 255, 255, 0.1);
+    --font-mono: 'JetBrains Mono', monospace;
+    --font-sans: 'Inter', sans-serif;
+    --font-military: 'Black Ops One', cursive;
+
+    /* TikTok UI Safe Areas (Symmetric & Tighter) */
+    --safe-top: 120px;
+    /* Reduced from 140px */
+    --safe-bottom: 300px;
+    /* Reduced from 340px */
+    --safe-right: 90px;
+    /* Symmetric margins (Icon width ~80px) */
+    --safe-left: 90px;
+    /* Symmetric margins */
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* Safety: Prevent overflow */
+img,
+video,
+svg,
+.card,
+.terminal-window,
+.code-block {
+    max-width: 100%;
+}
+
+/* --- GLOBAL LAYOUT & SAFE ZONE (TikTok Optimized) --- */
+html,
+body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    background-color: #000;
+    color: #fff;
+    font-family: 'Inter', sans-serif;
+    overflow: hidden;
+    position: relative;
+}
+
+/* 2. BACKGROUNDS (Theme-Aware) */
+.bg-grid {
+    background-image:
+        linear-gradient(color-mix(in srgb, var(--primary-color) 3%, transparent) 1px, transparent 1px),
+        linear-gradient(90deg, color-mix(in srgb, var(--primary-color) 3%, transparent) 1px, transparent 1px);
+    background-size: 40px 40px;
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+}
+
+.bg-glow {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 60%;
+    background: radial-gradient(circle at 50% 100%, color-mix(in srgb, var(--primary-color) 10%, transparent) 0%, transparent 70%);
+    z-index: -1;
+}
+
+/* 3. LAYOUT CONTAINERS */
+/* The Container for ALL content */
+.safe-zone {
+    position: absolute;
+    top: var(--safe-top);
+    left: var(--safe-left);
+    right: var(--safe-right);
+    bottom: var(--safe-bottom);
+
+    width: auto;
+    /* Allow auto width based on left/right */
+    height: auto;
+    /* Allow auto height based on top/bottom */
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    /* Center vertically in the safe area */
+    gap: 30px;
+    z-index: 10;
+}
+
+/* Debug Overlay */
+.safe-zone.debug {
+    border: 3px dashed #ff0055;
+    background: rgba(255, 0, 85, 0.1);
+}
+
+/* 4. TYPOGRAPHY */
+.cyber-title {
+    font-size: 64px;
+    font-weight: 800;
+    line-height: 1.1;
+    letter-spacing: -1px;
+    text-shadow: 0 0 20px color-mix(in srgb, var(--primary-color) 30%, transparent);
+    margin-bottom: 20px;
+}
+
+.cyber-subtitle {
+    font-size: 32px;
+    color: #94a3b8;
+    font-weight: 400;
+    line-height: 1.4;
+    margin-bottom: 40px;
+}
+
+.highlight {
+    color: var(--primary-color);
+    font-weight: 700;
+}
+
+.mono {
+    font-family: var(--font-mono);
+}
+
+/* 5. COMPONENTS */
+
+/* Glass Card - Compact */
+.glass-panel {
+    background: var(--bg-panel);
+    backdrop-filter: blur(10px);
+    border: var(--glass-border);
+    border-radius: 12px;
+    padding: 20px;
+    /* Reduced from 30px */
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    flex-shrink: 0;
+    /* Don't shrink below content */
+}
+
+/* Terminal Box - Smart Auto-Size */
+.terminal-window {
+    background: #0a0a0a;
+    border: 1px solid #333;
+    border-radius: 10px;
+    overflow: hidden;
+    font-family: var(--font-mono);
+
+    /* Layout Logic */
+    width: 100%;
+    height: auto;
+    min-height: min-content;
+    /* Fit content */
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 0 !important;
+    /* Remove external margins, rely on gap */
+}
+
+.term-header {
+    background: #111;
+    padding: 8px 15px;
+    /* Compact header */
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border-bottom: 1px solid #222;
+    flex-shrink: 0;
+}
+
+.term-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.term-dot.red {
+    background: #ff5f56;
+}
+
+.term-dot.yellow {
+    background: #ffbd2e;
+}
+
+.term-dot.green {
+    background: #27c93f;
+}
+
+.term-body {
+    padding: 15px;
+    /* Reduced from 24px */
+    color: #ccc;
+    font-size: 20px;
+    /* Slightly smaller for density, auto-fit script will adjust if needed */
+    line-height: 1.5;
+    flex-grow: 1;
+}
+
+/* 6. UTILITIES */
+.flex-center {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+.flex-col {
+    display: flex;
+    flex-direction: column;
+}
+
+/* Ensure no elements have huge default margins in Safe Zone */
+.safe-zone>* {
+    margin-top: 0;
+    margin-bottom: 0;
+}
+
+
+/* 7. PROGRESS BAR */
+.cyber-progress-container {
+    background: #0a0a0a;
+    border: 1px solid #333;
+    border-radius: 8px;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.cyber-progress-bar {
+    flex: 1;
+    height: 12px;
+    background: #1a1a1a;
+    border-radius: 6px;
+    overflow: hidden;
+    position: relative;
+}
+
+.cyber-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--primary-color), var(--success-color));
+    box-shadow: 0 0 20px color-mix(in srgb, var(--primary-color) 40%, transparent);
+    width: 0%;
+    /* Set via inline style */
+}
+
+.cyber-progress-text {
+    font-family: var(--font-mono);
+    color: var(--primary-color);
+    font-weight: 700;
+    font-size: 20px;
+}

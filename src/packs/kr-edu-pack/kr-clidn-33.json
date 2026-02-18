@@ -1,0 +1,44 @@
+{
+    "id": "kr-clidn-33",
+    "name": "KR-CLI: VS Card",
+    "category": "education",
+    "description": "Comparativa directa entre dos opciones (A vs B) con tarjetas estilizadas.",
+    "fields": {
+        "TITLE": {
+            "description": "Título de la comparativa",
+            "max_chars": 40,
+            "default": "HTTP vs HTTPS"
+        },
+        "SIDE_A": {
+            "description": "Objeto con NAME, COLOR, POINTS",
+            "type": "object",
+            "default": {
+                "NAME": "HTTP",
+                "COLOR": "var(--accent-color)",
+                "POINTS": [
+                    "Texto plano",
+                    "Inseguro",
+                    "Puerto 80"
+                ]
+            }
+        },
+        "SIDE_B": {
+            "description": "Objeto con NAME, COLOR, POINTS",
+            "type": "object",
+            "default": {
+                "NAME": "HTTPS",
+                "COLOR": "var(--success-color)",
+                "POINTS": [
+                    "Cifrado TLS",
+                    "Seguro",
+                    "Puerto 443"
+                ]
+            }
+        },
+        "DESCRIPTION": {
+            "description": "Conclusión o resumen",
+            "max_chars": 150,
+            "default": "Siempre utiliza HTTPS para proteger la integridad de los datos."
+        }
+    }
+}
