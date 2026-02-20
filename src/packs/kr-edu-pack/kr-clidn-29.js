@@ -24,7 +24,7 @@ export function render(data) {
     <style>
         .err-section { margin-bottom: 20px; }
         .err-badge {
-            font-family: var(--font-mono); font-size: 20px; font-weight: 700;
+            font-family: var(--font-mono); font-size: 41px; font-weight: 700;
             padding: 6px 16px; border-radius: 6px; letter-spacing: 2px;
             display: inline-block; margin-bottom: 12px;
         }
@@ -40,7 +40,7 @@ export function render(data) {
         ${TemplateUtils.renderBrandHeader()}
         ${TemplateUtils.renderMetaBadge(data)}
 
-        <h1 class="cyber-title" style="font-size:42px;">⚠️ ${TemplateUtils.renderEditable('TITLE', `${esc(d.TITLE)}`, data._overrides)}</h1>
+        <h1 class="cyber-title" style="font-size:71px;">⚠️ ${TemplateUtils.renderEditable('TITLE', `${esc(d.TITLE)}`, data._overrides)}</h1>
 
         <!-- ERROR Section -->
         <div class="err-section">
@@ -50,13 +50,13 @@ export function render(data) {
                     <div class="term-dot red"></div><div class="term-dot yellow"></div><div class="term-dot green"></div>
                 </div>
                 <div class="term-body">
-                    <div style="font-family:var(--font-mono); font-size:22px; color:#e2e8f0; margin-bottom:8px;">${esc(d.ERROR_CMD)}</div>
-                    <div style="font-family:var(--font-mono); font-size:20px; color:var(--accent-color); line-height:1.5;">${esc(d.ERROR_OUTPUT)}</div>
+                    <div style="font-family:var(--font-mono); font-size: 41px; color:#e2e8f0; margin-bottom:8px;">${esc(d.ERROR_CMD)}</div>
+                    <div style="font-family:var(--font-mono); font-size: 41px; color:var(--accent-color); line-height:1.5;">${esc(d.ERROR_OUTPUT)}</div>
                 </div>
             </div>
             <div class="glass-panel" style="margin-top:12px; display:flex; gap:12px; align-items:flex-start;">
-                <span style="font-size:20px;">🔍</span>
-                <span style="font-size:20px; color:#ffffff; line-height:1.5;">${esc(d.ERROR_MEANING)}</span>
+                <span style="font-size: 41px;">🔍</span>
+                <span style="font-size: 41px; color:#ffffff; line-height:1.5;">${esc(d.ERROR_MEANING)}</span>
             </div>
         </div>
 
@@ -68,23 +68,22 @@ export function render(data) {
                     <div class="term-dot red"></div><div class="term-dot yellow"></div><div class="term-dot green"></div>
                 </div>
                 <div class="term-body">
-                    <div style="font-family:var(--font-mono); font-size:22px; color:var(--success-color); margin-bottom:8px;">${esc(d.SOLUTION_CMD)}</div>
-                    <div style="font-family:var(--font-mono); font-size:20px; color:#ffffff; line-height:1.5;">${esc(d.SOLUTION_OUTPUT)}</div>
+                    <div style="font-family:var(--font-mono); font-size: 41px; color:var(--success-color); margin-bottom:8px;">${esc(d.SOLUTION_CMD)}</div>
+                    <div style="font-family:var(--font-mono); font-size: 41px; color:#ffffff; line-height:1.5;">${esc(d.SOLUTION_OUTPUT)}</div>
                 </div>
             </div>
         </div>
 
         <!-- Why It Works -->
         <div class="glass-panel" style="display:flex; gap:14px; align-items:flex-start;">
-            <span style="font-size:24px;">💡</span>
+            <span style="font-size:41px;">💡</span>
             <div>
-                <div class="mono" style="font-size:16px; color:var(--success-color); letter-spacing:2px; margin-bottom:6px;">¿POR QUÉ FUNCIONA?</div>
-                <span style="font-size:22px; color:#e2e8f0; line-height:1.5;">${esc(d.WHY_IT_WORKS)}</span>
+                <div class="mono" style="font-size: 41px; color:var(--success-color); letter-spacing:2px; margin-bottom:6px;">¿POR QUÉ FUNCIONA?</div>
+                <span style="font-size: 41px; color:#e2e8f0; line-height:1.5;">${esc(d.WHY_IT_WORKS)}</span>
             </div>
         </div>
             
         </div>
-    </div>
 
     ${TemplateUtils.getAutoFitScript()}
 </body>

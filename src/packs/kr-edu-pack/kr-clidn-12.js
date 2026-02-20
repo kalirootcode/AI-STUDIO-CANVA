@@ -21,8 +21,8 @@ export function render(data) {
 
     const renderItems = (items, color) => items.map(i => `
         <div style="display:flex; align-items:flex-start; gap:10px; margin-bottom:10px;">
-            <span style="color:${color}; font-size:18px; margin-top:3px;">✓</span>
-            <span style="font-size:22px; color:#ffffff; line-height:1.4;">${esc(i.TEXT)}</span>
+            <span style="color:${color}; font-size: 41px; margin-top:3px;">✓</span>
+            <span style="font-size: 41px; color:#ffffff; line-height:1.4;">${esc(i.TEXT)}</span>
         </div>`).join('');
 
     return `<!DOCTYPE html>
@@ -44,7 +44,7 @@ export function render(data) {
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 10;
             width: 56px; height: 56px; background: linear-gradient(135deg, #ff9500, var(--accent-color));
             border-radius: 50%; display: flex; align-items: center; justify-content: center;
-            font-family: var(--font-mono); font-size: 22px; font-weight: 800; color: #fff;
+            font-family: var(--font-mono); font-size: 41px; font-weight: 800; color: #fff;
             box-shadow: 0 0 25px rgba(255,149,0,0.4);
         }
     </style>
@@ -57,30 +57,29 @@ export function render(data) {
         ${TemplateUtils.renderBrandHeader()}
         ${TemplateUtils.renderMetaBadge(data)}
 
-        <div class="mono" style="font-size:22px; color:#ff9500; letter-spacing:3px; margin-bottom:12px;">// Comparación</div>
-        <h1 class="cyber-title" style="font-size:44px;">${TemplateUtils.renderEditable('TITLE', `${esc(d.TITLE)}`, data._overrides)}</h1>
+        <div class="mono" style="font-size: 41px; color:#ff9500; letter-spacing:3px; margin-bottom:12px;">// Comparación</div>
+        <h1 class="cyber-title" style="font-size:75px;">${TemplateUtils.renderEditable('TITLE', `${esc(d.TITLE)}`, data._overrides)}</h1>
 
         <!-- VS Cards -->
         <div class="vs-grid">
             <div class="vs-badge">VS</div>
             <div class="vs-card left">
-                <div class="mono" style="font-size:24px; font-weight:700; color:var(--primary-color); margin-bottom:18px;">${esc(d.LEFT_NAME)}</div>
+                <div class="mono" style="font-size:41px; font-weight:700; color:var(--primary-color); margin-bottom:18px;">${esc(d.LEFT_NAME)}</div>
                 ${renderItems(d.LEFT_ITEMS, 'var(--primary-color)')}
             </div>
             <div class="vs-card right">
-                <div class="mono" style="font-size:24px; font-weight:700; color:var(--success-color); margin-bottom:18px;">${esc(d.RIGHT_NAME)}</div>
+                <div class="mono" style="font-size:41px; font-weight:700; color:var(--success-color); margin-bottom:18px;">${esc(d.RIGHT_NAME)}</div>
                 ${renderItems(d.RIGHT_ITEMS, 'var(--success-color)')}
             </div>
         </div>
 
         <!-- Verdict -->
         <div class="glass-panel" style="display:flex; align-items:center; gap:14px; border-color:rgba(255,149,0,0.15);">
-            <span style="font-size:26px;">⚖️</span>
-            <span style="font-size:22px; color:#e2e8f0; line-height:1.4;">${esc(d.VERDICT)}</span>
+            <span style="font-size:44px;">⚖️</span>
+            <span style="font-size: 41px; color:#e2e8f0; line-height:1.4;">${esc(d.VERDICT)}</span>
         </div>
             
         </div>
-    </div>
 
     ${TemplateUtils.getAutoFitScript()}
 </body>

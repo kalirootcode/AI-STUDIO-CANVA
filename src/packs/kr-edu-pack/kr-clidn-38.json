@@ -1,0 +1,32 @@
+{
+    "id": "kr-clidn-38",
+    "name": "KR-CLI: Myth vs Reality",
+    "category": "comparison",
+    "description": "Layout dividido mito ❌ vs realidad ✅ con prueba técnica y veredicto.",
+    "fields": {
+        "MYTH_TITLE": {
+            "description": "Título del mito",
+            "default": "Mito Popular"
+        },
+        "MYTH_TEXT": {
+            "description": "Texto del mito",
+            "default": "Un antivirus es suficiente"
+        },
+        "REALITY_TEXT": {
+            "description": "La realidad",
+            "default": "El 68% de ataques bypasean antivirus."
+        },
+        "PROOF_CMD": {
+            "description": "Comando que demuestra la realidad",
+            "default": "$ powershell -ep bypass..."
+        },
+        "PROOF_EXPLAIN": {
+            "description": "Explicación de la prueba",
+            "default": "Ejecuta código en memoria sin tocar disco."
+        },
+        "VERDICT": {
+            "description": "Veredicto final",
+            "default": "🛡️ Necesitas EDR + segmentación."
+        }
+    }
+}

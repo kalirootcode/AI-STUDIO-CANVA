@@ -1,0 +1,24 @@
+{
+    "id": "ebook-04",
+    "name": "Ejemplo Práctico",
+    "description": "Texto descriptivo arriba y terminal de código gigante abajo.",
+    "category": "TECHNICAL",
+    "fields": {
+        "TITLE": {
+            "type": "string",
+            "label": "Título del Ejemplo"
+        },
+        "DESCRIPTION": {
+            "type": "string",
+            "label": "Explicación del código"
+        },
+        "COMMAND": {
+            "type": "string",
+            "label": "Comando a ejecutar"
+        },
+        "OUTPUT": {
+            "type": "text",
+            "label": "Salida de la terminal"
+        }
+    }
+}

@@ -40,22 +40,21 @@ export function render(data) {
             ${d.OPTIONS.map((o, i) => `
             <div class="glass-panel" style="animation: fadeInUp 0.4s ease backwards; animation-delay: ${i * 0.08}s;">
                 <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 14px;">
-                    <span style="font-size: 28px;">${o.ICON || '⚡'}</span>
-                    <span class="mono" style="font-size: 28px; font-weight: 800; color: var(--primary-color);">${esc(o.FLAG)}</span>
+                    <span style="font-size: 48px;">${o.ICON || '⚡'}</span>
+                    <span class="mono" style="font-size: 48px; font-weight: 800; color: var(--primary-color);">${esc(o.FLAG)}</span>
                 </div>
-                <div class="mono" style="font-size: 24px; font-weight: 700; color: #fff; margin-bottom: 8px;">${esc(o.NAME)}</div>
-                <div style="font-size: 20px; color: #ffffff; line-height: 1.4;">${esc(o.DESCRIPTION)}</div>
+                <div class="mono" style="font-size: 41px; font-weight: 700; color: #fff; margin-bottom: 8px;">${esc(o.NAME)}</div>
+                <div style="font-size: 41px; color: #ffffff; line-height: 1.4;">${esc(o.DESCRIPTION)}</div>
             </div>`).join('')}
         </div>
 
         <!-- Tip -->
         <div class="glass-panel" style="border-color: var(--warning-color);">
-            <div class="mono" style="font-size: 22px; font-weight: 700; color: var(--warning-color); margin-bottom: 8px;">💡 ${esc(d.TIP_TITLE)}</div>
-            <div style="font-size: 20px; color: #ffffff;">${esc(d.TIP_CONTENT)}</div>
+            <div class="mono" style="font-size: 41px; font-weight: 700; color: var(--warning-color); margin-bottom: 8px;">💡 ${esc(d.TIP_TITLE)}</div>
+            <div style="font-size: 41px; color: #ffffff;">${esc(d.TIP_CONTENT)}</div>
         </div>
             
         </div>
-    </div>
 
     ${TemplateUtils.getAutoFitScript()}
     <style>

@@ -1,0 +1,50 @@
+{
+    "id": "kr-clidn-40",
+    "name": "KR-CLI: Hook Comparativo",
+    "category": "viral",
+    "description": "Comparación visual directa (Mito vs Realidad) para detener el scroll.",
+    "fields": {
+        "TITLE": {
+            "default": "Título Impactante",
+            "description": "Título principal"
+        },
+        "MYTH_LABEL": {
+            "default": "Lo que crees",
+            "description": "Etiqueta lado izquierdo"
+        },
+        "MYTH_ICON": {
+            "default": "❌",
+            "description": "Icono lado izquierdo"
+        },
+        "MYTH_POINTS": {
+            "default": [
+                "Punto 1",
+                "Punto 2"
+            ],
+            "description": "Lista de puntos mito"
+        },
+        "REALITY_LABEL": {
+            "default": "La realidad",
+            "description": "Etiqueta lado derecho"
+        },
+        "REALITY_ICON": {
+            "default": "⚡",
+            "description": "Icono lado derecho"
+        },
+        "REALITY_POINTS": {
+            "default": [
+                "Verdad 1",
+                "Verdad 2"
+            ],
+            "description": "Lista de puntos realidad"
+        },
+        "BOTTOM_LINE": {
+            "default": "Conclusión",
+            "description": "Frase de cierre"
+        },
+        "CATEGORY": {
+            "default": "MITOS",
+            "description": "Categoría visual"
+        }
+    }
+}

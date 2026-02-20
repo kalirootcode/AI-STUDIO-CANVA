@@ -1,0 +1,16 @@
+{
+    "id": "ebook-02",
+    "name": "Divisor de Capítulo",
+    "description": "Página minimalista con número y título del capítulo.",
+    "category": "STRUCTURAL",
+    "fields": {
+        "CHAPTER_NUM": {
+            "type": "string",
+            "label": "Número de Capítulo"
+        },
+        "CHAPTER_TITLE": {
+            "type": "string",
+            "label": "Título del Capítulo"
+        }
+    }
+}

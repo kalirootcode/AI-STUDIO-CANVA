@@ -45,11 +45,11 @@ export function render(data) {
 
         <!-- Header badge -->
         <div style="display:flex; align-items:center; gap:16px; margin-bottom:20px;">
-            <div style="font-family:var(--font-mono); font-size:24px; font-weight:800; color:#fff; background:var(--accent-color); width:52px; height:52px; border-radius:10px; display:flex; align-items:center; justify-content:center;">${esc(d.EXERCISE_LETTER)}</div>
-            <span class="mono" style="font-size:28px; color:var(--accent-color); letter-spacing:2px;">// PRECAUCIÓN</span>
+            <div style="font-family:var(--font-mono); font-size:41px; font-weight:800; color:#fff; background:var(--accent-color); width:52px; height:52px; border-radius:10px; display:flex; align-items:center; justify-content:center;">${esc(d.EXERCISE_LETTER)}</div>
+            <span class="mono" style="font-size:48px; color:var(--accent-color); letter-spacing:2px;">// PRECAUCIÓN</span>
         </div>
 
-        <h1 class="cyber-title" style="font-size: 48px;">${TemplateUtils.renderEditable('TITLE', `${esc(d.TITLE)}`, data._overrides)}</h1>
+        <h1 class="cyber-title" style="font-size: 82px;">${TemplateUtils.renderEditable('TITLE', `${esc(d.TITLE)}`, data._overrides)}</h1>
         <div class="cyber-subtitle">${esc(d.INTRO_TEXT)}</div>
 
         <!-- Terminal -->
@@ -59,28 +59,27 @@ export function render(data) {
                 <div class="term-dot yellow"></div>
                 <div class="term-dot green"></div>
             </div>
-            <div class="term-body" style="font-size: 28px; font-weight: 700; color: var(--accent-color);">
+            <div class="term-body" style="font-size: 48px; font-weight: 700; color: var(--accent-color);">
                 ${TemplateUtils.renderEditable('COMMAND', `${esc(d.COMMAND)}`, data._overrides)}
             </div>
         </div>
 
         <!-- Result -->
         <div class="glass-panel" style="display: flex; gap: 14px; align-items: center;">
-            <span style="color: var(--primary-color); font-size: 28px;">→</span>
-            <span style="font-size: 22px; color: #e2e8f0; line-height: 1.5;">${esc(d.RESULT_TEXT)}</span>
+            <span style="color: var(--primary-color); font-size: 48px;">→</span>
+            <span style="font-size: 41px; color: #e2e8f0; line-height: 1.5;">${esc(d.RESULT_TEXT)}</span>
         </div>
 
         <!-- Warning Box -->
         <div class="warning-box">
             <div style="display:flex; align-items:center; gap:12px; margin-bottom:12px;">
-                <span style="font-size:28px;">⚠</span>
-                <span class="mono" style="font-size:28px; font-weight:800; color:var(--accent-color);">${esc(d.WARNING_TITLE)}</span>
+                <span style="font-size:48px;">⚠</span>
+                <span class="mono" style="font-size:48px; font-weight:800; color:var(--accent-color);">${esc(d.WARNING_TITLE)}</span>
             </div>
-            <div style="font-size:22px; color:#e2e8f0; line-height:1.6; padding-left:40px;">${esc(d.WARNING_CONTENT)}</div>
+            <div style="font-size: 41px; color:#e2e8f0; line-height:1.6; padding-left:40px;">${esc(d.WARNING_CONTENT)}</div>
         </div>
             
         </div>
-    </div>
 
     ${TemplateUtils.getAutoFitScript()}
 </body>

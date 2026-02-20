@@ -24,7 +24,7 @@ export function render(data) {
     };
 
     const renderLines = (lines) => lines.map(l =>
-        `<div style="font-family:var(--font-mono); font-size:20px; color:#e2e8f0; padding:5px 0; line-height:1.5;">${esc(l.TEXT)}</div>`
+        `<div style="font-family:var(--font-mono); font-size: 41px; color:#e2e8f0; padding:5px 0; line-height:1.5;">${esc(l.TEXT)}</div>`
     ).join('');
 
     return `<!DOCTYPE html>
@@ -35,7 +35,7 @@ export function render(data) {
     <style>
         .ba-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; flex: 1; }
         .ba-label {
-            font-family: var(--font-mono); font-size: 20px; font-weight: 700;
+            font-family: var(--font-mono); font-size: 41px; font-weight: 700;
             letter-spacing: 3px; padding: 8px 16px; border-radius: 6px; display: inline-block;
             margin-bottom: 12px;
         }
@@ -51,10 +51,10 @@ export function render(data) {
         ${TemplateUtils.renderBrandHeader()}
         ${TemplateUtils.renderMetaBadge(data)}
 
-        <h1 class="cyber-title" style="font-size:42px;">${TemplateUtils.renderEditable('TITLE', `${esc(d.TITLE)}`, data._overrides)}</h1>
+        <h1 class="cyber-title" style="font-size:71px;">${TemplateUtils.renderEditable('TITLE', `${esc(d.TITLE)}`, data._overrides)}</h1>
 
         <!-- Command Badge -->
-        <div class="mono" style="font-size:22px; color:var(--primary-color); background:rgba(0,217,255,0.06); border:1px solid rgba(0,217,255,0.15); padding:10px 18px; border-radius:8px; display:inline-block; margin-bottom:20px;">
+        <div class="mono" style="font-size: 41px; color:var(--primary-color); background:rgba(0,217,255,0.06); border:1px solid rgba(0,217,255,0.15); padding:10px 18px; border-radius:8px; display:inline-block; margin-bottom:20px;">
             $ ${TemplateUtils.renderEditable('COMMAND', `${esc(d.COMMAND)}`, data._overrides)}
         </div>
 
@@ -82,12 +82,11 @@ export function render(data) {
 
         <!-- Explanation -->
         <div class="glass-panel" style="display:flex; gap:14px; align-items:flex-start;">
-            <span style="font-size:24px;">💡</span>
-            <span style="font-size:22px; color:#e2e8f0; line-height:1.5;">${esc(d.EXPLANATION)}</span>
+            <span style="font-size:41px;">💡</span>
+            <span style="font-size: 41px; color:#e2e8f0; line-height:1.5;">${esc(d.EXPLANATION)}</span>
         </div>
             
         </div>
-    </div>
 
     ${TemplateUtils.getAutoFitScript()}
 </body>

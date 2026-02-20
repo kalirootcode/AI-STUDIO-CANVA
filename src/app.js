@@ -10,6 +10,7 @@ class App {
         this.overrideConsole();
         this.viewManager = new ViewManager();
         this.sidebar = new Sidebar();
+        this.tiktokSignal = null; // Store active trend
         this.init();
     }
 
@@ -60,6 +61,9 @@ class App {
 
         // 5. Init Core Engines (Legacy Bridge)
         this.initEngines();
+
+        // 6. Setup TikTok Listener
+        this.setupTikTokListener();
 
         // 6. Global Event Listeners
         document.addEventListener('editor-change', (e) => {
@@ -127,6 +131,23 @@ class App {
             console.log("📦 Packs loaded:", packs.length);
             // TODO: Pass to TemplatesView
         });
+    }
+
+    setupTikTokListener() {
+        if (window.cyberCanvas && window.cyberCanvas.onTiktokTrend) {
+            window.cyberCanvas.onTiktokTrend((data) => {
+                console.log("🔥 App received TikTok Trend:", data);
+                this.tiktokSignal = data;
+
+                // Update Studio View if active
+                const studio = this.viewManager.views['studio'];
+                if (studio && studio.showTiktokSignal) {
+                    studio.showTiktokSignal(data);
+                }
+
+                this.setStatus(`🔥 Trend Detectado: ${data.viralHook ? 'Viral Hook' : data.type}`);
+            });
+        }
     }
 
     // --- STUDIO ACTIONS ---
@@ -231,7 +252,14 @@ class App {
 
             // 2. Build Prompt
             this.setStatus(`🎨 Diseñando estructura (${mode})...`, true);
-            const systemPrompt = this.contentEngine.generatePrompt(topic, count, mode);
+
+            // Inject trend signal if available
+            if (this.tiktokSignal) {
+                console.log("💉 Injecting TikTok Signal into Prompt", this.tiktokSignal);
+                this.setStatus(`🔥 Inyectando Trend: ${this.tiktokSignal.type}`, true);
+            }
+
+            const systemPrompt = this.contentEngine.generatePrompt(topic, count, mode, this.tiktokSignal);
             this.setProgress(40);
 
             // 3. Call AI
@@ -506,27 +534,58 @@ class App {
 
         if (action.type === 'SELECT') {
             console.log("Selected element:", action.id);
-            // Optionally scroll inspector to field?
-            // For now just log.
         }
 
         if (action.type === 'UPDATE_POS') {
             // { type, id, x, y }
             if (!currentSlide.data._overrides) currentSlide.data._overrides = {};
-
             if (!currentSlide.data._overrides[action.id]) currentSlide.data._overrides[action.id] = {};
 
             currentSlide.data._overrides[action.id].x = action.x;
             currentSlide.data._overrides[action.id].y = action.y;
 
             console.log("Updated Position:", currentSlide.data._overrides);
-            // We don't need to re-render ENTIRE template just for this if the preview handles it visually.
-            // BUT, if we change slides and come back, we need it saved.
-            // Also, if we export, we need the renderer to respect _overrides.
 
-            // The visual update in preview is already done by the drag script.
-            // We just save state here.
+            // Re-render HTML so named editable overrides persist when switching slides
+            // (renderEditable reads _overrides and applies transform inline)
+            if (action.id && !action.id.startsWith('auto_')) {
+                currentSlide.html = this.templateEngine.renderTemplate(currentSlide.templateId, currentSlide.data);
+            }
+            // auto_ drag positions are handled at export time via getExportHTML
         }
+    }
+
+    /**
+     * Get export-ready HTML for a slide:
+     * - Bakes auto-drag position overrides as inline styles
+     * - Strips interactivity styles/scripts (hover outlines, drag cursor)
+     */
+    getExportHTML(slide) {
+        let html = slide.html || '';
+        const overrides = slide.data._overrides || {};
+
+        // Inject position overrides for auto-drag elements
+        const autoDragStyles = Object.entries(overrides)
+            .filter(([id]) => id.startsWith('auto_'))
+            .map(([id, pos]) => `[data-drag-id="${id}"] { transform: translate(${pos.x}px, ${pos.y}px) !important; }`)
+            .join('\n');
+
+        if (autoDragStyles) {
+            const styleBlock = `<style>/* Export Position Overrides */\n${autoDragStyles}\n</style>`;
+            if (html.includes('</head>')) {
+                html = html.replace('</head>', `${styleBlock}</head>`);
+            } else {
+                html = styleBlock + html;
+            }
+        }
+
+        // Strip interactivity styles (drag outlines, cursors)
+        html = html.replace(/<style>[\s\S]*?\.drag-ready[\s\S]*?<\/style>/g, '');
+
+        // Strip interactivity script
+        html = html.replace(/<script>[\s\S]*?initDragTargets[\s\S]*?<\/script>/g, '');
+
+        return html;
     }
 }
 

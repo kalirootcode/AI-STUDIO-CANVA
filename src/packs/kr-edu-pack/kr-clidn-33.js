@@ -23,13 +23,13 @@ export function render(data) {
 
     const renderSide = (side) => `
         <div style="flex:1; display:flex; flex-direction:column; gap:16px;">
-            <div style="font-family:var(--font-mono); font-size:32px; font-weight:800; color:${side.COLOR}; text-align:center; letter-spacing:3px;">
+            <div style="font-family:var(--font-mono); font-size:54px; font-weight:800; color:${side.COLOR}; text-align:center; letter-spacing:3px;">
                 ${esc(side.NAME)}
             </div>
             <div style="display:flex; flex-direction:column; gap:12px;">
                 ${side.POINTS.map(p => `
                     <div class="glass-panel" style="padding:16px 20px; border-color:${side.COLOR}15; text-align:center;">
-                        <span style="font-size:22px; color:#e2e8f0;">${esc(p)}</span>
+                        <span style="font-size: 41px; color:#e2e8f0;">${esc(p)}</span>
                     </div>
                 `).join('')}
             </div>
@@ -89,7 +89,7 @@ export function render(data) {
             margin: -80px auto 20px auto;
             background: #000;
             display: flex; align-items: center; justify-content: center;
-            font-size: 40px;
+            font-size: 68px;
         }
     </style>
 </head>

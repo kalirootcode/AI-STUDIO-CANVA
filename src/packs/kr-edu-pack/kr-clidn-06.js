@@ -27,14 +27,14 @@ export function render(data) {
             margin-bottom: 24px;
         }
         .badge-letter {
-            font-family: var(--font-mono); font-size: 28px; font-weight: 800;
+            font-family: var(--font-mono); font-size: 48px; font-weight: 800;
             color: #0a0a0f; background: linear-gradient(135deg, var(--primary-color), var(--success-color));
             width: 60px; height: 60px; border-radius: 14px;
             display: flex; align-items: center; justify-content: center;
             box-shadow: 0 0 25px rgba(0,217,255,0.3);
         }
         .badge-label {
-            font-family: var(--font-mono); font-size: 28px;
+            font-family: var(--font-mono); font-size: 48px;
             color: var(--primary-color); letter-spacing: 3px;
         }
     </style>
@@ -53,7 +53,7 @@ export function render(data) {
             <div class="badge-label">// EJERCICIO</div>
         </div>
 
-        <h1 class="cyber-title" style="font-size: 48px;">${TemplateUtils.renderEditable('TITLE', `${esc(d.TITLE)}`, data._overrides)}</h1>
+        <h1 class="cyber-title" style="font-size: 82px;">${TemplateUtils.renderEditable('TITLE', `${esc(d.TITLE)}`, data._overrides)}</h1>
         <div class="cyber-subtitle">${esc(d.INTRO_TEXT)}</div>
 
         <!-- Command Terminal -->
@@ -63,28 +63,27 @@ export function render(data) {
                 <div class="term-dot yellow"></div>
                 <div class="term-dot green"></div>
             </div>
-            <div class="term-body" style="font-size: 28px; font-weight: 700; color: var(--primary-color);">
+            <div class="term-body" style="font-size: 48px; font-weight: 700; color: var(--primary-color);">
                 ${TemplateUtils.renderEditable('COMMAND', `${esc(d.COMMAND)}`, data._overrides)}
             </div>
         </div>
 
         <!-- Result -->
         <div class="glass-panel" style="display: flex; gap: 16px; align-items: flex-start;">
-            <span style="color: var(--primary-color); font-size: 28px;">→</span>
-            <span style="font-size: 22px; color: #e2e8f0; line-height: 1.5;">${esc(d.RESULT_TEXT)}</span>
+            <span style="color: var(--primary-color); font-size: 48px;">→</span>
+            <span style="font-size: 41px; color: #e2e8f0; line-height: 1.5;">${esc(d.RESULT_TEXT)}</span>
         </div>
 
         <!-- Note -->
         <div class="glass-panel" style="display: flex; gap: 14px; align-items: flex-start; border-color: var(--warning-color);">
-            <span style="font-size: 28px;">ℹ️</span>
+            <span style="font-size: 48px;">ℹ️</span>
             <div>
-                <div class="mono" style="font-size: 22px; font-weight: 600; color: var(--primary-color); margin-bottom: 6px;">${esc(d.NOTE_TITLE)}</div>
-                <div style="font-size: 20px; color: #ffffff; line-height: 1.5;">${esc(d.NOTE_CONTENT)}</div>
+                <div class="mono" style="font-size: 41px; font-weight: 600; color: var(--primary-color); margin-bottom: 6px;">${esc(d.NOTE_TITLE)}</div>
+                <div style="font-size: 41px; color: #ffffff; line-height: 1.5;">${esc(d.NOTE_CONTENT)}</div>
             </div>
         </div>
             
         </div>
-    </div>
 
     ${TemplateUtils.getAutoFitScript()}
 </body>

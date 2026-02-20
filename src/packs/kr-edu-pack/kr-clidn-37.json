@@ -1,0 +1,32 @@
+{
+    "id": "kr-clidn-37",
+    "name": "KR-CLI: Puzzle / Challenge",
+    "category": "actionable",
+    "description": "Reto CTF con terminal de evidencia, badge de dificultad y cursor parpadeante.",
+    "fields": {
+        "CHALLENGE_NUM": {
+            "description": "Número del reto",
+            "default": "01"
+        },
+        "TITLE": {
+            "description": "Título del reto",
+            "default": "¿Puedes encontrar la flag?"
+        },
+        "SCENARIO": {
+            "description": "Escenario del desafío",
+            "default": "Tienes acceso SSH a un servidor comprometido."
+        },
+        "TERMINAL_LINES": {
+            "description": "Líneas de terminal con TYPE y TEXT",
+            "default": []
+        },
+        "HINT": {
+            "description": "Pista para el reto",
+            "default": "💡 Analiza las conexiones salientes"
+        },
+        "DIFFICULTY": {
+            "description": "Nivel: FÁCIL/MEDIO/DIFÍCIL",
+            "default": "MEDIO"
+        }
+    }
+}

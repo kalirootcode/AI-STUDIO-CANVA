@@ -1,0 +1,16 @@
+{
+    "id": "ebook-06",
+    "name": "Hoja de Trucos",
+    "description": "Lista densa de comandos cortos útiles como referencia.",
+    "category": "TECHNICAL",
+    "fields": {
+        "TITLE": {
+            "type": "string",
+            "label": "Título de la Cheat Sheet"
+        },
+        "COMMANDS": {
+            "type": "array",
+            "label": "Lista de Comandos"
+        }
+    }
+}

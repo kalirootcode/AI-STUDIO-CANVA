@@ -1,0 +1,44 @@
+{
+    "id": "kr-clidn-35",
+    "name": "KR-CLI: Tool Card (Arsenal)",
+    "category": "technical",
+    "description": "Tarjeta de herramienta con icono, ratings de dificultad/poder y comando de instalación.",
+    "fields": {
+        "TOOL_NAME": {
+            "description": "Nombre de la herramienta",
+            "default": "Nmap"
+        },
+        "TOOL_ICON": {
+            "description": "Emoji de la herramienta",
+            "default": "🔍"
+        },
+        "CATEGORY": {
+            "description": "Categoría",
+            "default": "Escaneo de Red"
+        },
+        "DESCRIPTION": {
+            "description": "Descripción breve",
+            "default": "El escáner de puertos más utilizado."
+        },
+        "INSTALL_CMD": {
+            "description": "Comando de instalación",
+            "default": "$ sudo apt install nmap"
+        },
+        "USAGE_CMD": {
+            "description": "Comando de uso",
+            "default": "$ nmap -sV target.com"
+        },
+        "DIFFICULTY": {
+            "description": "Estrellas de dificultad",
+            "default": "⭐⭐"
+        },
+        "POWER": {
+            "description": "Rating de poder",
+            "default": "🔥🔥🔥🔥🔥"
+        },
+        "PLATFORM": {
+            "description": "Plataformas soportadas",
+            "default": "Linux / Windows / macOS"
+        }
+    }
+}

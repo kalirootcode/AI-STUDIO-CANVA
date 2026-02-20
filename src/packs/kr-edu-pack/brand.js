@@ -64,7 +64,7 @@ export function brandCSS() {
 
         .brand-name {
             font-family: 'JetBrains Mono', monospace;
-            font-size: 32px; font-weight: 700;
+            font-size: 54px; font-weight: 700;
             letter-spacing: 4px; color: ${COLORS.primary};
         }
 
@@ -81,7 +81,7 @@ export function brandCSS() {
 
         .slide-num {
             font-family: 'JetBrains Mono', monospace;
-            font-size: 32px; color: ${COLORS.textDim};
+            font-size: 54px; color: ${COLORS.textDim};
         }
 
         .footer-accent {

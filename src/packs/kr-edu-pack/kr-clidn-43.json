@@ -1,0 +1,31 @@
+{
+    "id": "kr-clidn-43",
+    "name": "KR-CLI: Mito vs Realidad",
+    "category": "viral",
+    "description": "Formato Fact-Check para desmentir mitos.",
+    "fields": {
+        "TITLE": {
+            "default": "Mitos de Ciberseguridad",
+            "description": "Título"
+        },
+        "MYTHS": {
+            "default": [
+                {
+                    "MYTH": "Mac no tiene virus",
+                    "REALITY": "El malware en macOS creció 50%",
+                    "VERDICT": "FALSO",
+                    "DANGER": "ALTO"
+                }
+            ],
+            "description": "Lista de mitos"
+        },
+        "CLOSING": {
+            "default": "No te confíes.",
+            "description": "Frase de cierre"
+        },
+        "CATEGORY": {
+            "default": "FACT CHECK",
+            "description": "Categoría visual"
+        }
+    }
+}

@@ -1,0 +1,24 @@
+{
+    "id": "kr-clidn-32",
+    "name": "KR-CLI: Gráfico de Datos",
+    "category": "visual",
+    "description": "Gráfico de barras o circular para visualizar estadísticas.",
+    "fields": {
+        "TITLE": {
+            "description": "Título del gráfico",
+            "default": "Estadísticas"
+        },
+        "TYPE": {
+            "description": "Tipo: bar o circle",
+            "default": "bar"
+        },
+        "STATS": {
+            "description": "Array de datos [{LABEL, VALUE, COLOR}]",
+            "default": []
+        },
+        "DESCRIPTION": {
+            "description": "Descripción",
+            "default": "Análisis de datos."
+        }
+    }
+}

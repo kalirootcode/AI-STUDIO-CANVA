@@ -1,0 +1,16 @@
+{
+    "id": "ebook-03",
+    "name": "Página de Teoría",
+    "description": "Lectura profunda, sin cajas. Formato libro electrónico.",
+    "category": "TEXT",
+    "fields": {
+        "TITLE": {
+            "type": "string",
+            "label": "Subtítulo de la página"
+        },
+        "CONTENT": {
+            "type": "text",
+            "label": "Párrafos de teoría"
+        }
+    }
+}

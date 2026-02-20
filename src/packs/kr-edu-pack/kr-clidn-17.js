@@ -20,8 +20,8 @@ export function render(data) {
 
     const checksHTML = d.CHECK_ITEMS.map(c => `
         <div class="glass-panel" style="display:flex; align-items:center; gap:16px; padding:14px 18px; ${c.CHECKED ? 'border-color:rgba(0,255,136,0.15);' : ''}">
-            <span style="font-size:24px; color:${c.CHECKED ? 'var(--success-color)' : 'rgba(255,255,255,0.2)'};">${c.CHECKED ? '☑' : '☐'}</span>
-            <span style="font-size:22px; color:${c.CHECKED ? '#e2e8f0' : '#ffffff'}; line-height:1.4;">${esc(c.TEXT)}</span>
+            <span style="font-size:41px; color:${c.CHECKED ? 'var(--success-color)' : 'rgba(255,255,255,0.2)'};">${c.CHECKED ? '☑' : '☐'}</span>
+            <span style="font-size: 41px; color:${c.CHECKED ? '#e2e8f0' : '#ffffff'}; line-height:1.4;">${esc(c.TEXT)}</span>
         </div>`).join('\n');
 
     return `<!DOCTYPE html>
@@ -38,8 +38,8 @@ export function render(data) {
         ${TemplateUtils.renderBrandHeader()}
         ${TemplateUtils.renderMetaBadge(data)}
 
-        <div class="mono" style="font-size:22px; color:var(--primary-color); letter-spacing:3px; margin-bottom:12px;">// Checklist</div>
-        <h1 class="cyber-title" style="font-size:42px;">${TemplateUtils.renderEditable('TITLE', `${esc(d.TITLE)}`, data._overrides)}</h1>
+        <div class="mono" style="font-size: 41px; color:var(--primary-color); letter-spacing:3px; margin-bottom:12px;">// Checklist</div>
+        <h1 class="cyber-title" style="font-size:71px;">${TemplateUtils.renderEditable('TITLE', `${esc(d.TITLE)}`, data._overrides)}</h1>
         <div class="cyber-subtitle">${TemplateUtils.renderEditable('DESCRIPTION', `${esc(d.DESCRIPTION)}`, data._overrides)}</div>
 
         <!-- Check Items -->
@@ -47,12 +47,11 @@ export function render(data) {
 
         <!-- Note -->
         <div class="glass-panel" style="display:flex; gap:12px; align-items:center; border-color:rgba(37,99,235,0.15);">
-            <span style="font-size:24px;">ℹ️</span>
-            <span style="font-size:20px; color:#ffffff;">${esc(d.NOTE)}</span>
+            <span style="font-size:41px;">ℹ️</span>
+            <span style="font-size: 41px; color:#ffffff;">${esc(d.NOTE)}</span>
         </div>
             
         </div>
-    </div>
 
     ${TemplateUtils.getAutoFitScript()}
 </body>

@@ -1,0 +1,24 @@
+{
+    "id": "kr-clidn-39",
+    "name": "KR-CLI: Dense Reference (Cheatsheet)",
+    "category": "technical",
+    "description": "Referencia densa de comandos con secciones agrupadas. Máxima densidad de información.",
+    "fields": {
+        "TITLE": {
+            "description": "Título de la referencia",
+            "default": "Nmap Cheatsheet"
+        },
+        "CATEGORY": {
+            "description": "Categoría",
+            "default": "Red"
+        },
+        "SECTIONS": {
+            "description": "Array de secciones con HEADER y COMMANDS [{CMD, DESC}]",
+            "default": []
+        },
+        "NOTE": {
+            "description": "Nota al pie",
+            "default": "Siempre con autorización."
+        }
+    }
+}

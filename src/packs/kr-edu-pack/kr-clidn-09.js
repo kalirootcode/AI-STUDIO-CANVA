@@ -46,7 +46,7 @@ export function render(data) {
         }
         .brand-name {
             font-family: var(--font-military);
-            font-size: 40px; letter-spacing: 6px;
+            font-size: 68px; letter-spacing: 6px;
             color: #fff;
             text-shadow: 0 2px 10px rgba(0,0,0,0.8);
         }
@@ -54,7 +54,7 @@ export function render(data) {
         /* ── MAIN TITLE ── */
         .cta-title {
             font-family: var(--font-military);
-            font-size: 48px; font-weight: 900;
+            font-size: 82px; font-weight: 900;
             color: #fff; text-transform: uppercase;
             line-height: 1.15; letter-spacing: 1px;
             margin-bottom: 12px;
@@ -62,7 +62,7 @@ export function render(data) {
         }
         .cta-subtitle {
             font-family: var(--font-sans);
-            font-size: 26px; color: rgba(255,255,255,0.7);
+            font-size: 44px; color: rgba(255,255,255,0.7);
             line-height: 1.5; margin-bottom: 40px;
             max-width: 800px;
             text-shadow: 0 2px 6px rgba(0,0,0,0.6);
@@ -82,7 +82,7 @@ export function render(data) {
             width: 68px; height: 68px; border-radius: 50%;
             background: rgba(10,10,10,0.85);
             display: flex; align-items: center; justify-content: center;
-            font-size: 28px;
+            font-size: 48px;
             backdrop-filter: blur(8px);
             transition: all 0.3s ease;
             box-shadow: 0 4px 15px rgba(0,0,0,0.5);
@@ -93,7 +93,7 @@ export function render(data) {
         .social-icon.share  { border: 2px solid var(--primary-color); }
         .social-label {
             font-family: var(--font-mono);
-            font-size: 20px; font-weight: 600;
+            font-size: 41px; font-weight: 600;
             color: rgba(255,255,255,0.45);
         }
 
@@ -117,7 +117,7 @@ export function render(data) {
         /* ── CLOSING TEXT (PRIMARY COLOR) ── */
         .closing-text {
             font-family: var(--font-sans);
-            font-size: 34px; font-weight: 800;
+            font-size: 58px; font-weight: 800;
             color: var(--primary-color);
             line-height: 1.3;
             margin-bottom: 20px;
@@ -129,14 +129,14 @@ export function render(data) {
         /* ── FOOTER LABELS ── */
         .cta-footer-label {
             font-family: var(--font-mono);
-            font-size: 20px; font-weight: 600;
+            font-size: 41px; font-weight: 600;
             color: rgba(255,255,255,0.25);
             letter-spacing: 4px;
             margin-bottom: 16px;
         }
         .cta-hashtags {
             font-family: var(--font-mono);
-            font-size: 16px;
+            font-size: 41px;
             color: rgba(255,255,255,0.10);
             letter-spacing: 2px;
             max-width: 700px;
@@ -149,9 +149,9 @@ export function render(data) {
     <div class="bg-grid"></div>
     <div class="bg-glow"></div>
 
-    <!-- Matrix Rain Background -->
-    <div id="cyber-rain-top" style="position: absolute; top: 0; left: 0; width: 100%; height: 500px; z-index: 5; opacity: 0.6; mask-image: linear-gradient(to bottom, black 80%, transparent);"></div>
-    <div id="cyber-rain-bottom" style="position: absolute; bottom: 0; left: 0; width: 100%; height: 500px; z-index: 5; opacity: 0.6; mask-image: linear-gradient(to top, black 80%, transparent);"></div>
+    <!-- 0. EFFECT ZONES: Circuit Board Pattern (Same as Cover 01) -->
+    <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none; opacity: 0.25; background: var(--primary-color); -webkit-mask-image: url(&quot;data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Cg fill='none' stroke='%23000' stroke-width='2'%3E%3Cpath d='M0 50h30l20-20h20l20-20h10M0 20h20l20 20h20l20 20h20M30 100V70l20-20h20l20 20v30M10 100V80l20-20h20l20 20h30'/%3E%3Ccircle cx='30' cy='50' r='3' fill='%23000'/%3E%3Ccircle cx='90' cy='10' r='3' fill='%23000'/%3E%3Ccircle cx='20' cy='20' r='3' fill='%23000'/%3E%3Ccircle cx='80' cy='60' r='3' fill='%23000'/%3E%3Ccircle cx='50' cy='50' r='3' fill='%23000'/%3E%3Ccircle cx='90' cy='70' r='3' fill='%23000'/%3E%3Ccircle cx='10' cy='80' r='3' fill='%23000'/%3E%3Ccircle cx='70' cy='80' r='3' fill='%23000'/%3E%3C/g%3E%3C/svg%3E&quot;); -webkit-mask-size: 150px 150px;"></div>
+    <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none; opacity: 0.1; background: var(--accent-color); -webkit-mask-image: url(&quot;data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Cg fill='none' stroke='%23000' stroke-width='2'%3E%3Cpath d='M0 50h30l20-20h20l20-20h10M0 20h20l20 20h20l20 20h20M30 100V70l20-20h20l20 20v30M10 100V80l20-20h20l20 20h30'/%3E%3Ccircle cx='30' cy='50' r='3' fill='%23000'/%3E%3Ccircle cx='90' cy='10' r='3' fill='%23000'/%3E%3Ccircle cx='20' cy='20' r='3' fill='%23000'/%3E%3Ccircle cx='80' cy='60' r='3' fill='%23000'/%3E%3Ccircle cx='50' cy='50' r='3' fill='%23000'/%3E%3Ccircle cx='90' cy='70' r='3' fill='%23000'/%3E%3Ccircle cx='10' cy='80' r='3' fill='%23000'/%3E%3Ccircle cx='70' cy='80' r='3' fill='%23000'/%3E%3C/g%3E%3C/svg%3E&quot;); -webkit-mask-size: 250px 250px; transform: rotate(180deg) scale(-1, 1);"></div>
 
     <!-- ═══ CENTERED CTA CONTENT ═══ -->
     <div class="cta-wrapper">
@@ -203,21 +203,13 @@ export function render(data) {
 
     <!-- System Footer -->
     <div style="position: absolute; bottom: 35px; width: 100%; text-align: center; z-index: 10;">
-        <div style="font-family: var(--font-mono); font-size: 14px; color: rgba(255,255,255,0.15); letter-spacing: 6px;">
+        <div style="font-family: var(--font-mono); font-size: 34px; color: rgba(255,255,255,0.15); letter-spacing: 6px;">
             END_OF_TRANSMISSION
         </div>
     </div>
 
     ${TemplateUtils.getAutoFitScript()}
-    ${TemplateUtils.getCyberEffectsScript()}
-    <script>
-        window.addEventListener('load', () => {
-             if(window.startMatrixRain) {
-                 window.startMatrixRain('cyber-rain-top', true);
-                 window.startMatrixRain('cyber-rain-bottom', true);
-             }
-        });
-    </script>
+    <!-- Matrix Rain Script Removed for Book Aesthetic -->
 </body>
 </html>`;
 }

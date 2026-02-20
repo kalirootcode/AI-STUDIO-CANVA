@@ -56,10 +56,10 @@ export function render(data) {
                 </div>
             </div>` : ''}
 
-            <!-- 2. GRID SYSTEM -->
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+            <!-- 2. FLEX SYSTEM (Anteriormente Grid) -->
+            <div style="display: flex; flex-direction: column; gap: 16px;">
                 ${d.GRID_ITEMS.map((item, i) => `
-                <div class="glass-panel" style="animation: fadeInUp 0.5s ease backwards; animation-delay: ${i * 0.1}s">
+                <div class="glass-panel" style="animation: fadeInUp 0.5s ease backwards; animation-delay: ${i * 0.1}s; padding:24px;">
                     <div class="flex-center" style="justify-content:flex-start; margin-bottom:16px;">
                         <div style="
                             background:var(--primary-color); color:#000; 
@@ -68,9 +68,9 @@ export function render(data) {
                             margin-right:12px;">
                             ${item.NUMBER}
                         </div>
-                        <h3 class="mono" style="color:var(--primary-color); font-size:24px;">${esc(item.TITLE)}</h3>
+                        <h3 class="mono" style="color:var(--primary-color); font-size:41px;">${esc(item.TITLE)}</h3>
                     </div>
-                    <p style="font-size:20px; color:#ccc; line-height:1.5;">
+                    <p style="font-size: 41px; color:#ccc; line-height:1.5;">
                         ${esc(item.CONTENT)}
                     </p>
                 </div>
@@ -82,7 +82,6 @@ export function render(data) {
         <!-- FOOTER / BRAND -->
             
         </div>
-    </div>
 
     <!-- UTILS -->
     <!-- UTILS -->

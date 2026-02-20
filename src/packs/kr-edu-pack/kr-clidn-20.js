@@ -27,11 +27,11 @@ export function render(data) {
             width: 100px; height: 100px; background: #0a0a0a;
             border: 2px solid rgba(0,217,255,0.2); border-radius: 24px;
             display: flex; align-items: center; justify-content: center;
-            font-size: 48px; margin-bottom: 24px;
+            font-size: 82px; margin-bottom: 24px;
             box-shadow: 0 0 30px rgba(0,217,255,0.1);
         }
         .chapter-num {
-            font-family: var(--font-mono); font-size: 120px; font-weight: 800;
+            font-family: var(--font-mono); font-size: 204px; font-weight: 800;
             background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
             -webkit-background-clip: text; -webkit-text-fill-color: transparent;
             background-clip: text; line-height: 1; margin-bottom: 20px;
@@ -52,11 +52,11 @@ export function render(data) {
 
         <div class="chapter-hero">
             <div class="chapter-icon-box">${d.ICON}</div>
-            <div class="mono" style="font-size:26px; color:rgba(255,255,255,0.3); letter-spacing:4px; margin-bottom:12px;">SECCIÓN</div>
+            <div class="mono" style="font-size:44px; color:rgba(255,255,255,0.3); letter-spacing:4px; margin-bottom:12px;">SECCIÓN</div>
             <div class="chapter-num">${TemplateUtils.renderEditable('CHAPTER_NUMBER', `${esc(d.CHAPTER_NUMBER)}`, data._overrides)}</div>
             <div class="line-deco"></div>
-            <div class="mono" style="font-size:32px; font-weight:700; color:#fff; margin-bottom:16px;">${TemplateUtils.renderEditable('CHAPTER_TITLE', `${esc(d.CHAPTER_TITLE)}`, data._overrides)}</div>
-            <div style="font-size:24px; color:#ffffff; max-width:700px; line-height:1.5;">${TemplateUtils.renderEditable('CHAPTER_SUBTITLE', `${esc(d.CHAPTER_SUBTITLE)}`, data._overrides)}</div>
+            <div class="mono" style="font-size:54px; font-weight:700; color:#fff; margin-bottom:16px;">${TemplateUtils.renderEditable('CHAPTER_TITLE', `${esc(d.CHAPTER_TITLE)}`, data._overrides)}</div>
+            <div style="font-size:41px; color:#ffffff; max-width:700px; line-height:1.5;">${TemplateUtils.renderEditable('CHAPTER_SUBTITLE', `${esc(d.CHAPTER_SUBTITLE)}`, data._overrides)}</div>
         </div>
 
         <!-- Footer -->

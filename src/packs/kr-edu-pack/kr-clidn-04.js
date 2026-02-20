@@ -47,8 +47,8 @@ export function render(data) {
 
         <!-- Warning -->
         <div class="glass-panel" style="display: flex; align-items: center; gap: 16px; border-color: var(--accent-color);">
-            <span style="font-size: 28px; color: var(--accent-color);">⚠️</span>
-            <span style="font-size: 22px; color: var(--accent-color);">${TemplateUtils.renderEditable('WARNING', `${esc(d.WARNING_TEXT)}`, data._overrides)}</span>
+            <span style="font-size: 48px; color: var(--accent-color);">⚠️</span>
+            <span style="font-size: 41px; color: var(--accent-color);">${TemplateUtils.renderEditable('WARNING', `${esc(d.WARNING_TEXT)}`, data._overrides)}</span>
         </div>
 
         <!-- Terminal -->
@@ -69,16 +69,15 @@ export function render(data) {
         <div class="flex-col" style="gap: 14px;">
             ${d.BREAKDOWN_CARDS.map((c, i) => `
             <div class="glass-panel" style="display: flex; align-items: flex-start; gap: 20px; padding: 20px; animation: fadeInUp 0.4s ease backwards; animation-delay: ${i * 0.1}s;">
-                <div style="background: linear-gradient(135deg, var(--primary-color), #7c3aed); color: #000; width: 42px; height: 42px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 22px; flex-shrink: 0;" class="mono">${c.NUMBER}</div>
+                <div style="background: linear-gradient(135deg, var(--primary-color), #7c3aed); color: #000; width: 42px; height: 42px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 41px; flex-shrink: 0;" class="mono">${c.NUMBER}</div>
                 <div>
-                    <div class="mono" style="font-size: 22px; font-weight: 600; color: var(--primary-color); margin-bottom: 6px;">${esc(c.TITLE)}</div>
-                    <div style="font-size: 20px; color: #ffffff; line-height: 1.5;">${esc(c.CONTENT_HTML)}</div>
+                    <div class="mono" style="font-size: 41px; font-weight: 600; color: var(--primary-color); margin-bottom: 6px;">${esc(c.TITLE)}</div>
+                    <div style="font-size: 41px; color: #ffffff; line-height: 1.5;">${esc(c.CONTENT_HTML)}</div>
                 </div>
             </div>`).join('')}
         </div>
             
         </div>
-    </div>
 
     ${TemplateUtils.getAutoFitScript()}
     <style>

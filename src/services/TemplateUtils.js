@@ -32,7 +32,7 @@ export const TemplateUtils = {
                 <!-- Text -->
                 <div style="
                     font-family: 'JetBrains Mono', monospace; font-weight: 800; 
-                    font-size: 24px; letter-spacing: 6px; color: #fff;
+                    font-size: 36px; letter-spacing: 6px; color: #fff;
                     text-shadow: 0 0 20px rgba(0,217,255,0.5);
                     text-transform: uppercase;
                 ">KR-CLIDN</div>
@@ -51,7 +51,6 @@ export const TemplateUtils = {
             .replace(/'/g, '&#039;');
     },
 
-    // 3. Auto-fit script (injected as string)
     getAutoFitScript() {
         return `
         <script>
@@ -60,21 +59,34 @@ export const TemplateUtils = {
                     const safeZone = document.querySelector('.safe-zone');
                     if (!safeZone) return;
                     
-                    // Simple logic: if overflowing, scale down base font size
-                    const maxLoops = 20;
+                    const maxLoops = 30;
                     let loop = 0;
                     
                     while (safeZone.scrollHeight > safeZone.clientHeight && loop < maxLoops) {
-                        const textElements = document.querySelectorAll('.cyber-subtitle, .term-body, .glass-panel p');
+                        // Target ALL text elements for shrinking
+                        const textElements = document.querySelectorAll(
+                            '.cyber-title, .cyber-subtitle, .term-body, p, ' +
+                            '.glass-panel span, .glass-panel div, ' +
+                            '[style*="font-size"], .mono'
+                        );
                         let resized = false;
                         
                         textElements.forEach(el => {
                             let size = parseFloat(window.getComputedStyle(el).fontSize);
-                            if (size > 16) {
+                            const minSize = el.classList.contains('cyber-title') ? 40 : 36;
+                            if (size > minSize) {
                                 el.style.fontSize = (size - 1) + 'px';
                                 resized = true;
                             }
                         });
+                        
+                        // Also reduce gap if still overflowing
+                        if (loop > 10) {
+                            const gap = parseFloat(window.getComputedStyle(safeZone).gap) || 30;
+                            if (gap > 8) {
+                                safeZone.style.gap = (gap - 2) + 'px';
+                            }
+                        }
                         
                         if (!resized) break;
                         loop++;
@@ -114,55 +126,116 @@ export const TemplateUtils = {
         `;
     },
 
-    // 5. Interactivity Script: Injected into IFrame to handle Select/Drag
+    // 5. Interactivity Script: Injected into IFrame to handle Select/Drag for ALL elements
     getInteractivityScript() {
         return `
         <style>
-            .editable-element:hover {
-                outline: 2px dashed rgba(0, 217, 255, 0.5);
-                cursor: grab;
+            .drag-ready:hover {
+                outline: 2px dashed rgba(0, 217, 255, 0.5) !important;
+                cursor: grab !important;
             }
-            .editable-element.selected {
-                outline: 2px solid #00d9ff;
-                z-index: 1000;
+            .drag-ready.selected {
+                outline: 2px solid #00d9ff !important;
+                z-index: 1000 !important;
             }
-            .editable-element.dragging {
-                cursor: grabbing;
-                outline: 2px dashed #ff0055;
+            .drag-ready.dragging {
+                cursor: grabbing !important;
+                outline: 2px dashed #ff0055 !important;
+                z-index: 1001 !important;
             }
         </style>
         <script>
             (function() {
+                // ── EXCLUDED selectors: background/decoration elements that should NOT be draggable ──
+                const EXCLUDE = [
+                    '.bg-grid', '.bg-glow', '.bg-gradient',
+                    '#cyber-rain-top', '#cyber-rain-bottom',
+                    'canvas', 'script', 'style', 'link', 'meta',
+                    '.brand-header-global',
+                    '[style*="END_OF_TRANSMISSION"]'
+                ];
+                const EXCLUDE_SEL = EXCLUDE.join(',');
+
+                // ── Assign drag IDs to ALL meaningful elements ──
+                function initDragTargets() {
+                    // 1. Already-editable elements get drag-ready automatically
+                    document.querySelectorAll('.editable-element').forEach(el => {
+                        el.classList.add('drag-ready');
+                        if (!el.style.position || el.style.position === 'static') {
+                            el.style.position = 'relative';
+                        }
+                    });
+
+                    // 2. Find all other meaningful elements inside safe-zone (or body)
+                    const root = document.querySelector('.safe-zone') || document.body;
+                    const allChildren = root.querySelectorAll('*');
+                    let autoIdx = 0;
+
+                    allChildren.forEach(el => {
+                        // Skip if already drag-ready
+                        if (el.classList.contains('drag-ready')) return;
+                        // Skip excluded elements
+                        if (el.matches(EXCLUDE_SEL)) return;
+                        // Skip elements inside another drag-ready (avoid nested drag)
+                        if (el.closest('.drag-ready')) return;
+                        // Skip tiny/invisible elements
+                        const rect = el.getBoundingClientRect();
+                        if (rect.width < 20 || rect.height < 15) return;
+                        // Skip if it's purely inline text inside an already-draggable parent
+                        if (el.tagName === 'SPAN' && el.parentElement && el.parentElement.classList.contains('drag-ready')) return;
+
+                        // Only target meaningful visual elements
+                        const isBlock = window.getComputedStyle(el).display !== 'inline';
+                        const isVisual = ['DIV', 'SECTION', 'P', 'H1', 'H2', 'H3', 'H4', 'IMG', 'TABLE', 'UL', 'OL', 'FIGURE', 'BLOCKQUOTE', 'PRE', 'CODE'].includes(el.tagName);
+                        const hasClass = el.className && typeof el.className === 'string' && el.className.length > 0;
+
+                        if (isBlock || isVisual || hasClass) {
+                            // Assign auto drag-id
+                            if (!el.dataset.dragId && !el.dataset.editableId) {
+                                el.dataset.dragId = 'auto_' + autoIdx++;
+                            }
+                            el.classList.add('drag-ready');
+                            if (!el.style.position || el.style.position === 'static') {
+                                el.style.position = 'relative';
+                            }
+                        }
+                    });
+                }
+
+                // ── Drag State ──
                 let selectedId = null;
                 let draggedEl = null;
-                let startX, startY, initialTransformX = 0, initialTransformY = 0;
+                let startX, startY, initTX = 0, initTY = 0;
 
-                // Helper to parse translate(x, y)
+                function getElId(el) {
+                    return el.dataset.editableId || el.dataset.dragId || null;
+                }
+
                 function getTranslate(el) {
                     const style = window.getComputedStyle(el);
                     const matrix = new WebKitCSSMatrix(style.transform);
                     return { x: matrix.m41, y: matrix.m42 };
                 }
 
+                // ── Mouse Events ──
                 document.addEventListener('mousedown', (e) => {
-                    const el = e.target.closest('.editable-element');
+                    const el = e.target.closest('.drag-ready');
                     if (!el) {
-                        // Deselect if clicking empty space
                         if (selectedId) {
                             selectedId = null;
-                            document.querySelectorAll('.selected').forEach(el => el.classList.remove('selected'));
+                            document.querySelectorAll('.selected').forEach(s => s.classList.remove('selected'));
                             window.parent.postMessage({ type: 'DESELECT' }, '*');
                         }
                         return;
                     }
 
-                    e.preventDefault(); // Prevent text selection/dragging image
-                    
-                    // Select logic
-                    if (selectedId !== el.dataset.editableId) {
-                        document.querySelectorAll('.selected').forEach(el => el.classList.remove('selected'));
+                    e.preventDefault();
+
+                    const elId = getElId(el);
+                    if (selectedId !== elId) {
+                        document.querySelectorAll('.selected').forEach(s => s.classList.remove('selected'));
                         el.classList.add('selected');
-                        selectedId = el.dataset.editableId;
+                        selectedId = elId;
                         window.parent.postMessage({ type: 'SELECT', id: selectedId }, '*');
                     }
 
@@ -171,45 +244,49 @@ export const TemplateUtils = {
                     draggedEl.classList.add('dragging');
                     startX = e.clientX;
                     startY = e.clientY;
-                    
-                    const currentPos = getTranslate(draggedEl);
-                    initialTransformX = currentPos.x;
-                    initialTransformY = currentPos.y;
+                    const pos = getTranslate(draggedEl);
+                    initTX = pos.x;
+                    initTY = pos.y;
 
-                    document.addEventListener('mousemove', onMouseMove);
-                    document.addEventListener('mouseup', onMouseUp);
+                    document.addEventListener('mousemove', onMove);
+                    document.addEventListener('mouseup', onUp);
                 });
 
-                function onMouseMove(e) {
+                function onMove(e) {
                     if (!draggedEl) return;
-                    
                     const dx = e.clientX - startX;
                     const dy = e.clientY - startY;
-
-                    const newX = initialTransformX + dx;
-                    const newY = initialTransformY + dy;
-
-                    draggedEl.style.transform = \`translate(\${newX}px, \${newY}px)\`;
+                    draggedEl.style.transform = 'translate(' + (initTX + dx) + 'px, ' + (initTY + dy) + 'px)';
                 }
 
-                function onMouseUp(e) {
+                function onUp() {
                     if (!draggedEl) return;
-                    
                     const finalPos = getTranslate(draggedEl);
-                    
-                    // Notify Host to save
-                    window.parent.postMessage({ 
-                        type: 'UPDATE_POS', 
-                        id: draggedEl.dataset.editableId,
-                        x: finalPos.x,
-                        y: finalPos.y
-                    }, '*');
+                    const elId = getElId(draggedEl);
+
+                    if (elId) {
+                        window.parent.postMessage({
+                            type: 'UPDATE_POS',
+                            id: elId,
+                            x: finalPos.x,
+                            y: finalPos.y
+                        }, '*');
+                    }
 
                     draggedEl.classList.remove('dragging');
                     draggedEl = null;
-                    document.removeEventListener('mousemove', onMouseMove);
-                    document.removeEventListener('mouseup', onMouseUp);
+                    document.removeEventListener('mousemove', onMove);
+                    document.removeEventListener('mouseup', onUp);
                 }
+
+                // ── Init after DOM ready ──
+                if (document.readyState === 'loading') {
+                    document.addEventListener('DOMContentLoaded', () => setTimeout(initDragTargets, 200));
+                } else {
+                    setTimeout(initDragTargets, 200);
+                }
+                // Also re-init after full load (images, fonts)
+                window.addEventListener('load', () => setTimeout(initDragTargets, 500));
             })();
         </script>
         `;

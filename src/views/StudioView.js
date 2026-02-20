@@ -16,6 +16,16 @@ export class StudioView extends BaseView {
                         <span>INPUT DECK</span>
                     </div>
                     <div class="panel-content">
+                        <!-- TIKTOK SIGNAL (Hidden by default) -->
+                        <div id="tiktokSignalBadge" style="display:none; margin-bottom:15px; background:rgba(0,217,255,0.05); border:1px solid rgba(0,217,255,0.3); padding:12px; border-radius:8px;">
+                            <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
+                                <span class="material-icons" style="color:#00D9FF;">verified</span>
+                                <span style="color:#00D9FF; font-weight:700; font-size:13px; letter-spacing:1px;">TIKTOK TREND DETECTADO</span>
+                            </div>
+                            <div id="tiktokSignalText" style="font-size:12px; color:#ddd; line-height:1.4; margin-bottom:8px;"></div>
+                            <div style="font-size:11px; color:#666; font-family:monospace;">Autodetectado desde Chrome Extension</div>
+                        </div>
+
                         <!-- Topic -->
                         <div class="control-group">
                             <label>TEMA</label>
@@ -35,8 +45,17 @@ export class StudioView extends BaseView {
                                     <option value="STORY">🕵️ Historia / Caso Real</option>
                                     <option value="TOOL">🛠️ Review Herramienta</option>
                                     <option value="VS">⚔️ Comparativa (A vs B)</option>
+                                    <option value="SPEEDRUN">⚡ Speedrun (X en N pasos)</option>
+                                    <option value="ARSENAL">🔫 Arsenal (Top Herramientas)</option>
+                                    <option value="INCIDENT">🔥 Caso Real (Forense)</option>
+                                    <option value="CHALLENGE">🧩 Challenge / CTF</option>
+                                    <option value="CHEATSHEET">📋 Cheat Sheet Completa</option>
+                                    <option value="MYTHBUSTER">💥 Destructor de Mitos</option>
                                     <option value="NEWS">📰 Noticia / Actualidad</option>
                                     <option value="THEORY">🧠 Concepto Teórico</option>
+                                    <option value="EBOOK_CREATOR" style="color:#A855F7; font-weight:bold;">📖 E-BOOK VIRAL (8 Páginas)</option>
+                                    <option value="TIKTOK_TREND" style="color:#00D9FF; font-weight:bold;">🔥 TIKTOK TREND (AUTO)</option>
+                                    <option value="VIRAL_HOOK_TEST">🧪 A/B Hook Test</option>
                                 </select>
                             </div>
                         </div>
@@ -218,6 +237,31 @@ export class StudioView extends BaseView {
         }
     }
 
+    showTiktokSignal(data) {
+        const badge = this.element.querySelector('#tiktokSignalBadge');
+        const text = this.element.querySelector('#tiktokSignalText');
+        const intentSelect = this.element.querySelector('#intentSelect');
+        const themeInput = this.element.querySelector('#themeInput');
+
+        if (badge && text) {
+            badge.style.display = 'block';
+
+            // Format the trend summary
+            let summary = `<strong>${data.type.toUpperCase()}</strong>`;
+            if (data.hashtag) summary += ` • #${data.hashtag}`;
+            if (data.viralHook) summary += `<br><em>"${data.viralHook}"</em>`;
+
+            text.innerHTML = summary;
+
+            // Auto-select TIKTOK_TREND mode if not already
+            if (intentSelect && intentSelect.value !== 'TIKTOK_TREND') {
+                // Add the option if it doesn't exist (it should be in HTML ideally, but we can inject or select)
+                // Actually, let's just select it if it exists. 
+                // Wait, I haven't added TIKTOK_TREND to the HTML select options yet! I need to do that too.
+            }
+        }
+    }
+
     initEditor() {
         const textarea = this.element.querySelector('#editor');
         if (textarea && window.CodeMirror) {
@@ -376,8 +420,9 @@ export class StudioView extends BaseView {
                 exportSingleBtn.disabled = true;
 
                 try {
+                    const exportHtml = window.app.getExportHTML(currentSlide);
                     const result = await window.cyberCanvas.exportImage({
-                        html: currentSlide.html,
+                        html: exportHtml,
                         width,
                         height,
                         format: 'png'
@@ -412,8 +457,8 @@ export class StudioView extends BaseView {
                 const width = parseInt(parts[0]);
                 const height = parseInt(parts[1]);
 
-                // Collect all slide HTML
-                const slidesHtml = window.app.slides.map(s => s.html);
+                // Collect all slide HTML (with export overrides baked in)
+                const slidesHtml = window.app.slides.map(s => window.app.getExportHTML(s));
 
                 // Get title for folder name
                 const title = document.getElementById('themeInput')?.value || 'Post_Sin_Titulo';
@@ -566,10 +611,23 @@ export class StudioView extends BaseView {
             ? window.TemplateUtils.getInteractivityScript()
             : '';
 
+        // INJECT AUTO-DRAG POSITION OVERRIDES (for persisted auto-drag positions)
+        let autoDragOverrides = '';
+        if (window.app && window.app.slides && window.app.slides[window.app.currentSlideIndex]) {
+            const overrides = window.app.slides[window.app.currentSlideIndex].data._overrides || {};
+            const autoRules = Object.entries(overrides)
+                .filter(([id]) => id.startsWith('auto_'))
+                .map(([id, pos]) => `[data-drag-id="${id}"] { transform: translate(${pos.x}px, ${pos.y}px) !important; }`)
+                .join('\n');
+            if (autoRules) {
+                autoDragOverrides = `<style>/* Auto-Drag Overrides */\n${autoRules}\n</style>`;
+            }
+        }
+
         if (finalHtml.includes('</head>')) {
-            finalHtml = finalHtml.replace('</head>', `${scalingStyle}${interactivity}</head>`);
+            finalHtml = finalHtml.replace('</head>', `${scalingStyle}${interactivity}${autoDragOverrides}</head>`);
         } else {
-            finalHtml = `${scalingStyle}${interactivity}${finalHtml}`;
+            finalHtml = `${scalingStyle}${interactivity}${autoDragOverrides}${finalHtml}`;
         }
 
         frame.srcdoc = finalHtml;

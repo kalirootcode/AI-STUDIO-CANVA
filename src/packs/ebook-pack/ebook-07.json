@@ -1,0 +1,20 @@
+{
+    "id": "ebook-07",
+    "name": "Contraportada",
+    "description": "Cierre del libro con CTA para seguir/guardar.",
+    "category": "CLOSER",
+    "fields": {
+        "TITLE": {
+            "type": "string",
+            "label": "Mensaje Final"
+        },
+        "CTA": {
+            "type": "string",
+            "label": "Llamado a la Acción"
+        },
+        "HASHTAGS": {
+            "type": "string",
+            "label": "Hashtags del post"
+        }
+    }
+}

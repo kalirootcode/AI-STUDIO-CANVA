@@ -1,0 +1,49 @@
+{
+    "id": "kr-clidn-41",
+    "name": "KR-CLI: Stat Bomb",
+    "category": "viral",
+    "description": "Dato estadístico impactante con contexto visual.",
+    "fields": {
+        "SETUP": {
+            "default": "¿Sabías esto?",
+            "description": "Frase introductoria"
+        },
+        "STAT_NUMBER": {
+            "default": "99",
+            "description": "Número principal"
+        },
+        "STAT_UNIT": {
+            "default": "%",
+            "description": "Unidad (%, M, K)"
+        },
+        "STAT_DETAIL": {
+            "default": "De vulnerabilidades...",
+            "description": "Detalle del dato"
+        },
+        "CONTEXT_CARDS": {
+            "default": [
+                {
+                    "ICON": "⚡",
+                    "TEXT": "Impacto crítico"
+                },
+                {
+                    "ICON": "📉",
+                    "TEXT": "Tendencia anual"
+                }
+            ],
+            "description": "Cartas de contexto"
+        },
+        "SOURCE": {
+            "default": "Fuente: Industry Report",
+            "description": "Fuente del dato"
+        },
+        "HOOK": {
+            "default": "¿Estás protegido?",
+            "description": "Pregunta de gancho"
+        },
+        "CATEGORY": {
+            "default": "DATO",
+            "description": "Categoría visual"
+        }
+    }
+}

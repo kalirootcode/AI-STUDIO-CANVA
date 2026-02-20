@@ -20,6 +20,7 @@
     --font-mono: 'JetBrains Mono', monospace;
     --font-sans: 'Inter', sans-serif;
     --font-military: 'Black Ops One', cursive;
+    --secondary-color: color-mix(in srgb, var(--primary-color) 60%, #a855f7);
 
     /* TikTok UI Safe Areas (Symmetric & Tighter) */
     --safe-top: 200px;
@@ -135,7 +136,7 @@ body {
 p {
     color: #ffffff;
     font-family: var(--font-sans);
-    font-size: 24px;
+    font-size: 26px;
     line-height: 1.6;
     margin-bottom: 20px;
     font-weight: 400;
@@ -222,7 +223,7 @@ p {
     color: #ffffff;
     /* White text */
     font-family: var(--font-mono);
-    font-size: 22px;
+    font-size: 24px;
     /* Increased size */
     line-height: 1.6;
     flex-grow: 1;
@@ -282,4 +283,104 @@ p {
     color: var(--primary-color);
     font-weight: 700;
     font-size: 20px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════ */
+/* RESPONSIVE: Aspect Ratio Adaptations                                       */
+/* ═══════════════════════════════════════════════════════════════════════════ */
+
+/* 4:5 Portrait (1080x1350) — Instagram Feed */
+@media (max-aspect-ratio: 5/6) and (min-aspect-ratio: 9/10) {
+    :root {
+        --safe-top: 100px;
+        --safe-bottom: 200px;
+        --safe-right: 60px;
+        --safe-left: 60px;
+    }
+
+    .safe-zone {
+        gap: 20px;
+    }
+
+    .cyber-title {
+        font-size: 52px;
+        margin-bottom: 14px;
+    }
+
+    .cyber-subtitle {
+        font-size: 28px;
+        margin-bottom: 24px;
+    }
+
+    p {
+        font-size: 24px;
+    }
+
+    .term-body {
+        font-size: 22px;
+    }
+
+    .glass-panel {
+        padding: 14px 18px;
+    }
+
+    .brand-header-global {
+        height: 120px !important;
+    }
+}
+
+/* 1:1 Square (1080x1080) — Instagram Post */
+@media (min-aspect-ratio: 9/10) {
+    :root {
+        --safe-top: 60px;
+        --safe-bottom: 120px;
+        --safe-right: 50px;
+        --safe-left: 50px;
+    }
+
+    .safe-zone {
+        gap: 16px;
+    }
+
+    .cyber-title {
+        font-size: 44px;
+        margin-bottom: 10px;
+    }
+
+    .cyber-subtitle {
+        font-size: 24px;
+        margin-bottom: 16px;
+    }
+
+    p {
+        font-size: 22px;
+    }
+
+    .term-body {
+        font-size: 20px;
+    }
+
+    .glass-panel {
+        padding: 12px 14px;
+    }
+
+    .terminal-window {
+        margin-bottom: 12px;
+    }
+
+    .brand-header-global {
+        height: 90px !important;
+        padding-top: 10px !important;
+    }
+
+    .brand-header-global img {
+        width: 50px !important;
+        height: 50px !important;
+        margin-bottom: 6px !important;
+    }
+
+    .cyber-progress-container {
+        padding: 12px;
+        gap: 12px;
+    }
 }

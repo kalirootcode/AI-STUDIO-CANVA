@@ -39,8 +39,8 @@ export function render(data) {
         const num = String(i + 1).padStart(2, ' ');
         const color = colorMap[l.TYPE] || '#e2e8f0';
         return `<div style="display:flex; gap:16px; padding:4px 0; line-height:1.7;">
-            <span style="color:#444; font-size:18px; min-width:30px; text-align:right; user-select:none; font-family:var(--font-mono);">${num}</span>
-            <span style="color:${color}; font-size:22px; font-family:var(--font-mono);">${l.TEXT ? esc(l.TEXT) : '&nbsp;'}</span>
+            <span style="color:#444; font-size: 41px; min-width:30px; text-align:right; user-select:none; font-family:var(--font-mono);">${num}</span>
+            <span style="color:${color}; font-size: 41px; font-family:var(--font-mono);">${l.TEXT ? esc(l.TEXT) : '&nbsp;'}</span>
         </div>`;
     }).join('');
 
@@ -60,18 +60,18 @@ export function render(data) {
 
         <!-- Language Badge -->
         <div style="display:flex; align-items:center; gap:12px; margin-bottom:12px;">
-            <div class="mono" style="font-size:18px; color:var(--primary-color); background:rgba(0,217,255,0.06); border:1px solid rgba(0,217,255,0.15); padding:6px 14px; border-radius:6px; letter-spacing:2px;">${esc(d.LANGUAGE.toUpperCase())}</div>
+            <div class="mono" style="font-size: 41px; color:var(--primary-color); background:rgba(0,217,255,0.06); border:1px solid rgba(0,217,255,0.15); padding:6px 14px; border-radius:6px; letter-spacing:2px;">${esc(d.LANGUAGE.toUpperCase())}</div>
         </div>
 
-        <h1 class="cyber-title" style="font-size:40px;">${TemplateUtils.renderEditable('TITLE', `${esc(d.TITLE)}`, data._overrides)}</h1>
+        <h1 class="cyber-title" style="font-size:68px;">${TemplateUtils.renderEditable('TITLE', `${esc(d.TITLE)}`, data._overrides)}</h1>
         <div class="cyber-subtitle">${TemplateUtils.renderEditable('DESCRIPTION', `${esc(d.DESCRIPTION)}`, data._overrides)}</div>
 
         <!-- Code Editor -->
         <div class="terminal-window" style="flex:1;">
             <div class="term-header">
                 <div class="term-dot red"></div><div class="term-dot yellow"></div><div class="term-dot green"></div>
-                <span class="mono" style="margin-left:12px; font-size:16px; color:#999;">📄 ${esc(d.FILENAME)}</span>
-                <span class="mono" style="margin-left:auto; font-size:16px; color:#ffffff;">${esc(d.LANGUAGE)}</span>
+                <span class="mono" style="margin-left:12px; font-size: 41px; color:#999;">📄 ${esc(d.FILENAME)}</span>
+                <span class="mono" style="margin-left:auto; font-size: 41px; color:#ffffff;">${esc(d.LANGUAGE)}</span>
             </div>
             <div class="term-body">
                 ${linesHTML}
@@ -80,8 +80,8 @@ export function render(data) {
 
         <!-- Explanation -->
         <div class="glass-panel" style="display:flex; gap:14px; align-items:flex-start;">
-            <span style="font-size:24px;">💡</span>
-            <span style="font-size:22px; color:#e2e8f0; line-height:1.5;">${esc(d.EXPLANATION)}</span>
+            <span style="font-size:41px;">💡</span>
+            <span style="font-size: 41px; color:#e2e8f0; line-height:1.5;">${esc(d.EXPLANATION)}</span>
         </div>
 
         <!-- Footer -->

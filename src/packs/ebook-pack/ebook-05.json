@@ -1,0 +1,20 @@
+{
+    "id": "ebook-05",
+    "name": "Gráfico de Datos",
+    "description": "Muestra estadísticas o porcentajes de forma elegante.",
+    "category": "VISUAL",
+    "fields": {
+        "TITLE": {
+            "type": "string",
+            "label": "Título del gráfico"
+        },
+        "SUBTITLE": {
+            "type": "string",
+            "label": "Subtítulo de contexto"
+        },
+        "STATS": {
+            "type": "array",
+            "label": "Estadísticas"
+        }
+    }
+}

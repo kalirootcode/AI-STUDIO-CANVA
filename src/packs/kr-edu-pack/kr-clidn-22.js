@@ -28,9 +28,9 @@ export function render(data) {
         return `
             <div style="display:flex; align-items:center; gap:10px; padding:10px 0; padding-left:${indent}px; border-bottom:1px solid rgba(255,255,255,0.03);">
                 ${connector}
-                <span style="font-size:24px;">${icon}</span>
-                <span style="font-family:var(--font-mono); font-size:24px; font-weight:600; color:${nameColor};">${esc(item.NAME)}</span>
-                <span style="font-size:18px; color:#ffffff; margin-left:auto;">${esc(item.DETAIL)}</span>
+                <span style="font-size:41px;">${icon}</span>
+                <span style="font-family:var(--font-mono); font-size:41px; font-weight:600; color:${nameColor};">${esc(item.NAME)}</span>
+                <span style="font-size: 41px; color:#ffffff; margin-left:auto;">${esc(item.DETAIL)}</span>
             </div>`;
     }).join('');
 
@@ -48,10 +48,10 @@ export function render(data) {
         ${TemplateUtils.renderBrandHeader()}
         ${TemplateUtils.renderMetaBadge(data)}
 
-        <h1 class="cyber-title" style="font-size:40px;">${TemplateUtils.renderEditable('TITLE', `${esc(d.TITLE)}`, data._overrides)}</h1>
+        <h1 class="cyber-title" style="font-size:68px;">${TemplateUtils.renderEditable('TITLE', `${esc(d.TITLE)}`, data._overrides)}</h1>
 
         <!-- Root Path -->
-        <div class="mono" style="font-size:22px; color:var(--primary-color); background:rgba(0,217,255,0.06); border:1px solid rgba(0,217,255,0.15); padding:10px 18px; border-radius:8px; display:inline-block; margin-bottom:16px;">
+        <div class="mono" style="font-size: 41px; color:var(--primary-color); background:rgba(0,217,255,0.06); border:1px solid rgba(0,217,255,0.15); padding:10px 18px; border-radius:8px; display:inline-block; margin-bottom:16px;">
             ${esc(d.ROOT_PATH)}
         </div>
 
@@ -59,7 +59,7 @@ export function render(data) {
         <div class="terminal-window" style="flex:1;">
             <div class="term-header">
                 <div class="term-dot red"></div><div class="term-dot yellow"></div><div class="term-dot green"></div>
-                <span class="mono" style="margin-left:auto; font-size:16px; color:#ffffff;">tree</span>
+                <span class="mono" style="margin-left:auto; font-size: 41px; color:#ffffff;">tree</span>
             </div>
             <div class="term-body" style="padding:16px 20px;">
                 ${treeHTML}
@@ -68,12 +68,11 @@ export function render(data) {
 
         <!-- Description -->
         <div class="glass-panel" style="display:flex; gap:14px; align-items:flex-start;">
-            <span style="font-size:24px;">📂</span>
-            <span style="font-size:22px; color:#e2e8f0; line-height:1.5;">${TemplateUtils.renderEditable('DESCRIPTION', `${esc(d.DESCRIPTION)}`, data._overrides)}</span>
+            <span style="font-size:41px;">📂</span>
+            <span style="font-size: 41px; color:#e2e8f0; line-height:1.5;">${TemplateUtils.renderEditable('DESCRIPTION', `${esc(d.DESCRIPTION)}`, data._overrides)}</span>
         </div>
             
         </div>
-    </div>
 
     ${TemplateUtils.getAutoFitScript()}
 </body>

@@ -1,0 +1,20 @@
+{
+    "id": "ebook-01",
+    "name": "Portada Ebook",
+    "description": "Portada inmensa con tipografía elegante para gancho inicial.",
+    "category": "OPENER",
+    "fields": {
+        "TITLE": {
+            "type": "string",
+            "label": "Título Principal"
+        },
+        "SUBTITLE": {
+            "type": "string",
+            "label": "Subtítulo"
+        },
+        "AUTHOR": {
+            "type": "string",
+            "label": "Nombre del Autor o Marca"
+        }
+    }
+}

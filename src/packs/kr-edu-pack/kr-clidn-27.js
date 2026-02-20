@@ -21,7 +21,7 @@ export function render(data) {
         const permsHTML = g.PERMS.split('').map(c => {
             const isActive = c !== '-';
             return `<span style="
-                font-family:var(--font-mono); font-size:36px; font-weight:800;
+                font-family:var(--font-mono); font-size:61px; font-weight:800;
                 width:56px; height:56px; display:flex; align-items:center; justify-content:center;
                 border-radius:10px;
                 ${isActive
@@ -33,10 +33,10 @@ export function render(data) {
 
         return `
             <div class="glass-panel" style="display:flex; align-items:center; gap:20px; padding:20px 24px;">
-                <span style="font-size:32px;">${g.ICON}</span>
+                <span style="font-size:54px;">${g.ICON}</span>
                 <div style="flex:1;">
-                    <div style="font-size:22px; font-weight:700; color:${g.COLOR}; margin-bottom:4px;">${esc(g.GROUP)}</div>
-                    <div style="font-size:18px; color:#ffffff;">${esc(g.DESC)}</div>
+                    <div style="font-size: 41px; font-weight:700; color:${g.COLOR}; margin-bottom:4px;">${esc(g.GROUP)}</div>
+                    <div style="font-size: 41px; color:#ffffff;">${esc(g.DESC)}</div>
                 </div>
                 <div style="display:flex; gap:8px;">${permsHTML}</div>
             </div>`;
@@ -56,15 +56,15 @@ export function render(data) {
         ${TemplateUtils.renderBrandHeader()}
         ${TemplateUtils.renderMetaBadge(data)}
 
-        <h1 class="cyber-title" style="font-size:42px;">${TemplateUtils.renderEditable('TITLE', `${esc(d.TITLE)}`, data._overrides)}</h1>
+        <h1 class="cyber-title" style="font-size:71px;">${TemplateUtils.renderEditable('TITLE', `${esc(d.TITLE)}`, data._overrides)}</h1>
 
         <!-- File Example -->
         <div class="terminal-window">
             <div class="term-header">
                 <div class="term-dot red"></div><div class="term-dot yellow"></div><div class="term-dot green"></div>
-                <span class="mono" style="margin-left:auto; font-size:16px; color:#ffffff;">ls -la</span>
+                <span class="mono" style="margin-left:auto; font-size: 41px; color:#ffffff;">ls -la</span>
             </div>
-            <div class="term-body" style="font-family:var(--font-mono); font-size:24px; color:var(--primary-color);">
+            <div class="term-body" style="font-family:var(--font-mono); font-size:41px; color:var(--primary-color);">
                 ${esc(d.FILE_EXAMPLE)}
             </div>
         </div>
@@ -76,8 +76,8 @@ export function render(data) {
 
         <!-- Explanation -->
         <div class="glass-panel" style="display:flex; gap:14px; align-items:flex-start;">
-            <span style="font-size:24px;">🔑</span>
-            <span style="font-size:22px; color:#e2e8f0; line-height:1.5;">${esc(d.EXPLANATION)}</span>
+            <span style="font-size:41px;">🔑</span>
+            <span style="font-size: 41px; color:#e2e8f0; line-height:1.5;">${esc(d.EXPLANATION)}</span>
         </div>
 
         <!-- Footer -->

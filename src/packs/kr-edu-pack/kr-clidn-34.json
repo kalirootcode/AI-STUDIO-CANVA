@@ -1,0 +1,32 @@
+{
+    "id": "kr-clidn-34",
+    "name": "KR-CLI: Speedrun Step",
+    "category": "actionable",
+    "description": "Paso numerado de speedrun con comando, resultado y barra de progreso.",
+    "fields": {
+        "STEP_NUMBER": {
+            "description": "Número del paso actual",
+            "default": "01"
+        },
+        "TOTAL_STEPS": {
+            "description": "Total de pasos",
+            "default": "05"
+        },
+        "TITLE": {
+            "description": "Título de la acción",
+            "default": "Instalar herramienta"
+        },
+        "COMMAND": {
+            "description": "Comando a ejecutar",
+            "default": "$ sudo apt install nmap"
+        },
+        "RESULT": {
+            "description": "Resultado esperado",
+            "default": "Instalación completada."
+        },
+        "TIME_ESTIMATE": {
+            "description": "Tiempo estimado",
+            "default": "~10s"
+        }
+    }
+}

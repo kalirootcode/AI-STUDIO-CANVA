@@ -32,7 +32,7 @@ class ContentEngine {
             CONCEPTO: {
                 id: 'kr-clidn-15',
                 desc: 'Definición Técnica',
-                schema: `"TERM": "Término", "CATEGORY": "Cat", "DEFINITION": "Definición", "KEY_POINTS": [{"ICON": "🔗", "TEXT": "Punto"}], "EXAMPLE": "Ejemplo"`
+                schema: `"TERM": "Término", "CATEGORY": "Cat", "DEFINITION": "Párrafo MUY largo explicando detalladamente. Puedes extenderte mucho aquí sin problema.", "KEY_POINTS": [{"ICON": "🔗", "TEXT": "Punto (MÁXIMO 2 ITEMS, pero con texto más largo)"}], "EXAMPLE": "Ejemplo extenso"`
             },
             LIST: {
                 id: 'kr-clidn-03',
@@ -41,15 +41,15 @@ class ContentEngine {
             },
             GRID: {
                 id: 'kr-clidn-05',
-                desc: 'Grid con Terminal',
-                schema: `"TITLE": "Título", "COMMAND": "$ cmd", "INTRO_TEXT": "Intro", "OUTPUT_LINES": [{"TEXT": "out"}], "GRID_ITEMS": [{"NUMBER": "1", "TITLE": "T", "CONTENT": "C"}]`
+                desc: 'Columna/Lista Extendida',
+                schema: `"TITLE": "Título", "COMMAND": "$ cmd", "INTRO_TEXT": "Intro", "OUTPUT_LINES": [{"TEXT": "out"}], "GRID_ITEMS": [{"NUMBER": "1", "TITLE": "T", "CONTENT": "Párrafo LARGO detallando el item. Extiéndete todo lo que quieras. (MÁXIMO 2 ITEMS TOTALES)"}]`
             },
 
             // --- TECHNICAL / HANDS-ON ---
             TERMINAL_OUTPUT: {
                 id: 'kr-clidn-04',
                 desc: 'Salida de Terminal',
-                schema: `"TITLE": "Título", "COMMAND": "$ cmd", "WARNING_TEXT": "Warn", "OUTPUT_LINES": [{"TEXT": "line", "HIGHLIGHT": "kw"}], "BREAKDOWN_CARDS": [{"NUMBER": "1", "TITLE": "T", "CONTENT_HTML": "C"}]`
+                schema: `"TITLE": "Título", "COMMAND": "$ cmd", "WARNING_TEXT": "Warn", "OUTPUT_LINES": [{"TEXT": "line", "HIGHLIGHT": "kw"}], "BREAKDOWN_CARDS": [{"NUMBER": "1", "TITLE": "T", "CONTENT_HTML": "Párrafo extenso explicativo. (MÁXIMO 2 ITEMS)"}]`
             },
             PRO_TERMINAL: {
                 id: 'kr-clidn-21',
@@ -178,6 +178,129 @@ class ContentEngine {
                 schema: `"TITLE": "Permisos", "FILE_EXAMPLE": "-rwx...", "PERMISSION_GROUPS": [{"GROUP": "Owner", "PERMS": "rwx", "ICON": "👤", "COLOR": "#f00", "DESC": "Desc"}], "EXPLANATION": "Expl"`
             },
 
+            // --- MODE-SPECIFIC ---
+            SPEEDRUN_STEP: {
+                id: 'kr-clidn-34',
+                desc: 'Paso Speedrun',
+                schema: `"STEP_NUMBER": "01", "TOTAL_STEPS": "05", "TITLE": "Acción", "COMMAND": "$ cmd", "RESULT": "Resultado", "TIME_ESTIMATE": "~10s"`
+            },
+            TOOL_CARD: {
+                id: 'kr-clidn-35',
+                desc: 'Tarjeta Arsenal',
+                schema: `"TOOL_NAME": "Tool", "TOOL_ICON": "🔍", "CATEGORY": "Cat", "DESCRIPTION": "Desc", "INSTALL_CMD": "$ apt install...", "USAGE_CMD": "$ tool...", "DIFFICULTY": "⭐⭐", "POWER": "🔥🔥🔥", "PLATFORM": "Linux"`
+            },
+            TIMELINE: {
+                id: 'kr-clidn-36',
+                desc: 'Línea Temporal',
+                schema: `"TITLE": "Cronología", "EVENTS": [{"TIME": "08:00", "ICON": "🔍", "EVENT": "Evento", "DETAIL": "Detalle"}], "IMPACT": "Impacto"`
+            },
+            PUZZLE: {
+                id: 'kr-clidn-37',
+                desc: 'Challenge/Puzzle',
+                schema: `"CHALLENGE_NUM": "01", "TITLE": "Reto", "SCENARIO": "Escenario", "TERMINAL_LINES": [{"TYPE": "prompt/output", "TEXT": "txt"}], "HINT": "Pista", "DIFFICULTY": "MEDIO"`
+            },
+            MYTH_REALITY: {
+                id: 'kr-clidn-38',
+                desc: 'Mito vs Realidad',
+                schema: `"MYTH_TITLE": "Título", "MYTH_TEXT": "Mito", "REALITY_TEXT": "Realidad", "PROOF_CMD": "$ cmd", "PROOF_EXPLAIN": "Expl", "VERDICT": "Veredicto"`
+            },
+            DENSE_REF: {
+                id: 'kr-clidn-39',
+                desc: 'Referencia Densa',
+                schema: `"TITLE": "Ref", "CATEGORY": "Cat", "SECTIONS": [{"HEADER": "Sección", "COMMANDS": [{"CMD": "cmd", "DESC": "desc"}]}], "NOTE": "Nota"`
+            },
+
+            // --- TIKTOK VIRAL (NEW) ---
+            HOOK_COMPARE: {
+                id: 'kr-clidn-40',
+                desc: 'Hook Comparativo',
+                schema: `"TITLE": "Título", "MYTH_LABEL": "Lo que crees", "MYTH_ICON": "❌", "MYTH_POINTS": ["p1"], "REALITY_LABEL": "La realidad", "REALITY_ICON": "⚡", "REALITY_POINTS": ["p1"], "BOTTOM_LINE": "Conclusión", "CATEGORY": "MITOS"`
+            },
+            STAT_BOMB: {
+                id: 'kr-clidn-41',
+                desc: 'Dato Impactante',
+                schema: `"SETUP": "Contexto", "STAT_NUMBER": "99", "STAT_UNIT": "%", "STAT_DETAIL": "Detalle", "CONTEXT_CARDS": [{"ICON": "⚡", "TEXT": "txt"}], "SOURCE": "Fuente", "HOOK": "Pregunta", "CATEGORY": "DATO"`
+            },
+            PROGRESS_BAR: {
+                id: 'kr-clidn-42',
+                desc: 'Barra Progreso',
+                schema: `"TITLE": "Nivel", "CURRENT_LEVEL": 3, "TOTAL_LEVELS": 5, "LEVEL_LABEL": "Label", "PROGRESS_PCT": 60, "LEVELS": [{"NUM": 1, "LABEL": "L", "DESC": "D", "DONE": true, "CURRENT": false}], "NEXT_STEP": "Teaser", "CATEGORY": "SKILL"`
+            },
+            MYTH_VS_REALITY: {
+                id: 'kr-clidn-43',
+                desc: 'Mito vs Realidad',
+                schema: `"TITLE": "Mitos", "MYTHS": [{"MYTH": "M", "REALITY": "R", "VERDICT": "FALSO", "DANGER": "ALTO"}], "CLOSING": "Cierre", "CATEGORY": "FACT CHECK"`
+            },
+            POLL: {
+                id: 'kr-clidn-44',
+                desc: 'Encuesta Viral',
+                schema: `"TITLE": "Pregunta", "QUESTION": "Q", "OPTIONS": [{"KEY": "A", "TEXT": "T", "COLOR": "#f00", "ICON": "x"}], "CORRECT_KEY": "B", "REVEAL": "Teaser", "COMMENT_CTA": "Comenta", "CATEGORY": "QUIZ"`
+            },
+
+            // --- TIKTOK VIRAL (NEW) ---
+            HOOK_COMPARE: {
+                id: 'kr-clidn-40',
+                desc: 'Hook Comparativo',
+                schema: `"TITLE": "Título", "MYTH_LABEL": "Lo que crees", "MYTH_ICON": "❌", "MYTH_POINTS": ["p1"], "REALITY_LABEL": "La realidad", "REALITY_ICON": "⚡", "REALITY_POINTS": ["p1"], "BOTTOM_LINE": "Conclusión", "CATEGORY": "MITOS"`
+            },
+            STAT_BOMB: {
+                id: 'kr-clidn-41',
+                desc: 'Dato Impactante',
+                schema: `"SETUP": "Contexto", "STAT_NUMBER": "99", "STAT_UNIT": "%", "STAT_DETAIL": "Detalle", "CONTEXT_CARDS": [{"ICON": "⚡", "TEXT": "txt"}], "SOURCE": "Fuente", "HOOK": "Pregunta", "CATEGORY": "DATO"`
+            },
+            PROGRESS_BAR: {
+                id: 'kr-clidn-42',
+                desc: 'Barra Progreso',
+                schema: `"TITLE": "Nivel", "CURRENT_LEVEL": 3, "TOTAL_LEVELS": 5, "LEVEL_LABEL": "Label", "PROGRESS_PCT": 60, "LEVELS": [{"NUM": 1, "LABEL": "L", "DESC": "D", "DONE": true, "CURRENT": false}], "NEXT_STEP": "Teaser", "CATEGORY": "SKILL"`
+            },
+            MYTH_VS_REALITY: {
+                id: 'kr-clidn-43',
+                desc: 'Mito vs Realidad',
+                schema: `"TITLE": "Mitos", "MYTHS": [{"MYTH": "M", "REALITY": "R", "VERDICT": "FALSO", "DANGER": "ALTO"}], "CLOSING": "Cierre", "CATEGORY": "FACT CHECK"`
+            },
+            POLL: {
+                id: 'kr-clidn-44',
+                desc: 'Encuesta Viral',
+                schema: `"TITLE": "Pregunta", "QUESTION": "Q", "OPTIONS": [{"KEY": "A", "TEXT": "T", "COLOR": "#f00", "ICON": "x"}], "CORRECT_KEY": "B", "REVEAL": "Teaser", "COMMENT_CTA": "Comenta", "CATEGORY": "QUIZ"`
+            },
+
+            // --- EBOOK VIRAL PACK (NEW) ---
+            EBOOK_01: {
+                id: 'ebook-01',
+                desc: 'Portada Ebook',
+                schema: `"TITLE": "Título con *palabras clave* resaltadas entre asteriscos", "SUBTITLE": "Subtítulo con *keyword* resaltada", "AUTHOR": "KR-CLIDN"`
+            },
+            EBOOK_02: {
+                id: 'ebook-02',
+                desc: 'Separador Capítulo',
+                schema: `"CHAPTER_NUM": "01", "CHAPTER_TITLE": "Título del Capítulo", "TITLE": "*Subtítulo* del capítulo", "CHAPTER_DESC": "Párrafo descriptivo del contenido del capítulo con *palabras clave* resaltadas entre asteriscos. Describe qué aprenderá el lector.", "CURRENT_PAGE": "2", "TOTAL_PAGES": "TOTAL_REAL"`
+            },
+            EBOOK_03: {
+                id: 'ebook-03',
+                desc: 'Página de Teoría',
+                schema: `"TITLE": "*Título* del Concepto", "CONTENT": "Dos párrafos extensos y educativos separados por \\\\n\\\\n. Resalta *palabras clave* entre asteriscos. Primer párrafo: explica el concepto en profundidad.\\\\n\\\\nSegundo párrafo: amplía con ejemplos, contexto histórico o aplicaciones prácticas. Se permite ser EXTENSO.", "CURRENT_PAGE": "3", "TOTAL_PAGES": "TOTAL_REAL"`
+            },
+            EBOOK_04: {
+                id: 'ebook-04',
+                desc: 'Ejemplo Práctico',
+                schema: `"TITLE": "Comando: *nombre*", "DESCRIPTION": "Dos párrafos explicativos separados por \\\\n\\\\n. Resalta *herramientas* y *conceptos* entre asteriscos.\\\\n\\\\nSegundo párrafo con detalles técnicos adicionales.", "COMMAND": "comando_real_ejecutable", "OUTPUT": "Salida realista del terminal", "CURRENT_PAGE": "4", "TOTAL_PAGES": "TOTAL_REAL"`
+            },
+            EBOOK_05: {
+                id: 'ebook-05',
+                desc: 'Gráfico Estadísticas',
+                schema: `"TITLE": "*Datos* Relevantes", "SUBTITLE": "Párrafo de contexto explicando las *estadísticas* con palabras clave resaltadas. Mínimo 2 líneas.", "STATS": [{"LABEL": "Categoría", "VALUE": 80, "COLOR": "var(--primary-color)"}, {"LABEL": "Cat 2", "VALUE": 55, "COLOR": "var(--accent-color)"}, {"LABEL": "Cat 3", "VALUE": 30, "COLOR": "var(--warning-color)"}], "CURRENT_PAGE": "5", "TOTAL_PAGES": "TOTAL_REAL"`
+            },
+            EBOOK_06: {
+                id: 'ebook-06',
+                desc: 'Hoja de Trucos',
+                schema: `"TITLE": "*Hoja* de Trucos", "INTRO": "Párrafo introductorio con *keywords* resaltadas describiendo esta referencia rápida.", "COMMANDS": [{"CMD": "comando_real", "DESC": "Descripción corta"}], "TIP": "Consejo profesional con *keywords* resaltadas entre asteriscos.", "CURRENT_PAGE": "6", "TOTAL_PAGES": "TOTAL_REAL"`
+            },
+            EBOOK_07: {
+                id: 'ebook-07',
+                desc: 'Contraportada',
+                schema: `"TITLE": "*Fin* del E-Book", "CTA": "Mensaje persuasivo con *palabras clave* resaltadas para guardar, compartir y seguir.", "MOTIVATION": "Frase motivacional con *keywords* sobre el valor de aprender este tema.", "HASHTAGS": "#hashtags #relevantes"`
+            },
+
             // --- STRUCTURAL ---
             CHAPTER: {
                 id: 'kr-clidn-20',
@@ -187,7 +310,7 @@ class ContentEngine {
             CONCLUSION: { // 09 usually CTA
                 id: 'kr-clidn-09',
                 desc: 'Cierre / CTA',
-                schema: `"TITLE": "Pregunta cierre", "CTA_MESSAGE": "Llamada acción", "CLOSING_TEXT": "Frase final", "HASHTAGS": "#tags"`
+                schema: `"TITLE": "Pregunta de cierre que enganche (ej: '¿Listo para proteger tu red?')", "CTA_MESSAGE": "Frase PERSUASIVA para seguir la cuenta (ej: 'Sígueme para dominar la ciberseguridad desde cero'). NO mencionar próximo post específico.", "CLOSING_TEXT": "Frase motivacional corta y poderosa que inspire a seguir aprendiendo", "HASHTAGS": "#tags"`
             }
         };
 
@@ -195,85 +318,311 @@ class ContentEngine {
         this.categories = {
             OPENER: ['COVER', 'HOOK'],
             CONCEPT: ['CONCEPTO', 'ANATOMY', 'QUOTE', 'LIST'],
-            TECHNICAL: ['TERMINAL_OUTPUT', 'PRO_TERMINAL', 'CODE', 'CODE_BLOCK', 'SCRIPT_EDITOR', 'CHEAT_SHEET', 'COMMAND_CARD', 'PERMISSION_MATRIX'],
-            VISUAL: ['FLOW', 'DIRECTORY_TREE', 'NETWORK_DIAGRAM', 'GRID', 'STATISTIC_CHART', 'STATS_HERO'],
-            COMPARISON: ['VS_CARD', 'VS_SIMPLE', 'BEFORE_AFTER'],
-            ACTIONABLE: ['MINI_TUTORIAL', 'LAB', 'STEP_BY_STEP', 'ERROR_SOLUTION'],
-            ADVICE: ['PRO_TIP', 'DO_DONT', 'CHECKLIST', 'WARNING'],
+            TECHNICAL: ['TERMINAL_OUTPUT', 'PRO_TERMINAL', 'CODE', 'CODE_BLOCK', 'SCRIPT_EDITOR', 'CHEAT_SHEET', 'COMMAND_CARD', 'PERMISSION_MATRIX', 'DENSE_REF'],
+            VISUAL: ['FLOW', 'DIRECTORY_TREE', 'NETWORK_DIAGRAM', 'GRID', 'STATISTIC_CHART', 'STATS_HERO', 'TIMELINE'],
+            COMPARISON: ['VS_CARD', 'VS_SIMPLE', 'BEFORE_AFTER', 'MYTH_REALITY'],
+            ACTIONABLE: ['MINI_TUTORIAL', 'LAB', 'STEP_BY_STEP', 'ERROR_SOLUTION', 'SPEEDRUN_STEP', 'PUZZLE'],
+            ADVICE: ['PRO_TIP', 'DO_DONT', 'CHECKLIST', 'WARNING', 'TOOL_CARD'],
             CLOSER: ['CONCLUSION']
         };
     }
 
-
     /**
      * Builds a specific sequence based on Content Mode.
-     * Enforces strict structure for Tutorials, Stories, etc.
+     * 11 Modes with psychology-driven template ordering.
      */
     buildSlideSequence(count, mode = 'TUTORIAL') {
         const sequence = ['COVER'];
-        let remaining = count - 2; // Reserve Cover + Conclusion (Index handled inside)
+        let remaining = count - 2; // Reserve Cover + Conclusion
 
-        // 1. Define Core Sequences by Mode
+        // ─── MODE: TIKTOK_TREND (NEW) ───
+        if (mode === 'TIKTOK_TREND') {
+            // Highly aggressive viral structure
+            sequence[0] = Math.random() > 0.5 ? 'HOOK_COMPARE' : 'STAT_BOMB'; // Replace default cover
+
+            // Core rotation of high-retention templates
+            const viralPool = ['MYTH_VS_REALITY', 'VS_CARD', 'PROGRESS_BAR', 'DO_DONT', 'POLL', 'ERROR_SOLUTION', 'TIMELINE'];
+
+            for (let i = 0; i < remaining; i++) {
+                sequence.push(viralPool[Math.floor(Math.random() * viralPool.length)]);
+            }
+
+            // Strong engagement closer
+            sequence.push('POLL');
+            return sequence;
+        }
+
+        // ─── MODE: VIRAL_HOOK_TEST (NEW) ───
+        if (mode === 'VIRAL_HOOK_TEST') {
+            return ['HOOK_COMPARE', 'STAT_BOMB', 'COVER', 'POLL'];
+        }
+
+        // ─── MODE: EBOOK_CREATOR (DYNAMIC EBOOK) ───
+        if (mode === 'EBOOK_CREATOR') {
+            // Dynamic sequence that adapts to any page count
+            const ebookSeq = ['EBOOK_01', 'EBOOK_02']; // Cover + Chapter
+            let ebookRemaining = count - 3; // Reserve 1 for back cover
+            const middleTypes = ['EBOOK_03', 'EBOOK_04', 'EBOOK_05', 'EBOOK_03', 'EBOOK_06'];
+            for (let i = 0; i < ebookRemaining; i++) {
+                ebookSeq.push(middleTypes[i % middleTypes.length]);
+            }
+            ebookSeq.push('EBOOK_07'); // Back cover
+            return ebookSeq;
+        }
+
+        // ─── MODE: TUTORIAL (Improved) ───
         if (mode === 'TUTORIAL') {
-            // Structure: Cover -> Index -> Prerequisites -> Steps... -> Conclusion
-            sequence.push('HOOK'); // The Index Slide
+            // Structure: Cover → Index → Prerequisites → [Step→Result→Tip]... → Before/After → Conclusion
+            sequence.push('HOOK');
             remaining--;
 
-            // Add Prerequisites if space permits
             if (remaining > 5) {
                 sequence.push('CHECKLIST'); // "What you need"
                 remaining--;
             }
 
-            // Fill with Steps
-            const stepTemplates = ['STEP_BY_STEP', 'TERMINAL_OUTPUT', 'CODE_BLOCK', 'WARNING', 'PRO_TIP'];
             for (let i = 0; i < remaining; i++) {
-                // Alternating Logic for visual variety
-                if (i % 3 === 0) sequence.push('STEP_BY_STEP'); // Core step
-                else if (i % 3 === 1) sequence.push('TERMINAL_OUTPUT'); // Result
-                else sequence.push('PRO_TIP'); // Advice
+                const cycle = i % 5;
+                if (cycle === 0) sequence.push('STEP_BY_STEP');
+                else if (cycle === 1) sequence.push('TERMINAL_OUTPUT');
+                else if (cycle === 2) sequence.push('PRO_TIP');
+                else if (cycle === 3) sequence.push('WARNING');
+                else sequence.push('BEFORE_AFTER');
             }
 
+            // ─── MODE: STORY (Kill Chain) ───
         } else if (mode === 'STORY') {
-            // Structure: Cover -> Hook -> Context -> Narrative... -> Lesson -> Conclusion
-            sequence.push('HOOK'); // "What happened" summary
+            // Structure: Cover → Index → Recon → Weaponize → Deliver → Exploit → Persist → Lesson
+            sequence.push('HOOK');
             remaining--;
 
-            const storyTemplates = ['QUOTE', 'NETWORK_DIAGRAM', 'FLOW', 'ANATOMY', 'STATS_HERO', 'VS_SIMPLE'];
+            // Kill Chain narrative arc
+            const storyArc = [
+                'CONCEPTO',          // Context: What happened
+                'NETWORK_DIAGRAM',   // Recon: The target
+                'FLOW',              // Attack flow
+                'TERMINAL_OUTPUT',   // The exploit
+                'CODE_BLOCK',        // The payload
+                'STATS_HERO',        // The impact
+                'QUOTE',             // Lesson learned
+                'DO_DONT',           // How to defend
+                'CHECKLIST'          // Action items
+            ];
+
             for (let i = 0; i < remaining; i++) {
-                sequence.push(storyTemplates[i % storyTemplates.length]);
+                sequence.push(storyArc[i % storyArc.length]);
             }
 
+            // ─── MODE: TOOL (Improved) ───
         } else if (mode === 'TOOL') {
-            // Structure: Cover -> What is it -> Install -> Usage -> Features -> Pro Tip -> Conclusion
-            const toolSeq = ['CONCEPTO', 'COMMAND_CARD', 'TERMINAL_OUTPUT', 'LIST', 'PRO_TIP', 'VS_SIMPLE'];
-            // Fill available slots looping through toolSeq
+            // Structure: Cover → What → Install → Use → Features → Errors → Cheat → Conclusion
+            const toolSeq = [
+                'CONCEPTO',          // What is it
+                'COMMAND_CARD',      // GitHub/Install
+                'TERMINAL_OUTPUT',   // Basic usage
+                'LIST',              // Key features
+                'CODE_BLOCK',        // Script example
+                'ERROR_SOLUTION',    // Common errors
+                'CHEAT_SHEET',       // Quick reference
+                'PRO_TIP',           // Pro tips
+                'VS_SIMPLE'          // vs alternatives
+            ];
+
             for (let i = 0; i < remaining; i++) {
                 sequence.push(toolSeq[i % toolSeq.length]);
             }
 
+            // ─── MODE: VS (Improved) ───
         } else if (mode === 'VS') {
-            // Structure: Cover -> Contenders -> Round 1 -> Round 2 -> Verdict
-            sequence.push('VS_CARD'); // Main Comparison
+            // Structure: Cover → Main VS → Rounds → Stats → Verdict
+            sequence.push('VS_CARD');
             remaining--;
 
-            const vsTemplates = ['VS_SIMPLE', 'BEFORE_AFTER', 'STATISTIC_CHART', 'LIST'];
+            const vsSeq = [
+                'TERMINAL_OUTPUT',   // Tool A demo
+                'TERMINAL_OUTPUT',   // Tool B demo
+                'VS_SIMPLE',         // Feature comparison
+                'STATISTIC_CHART',   // Performance data
+                'BEFORE_AFTER',      // Real-world result
+                'DO_DONT',           // When to use which
+                'STATS_HERO'         // Winner stats
+            ];
+
             for (let i = 0; i < remaining; i++) {
-                sequence.push(vsTemplates[i % vsTemplates.length]);
+                sequence.push(vsSeq[i % vsSeq.length]);
+            }
+
+            // ─── MODE: SPEEDRUN ⚡ ───
+        } else if (mode === 'SPEEDRUN') {
+            // Structure: Cover → Rapid-fire numbered steps → Result
+            // No index, just GO GO GO
+            const speedSeq = [
+                'SPEEDRUN_STEP',
+                'SPEEDRUN_STEP',
+                'SPEEDRUN_STEP',
+                'TERMINAL_OUTPUT',
+                'SPEEDRUN_STEP',
+                'SPEEDRUN_STEP',
+                'CODE_BLOCK',
+                'STATS_HERO'
+            ];
+
+            for (let i = 0; i < remaining; i++) {
+                sequence.push(speedSeq[i % speedSeq.length]);
+            }
+
+            // ─── MODE: ARSENAL 🔫 ───
+        } else if (mode === 'ARSENAL') {
+            // Structure: Cover → Index → Tool cards with ratings → Summary
+            sequence.push('HOOK');
+            remaining--;
+
+            const arsenalSeq = [
+                'TOOL_CARD',         // Tool with ratings
+                'TERMINAL_OUTPUT',   // Demo usage
+                'TOOL_CARD',         // Next tool
+                'CODE_BLOCK',        // Usage example
+                'TOOL_CARD',         // Next tool
+                'DENSE_REF',         // Quick reference
+                'TOOL_CARD',         // Next tool
+                'PRO_TIP'            // Pro tip
+            ];
+
+            for (let i = 0; i < remaining; i++) {
+                sequence.push(arsenalSeq[i % arsenalSeq.length]);
+            }
+
+            // ─── MODE: INCIDENT 🔥 ───
+        } else if (mode === 'INCIDENT') {
+            // Structure: Cover → Timeline → Target → Attack → Impact → Forensics → Defense
+            sequence.push('HOOK');
+            remaining--;
+
+            const incidentSeq = [
+                'QUOTE',             // "On March 15, the world woke up to..."
+                'TIMELINE',          // Chronological incident timeline
+                'NETWORK_DIAGRAM',   // The target infrastructure
+                'TERMINAL_OUTPUT',   // What the attacker ran
+                'CODE_BLOCK',        // The exploit code
+                'STATS_HERO',        // Damage/Impact numbers
+                'TIMELINE',          // Detection timeline
+                'CHECKLIST',         // Lessons / How to prevent
+                'DO_DONT'            // Defense recommendations
+            ];
+
+            for (let i = 0; i < remaining; i++) {
+                sequence.push(incidentSeq[i % incidentSeq.length]);
+            }
+
+            // ─── MODE: CHALLENGE 🧩 ───
+        } else if (mode === 'CHALLENGE') {
+            // Structure: Cover → Puzzles → Clues → Solution Reveal
+            const challengeSeq = [
+                'PUZZLE',            // The CTF challenge
+                'CONCEPTO',          // Context/Hint
+                'CODE_BLOCK',        // "Look at this code..."
+                'PUZZLE',            // Another puzzle
+                'DIRECTORY_TREE',    // "Where's the flag?"
+                'BEFORE_AFTER',      // Wrong vs Right approach
+                'PUZZLE',            // Solution reveal
+                'STATS_HERO'         // Score/Difficulty rating
+            ];
+
+            for (let i = 0; i < remaining; i++) {
+                sequence.push(challengeSeq[i % challengeSeq.length]);
+            }
+
+            // ─── MODE: CHEATSHEET 📋 ───
+        } else if (mode === 'CHEATSHEET') {
+            // Structure: Cover → Dense reference sections + cheat sheets
+            sequence.push('HOOK'); // Table of contents
+            remaining--;
+
+            const cheatSeq = [
+                'DENSE_REF',         // Dense command reference
+                'CHEAT_SHEET',       // Commands group
+                'DENSE_REF',         // More dense reference
+                'CODE',              // Syntax reference
+                'DENSE_REF',         // Even more reference
+                'PRO_TIP',           // Pro tips
+                'ERROR_SOLUTION',    // Common mistakes
+                'PERMISSION_MATRIX'  // Reference table
+            ];
+
+            for (let i = 0; i < remaining; i++) {
+                sequence.push(cheatSeq[i % cheatSeq.length]);
+            }
+
+            // ─── MODE: MYTHBUSTER 💥 ───
+        } else if (mode === 'MYTHBUSTER') {
+            // Structure: Cover → [Myth❌ → Reality✅ → Proof]... → Summary
+            const mythSeq = [
+                'MYTH_REALITY',      // Myth vs Reality split
+                'TERMINAL_OUTPUT',   // Proof with real output
+                'STATS_HERO',        // Stats that prove/disprove
+                'MYTH_REALITY',      // Next myth
+                'CODE_BLOCK',        // Technical proof
+                'CONCEPTO',          // Why people believe this
+                'MYTH_REALITY',      // Another myth
+                'BEFORE_AFTER',      // Expected vs Actual
+                'CHECKLIST'          // Truth summary
+            ];
+
+            for (let i = 0; i < remaining; i++) {
+                sequence.push(mythSeq[i % mythSeq.length]);
+            }
+
+            // ─── MODE: NEWS ───
+        } else if (mode === 'NEWS') {
+            // Structure: Cover → What happened → Impact → Analysis → What's next
+            sequence.push('HOOK');
+            remaining--;
+
+            const newsSeq = [
+                'QUOTE',             // The headline/statement
+                'STATS_HERO',        // Key numbers
+                'NETWORK_DIAGRAM',   // Who's affected
+                'FLOW',              // Timeline
+                'CONCEPTO',          // Analysis
+                'VS_SIMPLE',         // Before vs After
+                'DO_DONT',           // What to do
+                'CHECKLIST'          // Action items
+            ];
+
+            for (let i = 0; i < remaining; i++) {
+                sequence.push(newsSeq[i % newsSeq.length]);
+            }
+
+            // ─── MODE: THEORY ───
+        } else if (mode === 'THEORY') {
+            // Structure: Cover → Index → Concepts → Visuals → Applications
+            sequence.push('HOOK');
+            remaining--;
+
+            const theorySeq = [
+                'CONCEPTO',          // Core concept
+                'ANATOMY',           // Break it down
+                'FLOW',              // How it works
+                'GRID',              // Components
+                'DIRECTORY_TREE',    // Structure
+                'STATISTIC_CHART',   // Data
+                'QUOTE',             // Expert insight
+                'MINI_TUTORIAL',     // Try it yourself
+                'PRO_TIP'            // Key takeaway
+            ];
+
+            for (let i = 0; i < remaining; i++) {
+                sequence.push(theorySeq[i % theorySeq.length]);
             }
 
         } else {
-            // Default "Smart Mix" (The old logic)
-            // If very short, just mix technical/visual
+            // ─── DEFAULT: Smart Mix ───
+            sequence.push('HOOK');
+            remaining--;
+
             if (remaining <= 5) {
-                sequence.push('HOOK');
-                remaining--;
                 sequence.push(...this.getRandomMix(remaining, 'THEORY', 'MIX'));
             } else {
-                // Chapter Logic
-                sequence.push('HOOK'); // Index
-                remaining--;
-
                 const numChapters = Math.min(4, Math.ceil(remaining / 8));
                 const slidesPerChapter = Math.floor(remaining / numChapters);
                 let extraSlides = remaining % numChapters;
@@ -315,25 +664,200 @@ class ContentEngine {
         return mix;
     }
 
-    generatePrompt(topic, slideCount = 10, mode = 'TUTORIAL') {
+    generatePrompt(topic, slideCount = 10, mode = 'TUTORIAL', trendSignal = null) {
         const count = Math.max(5, Math.min(50, parseInt(slideCount)));
         const sequence = this.buildSlideSequence(count, mode);
-        // Default theme based on mode if not strictly intent-based
-        const themeMap = { 'TUTORIAL': 'BLUE_TEAM', 'STORY': 'OSINT', 'TOOL': 'RED_TEAM', 'VS': 'CYBER', 'NEWS': 'CYBER', 'THEORY': 'CYBER' };
+
+        // Expanded theme map for all modes
+        const themeMap = {
+            'TUTORIAL': 'BLUE_TEAM', 'STORY': 'OSINT', 'TOOL': 'RED_TEAM',
+            'VS': 'CYBER', 'NEWS': 'CYBER', 'THEORY': 'BLUE_TEAM',
+            'SPEEDRUN': 'RED_TEAM', 'ARSENAL': 'RED_TEAM', 'INCIDENT': 'OSINT',
+            'CHALLENGE': 'RED_TEAM', 'CHEATSHEET': 'BLUE_TEAM', 'MYTHBUSTER': 'CYBER',
+            'TIKTOK_TREND': 'CYBER', 'VIRAL_HOOK_TEST': 'RED_TEAM',
+            'EBOOK_CREATOR': 'CYBER'
+        };
         const theme = themeMap[mode] || 'CYBER';
 
         console.log(`[ContentEngine] Topic: "${topic}" | Mode: ${mode} | Slides: ${count} | Sequence:`, sequence);
 
         let slideInstructions = '';
 
-        // Special Instruction for Index Consistency
-        const indexConfig = `
-    IMPORTANT: SLIDE 2 is the INDEX ("HOOK" template). 
-    It MUST list the key sections/steps that appear in the SUBSEQUENT slides.
-    If Mode is TUTORIAL, list the Steps.
-    If Mode is STORY, list the chronological phases.
-    Ensure the "ITEMS" array in Slide 2 MATCHES the content of the rest of the generated JSON.
-        `;
+        // ─── TIKTOK INTELLIGENCE INJECTION (NEW) ───
+        let tiktokContext = '';
+        if (trendSignal) {
+            tiktokContext = `
+🚨 TIKTOK TREND SIGNAL DETECTED 🚨
+You must adapt the content to match this active trend:
+- HASHTAGS ACTIVOS: ${trendSignal.hashtag || 'N/A'}
+- SONIDO VIRAL: ${trendSignal.sound || 'N/A'}
+- VIRAL HOOK REFERENCE: "${trendSignal.viralHook || 'N/A'}"
+- USER NICHE: "${trendSignal.niche || 'Cybersecurity'}"
+
+INSTRUCCIONES DE ADAPTACIÓN:
+1. Usa el "VIRAL HOOK REFERENCE" como inspiración para tu Slide 1, pero adáptalo a: ${topic}.
+2. Si hay un sonido viral, sugiere en el texto cómo interactuar con el ritmo (ej: "Lee esto con el audio...").
+3. Maximiza la controversia o la sorpresa (High-Dopamine Content).
+4. El tono debe ser URGENTE y DIRECTO.
+`;
+        }
+
+        // ── MODE-SPECIFIC GOLDEN RULES ──
+        const modeRules = {
+            'TIKTOK_TREND': `
+REGLAS DE ORO (TIKTOK TREND):
+- SLIDE 1: HOOK VISUAL OBLIGATORIO. Usa el formato de comparación o dato impactante.
+- VELOCIDAD EXTREMA: Máximo 5 segundos de lectura por slide.
+- PATRONES VISUALES: Usa emojis grandes como iconos (❌, ✅, ⚠️).
+- CIERRE: Pregunta polarizante para generar comentarios.`,
+
+            'VIRAL_HOOK_TEST': `
+REGLAS (A/B HOOK TEST):
+- Genera 3 portadas con ángulos psicológicos diferentes (Miedo, Curiosidad, Beneficio).
+- El objetivo es probar cuál detiene el scroll.`,
+
+            'TUTORIAL': `
+REGLAS DE ORO (TUTORIAL):
+- Slide 1: Gancho visual que prometa un RESULTADO tangible ("Después de este post, podrás...")
+- Usa progresión de dificultad: empezar fácil, terminar avanzado
+- Cada paso debe tener un comando REAL ejecutable
+- Incluye advertencias REALES antes de comandos peligrosos
+- Penúltimo slide: Muestra el ANTES vs DESPUÉS del resultado
+- Último slide: CTA con pregunta directa ("¿Qué herramienta quieres dominar next?")
+- TONO: Profesor paciente pero experto`,
+
+            'STORY': `
+REGLAS DE ORO (HISTORIA / CASO REAL):
+- Estructura KILL CHAIN: Reconocimiento → Weaponización → Entrega → Explotación → Persistencia → Lección
+- Slide 1: Gancho tipo true crime ("El día que hackearon a...")
+- Usa CLIFFHANGERS entre slides ("Pero lo que no sabían era...")
+- Incluye datos reales: fechas, empresas, números de registros afectados
+- Slide de impacto: Estadísticas escalofriantes ($ perdidos, usuarios afectados)
+- Cierre con lecciones aplicables, NO solo con la historia
+- TONO: Narrador de documental, urgente y dramático`,
+
+            'TOOL': `
+REGLAS DE ORO (REVIEW DE HERRAMIENTA):
+- NO vendas la herramienta, muestra su PODER con ejemplos reales
+- Incluye: Qué es → Instalación → Uso básico → Uso avanzado → Errores comunes → Cheat sheet
+- Cada comando debe ser COPIABLE y funcional
+- Muestra errores REALES y cómo resolverlos
+- Compara brevemente con alternativas
+- TONO: Reviewer experto, honesto (menciona pros Y contras)`,
+
+            'VS': `
+REGLAS DE ORO (COMPARATIVA):
+- Slide 1: Plantea el debate de forma POLARIZANTE ("¿Cuál es MEJOR?")
+- Sé OBJETIVO: muestra pros y contras de AMBOS lados
+- Incluye: Demo de A → Demo de B → Comparativa features → Datos de rendimiento → Veredicto
+- Usa DATOS REALES (benchmarks, features, compatibilidad)
+- El veredicto final debe ser MATIZADO ("Usa X cuando..., Usa Y cuando...")
+- TONO: Juez imparcial pero con opinión fundamentada`,
+
+            'SPEEDRUN': `
+REGLAS DE ORO (SPEEDRUN):
+- SIN ÍNDICE. Directo a la acción desde el Slide 2
+- Cada slide = UN PASO CLARO. Sin explicaciones largas
+- Títulos cortos tipo countdown: "PASO 1/5", "PASO 2/5"...
+- Cada paso: 1 comando + 1 resultado. Máximo 3 líneas de texto
+- Sensación de VELOCIDAD y PODER: "En 30 segundos tendrás..."
+- Último paso muestra el RESULTADO FINAL impactante
+- TONO: Speedrunner, directo, sin rodeos`,
+
+            'ARSENAL': `
+REGLAS DE ORO (ARSENAL / TOP HERRAMIENTAS):
+- Slide 1: "Las X herramientas que todo hacker necesita"
+- Cada herramienta: Nombre + 1 línea qué hace + comando de instalación + rating dificultad
+- VARIEDAD: mezclar categorías (escaneo, explotación, forense, OSINT)
+- Incluir herramientas REALES con repositorios GitHub reales
+- Rating visual: ⭐ Dificultad, 🔥 Poder, 📊 Popularidad
+- Cerrar con "¿Cuál falta? Comenta 👇"
+- TONO: Curador experto, selectivo`,
+
+            'INCIDENT': `
+REGLAS DE ORO (CASO REAL / FORENSE):
+- Slide 1: Titular de noticia impactante ("Así cayó [empresa]")
+- Timeline cronológico del ataque con fechas reales
+- Diagrama de red mostrando el vector de ataque
+- Incluir CVEs reales, TTPs del framework MITRE ATT&CK si aplica
+- Números de impacto: $ pérdidas, registros expuestos, tiempo de detección
+- Cerrar con LECCIONES DEFENSIVAS aplicables
+- TONO: Periodista investigativo + analista forense`,
+
+            'CHALLENGE': `
+REGLAS DE ORO (CHALLENGE / CTF):
+- SIN ÍNDICE. El misterio empieza en el Slide 2
+- Slide 1: "¿Puedes resolver esto?" con emoji 🧩
+- Presenta el puzzle: un output, un código, un log sospechoso
+- Cada slide siguiente da UNA PISTA más
+- Pattern interrupt: un slide con pista falsa o red herring
+- Penúltimo: "¿Ya lo tienes?" (pausa dramática)
+- Último: Solución + explicación + nivel de dificultad
+- TONO: Game master, misterioso, retador`,
+
+            'CHEATSHEET': `
+REGLAS DE ORO (CHEAT SHEET):
+- Slide 1: "La guía DEFINITIVA de [tema]"
+- MÁXIMA DENSIDAD de información útil por slide
+- Organizar por secciones temáticas (Básico, Intermedio, Avanzado)
+- Cada comando con su descripción en 1 línea
+- Incluir atajos, trucos y flags poco conocidos
+- Formato consistente: comando → resultado esperado
+- Este post debe ser GUARDADO como referencia
+- TONO: Manual de referencia, conciso y preciso`,
+
+            'MYTHBUSTER': `
+REGLAS DE ORO (DESTRUCTOR DE MITOS):
+- Slide 1: "X MENTIRAS que te dijeron sobre [tema]"
+- Estructura por mito: MITO ❌ → REALIDAD ✅ → PRUEBA TÉCNICA
+- Cada mito debe ser algo que la MAYORÍA cree
+- La prueba debe ser un comando/output/dato REAL verificable
+- Usar tono de "shock": "Esto que crees es FALSO"
+- Incluir estadísticas que contradigan la creencia popular
+- TONO: Detectivo que desmonta conspiracies, contundente`,
+
+            'NEWS': `
+REGLAS DE ORO (NOTICIA / ACTUALIDAD):
+- Slide 1: Titular URGENTE con 🚨
+- Responder: ¿Qué pasó? ¿A quién afecta? ¿Qué hacer?
+- Incluir datos verificables (fuentes, fechas, números)
+- Contextualizar: por qué IMPORTA para el usuario
+- Cerrar con acciones concretas que el usuario puede tomar HOY
+- TONO: Periodista de breaking news, urgente pero riguroso`,
+
+            'EBOOK_CREATOR': `
+REGLAS DE ORO (E-BOOK VIRAL):
+- PORTADA (Slide 1): Título IMPACTANTE con *palabras clave* resaltadas. Debe generar curiosidad masiva.
+- ÍNDICE (Slide 2): Descripción del capítulo con contexto rico.
+- PÁGINAS DE TEORÍA: Mínimo 2 PÁRRAFOS LARGOS por página separados por \\n\\n. Resalta *conceptos clave* entre asteriscos.
+- PÁGINAS PRÁCTICAS: Incluye comandos REALES y salidas de terminal realistas junto con 2 párrafos explicativos.
+- ESTADÍSTICAS: Usa datos REALES con 3 barras de progreso y un párrafo de contexto.
+- CHEAT SHEET: Incluye intro + 4 comandos + tip profesional.
+- CONTRAPORTADA: CTA persuasivo + frase motivacional con *keywords*.
+- IMPORTANTE: Este es un E-BOOK, NO un carrusel. El contenido debe ser EXTENSO, PROFUNDO y EDUCATIVO.
+- Usa *asteriscos* alrededor de 2-3 palabras clave importantes POR PÁRRAFO para resaltarlas visualmente.
+- NO seas breve. Extiéndete todo lo que necesites. El lector espera VALOR profundo.
+- TONO: Autoridad técnica, profesor experto que domina el tema.`,
+
+            'THEORY': `
+REGLAS DE ORO (CONCEPTO TEÓRICO):
+- Slide 1: Pregunta intrigante ("¿Realmente sabes qué es un...?")
+- Explicar de SIMPLE a COMPLEJO: analogía → definición → técnico
+- Incluir diagramas, flujos y estructuras visuales
+- Conectar teoría con práctica: "En la vida real, esto se ve así..."
+- Un mini-tutorial al final para aplicar el concepto
+- TONO: Profesor universitario que hace TODO interesante`
+        };
+
+        const goldenRules = modeRules[mode] || modeRules['TUTORIAL'];
+
+        // Index instruction (only for modes that use HOOK as slide 2)
+        const modesWithIndex = ['TUTORIAL', 'STORY', 'TOOL', 'ARSENAL', 'INCIDENT', 'CHEATSHEET', 'NEWS', 'THEORY'];
+        const indexConfig = modesWithIndex.includes(mode) ? `
+IMPORTANTE SOBRE EL ÍNDICE (SLIDE 2):
+El Slide 2 es el ÍNDICE. Su campo "ITEMS" DEBE listar las secciones/pasos que aparecen en los slides posteriores.
+Asegúrate de que el índice refleje EXACTAMENTE el contenido real del carrusel.` : `
+NOTA: Este modo NO usa slide de índice. Empieza la acción directamente desde el Slide 2.`;
 
         for (let i = 0; i < sequence.length; i++) {
             const type = sequence[i];
@@ -352,20 +876,36 @@ class ContentEngine {
     }${i < sequence.length - 1 ? ',' : ''}`;
         }
 
-        return `ACTÚA COMO UN EXPERTO EN CIBERSEGURIDAD Y EDUCADOR.
+        return `ACTÚA COMO UN ESTRATEGA DE CONTENIDO VIRAL EXPERTO EN CIBERSEGURIDAD, HACKING ÉTICO Y KALI LINUX.
 TIPO DE POST: "${mode}"
 TEMA: "${topic}"
 SLIDES: ${count}
 
-OBJETIVO: Generar un post tipo "${mode}" con estructura narrativa perfecta.
+OBJETIVO: Generar un carrusel tipo "${mode}" que sea ADICTIVO, EDUCATIVO y maximice retención y guardados.
+
+${tiktokContext}
+
+${goldenRules}
+
+TÉCNICAS DE RETENCIÓN OBLIGATORIAS:
+1. SLIDE 1: Gancho visual IMPACTANTE. Nunca empezar con texto genérico.
+2. SLIDE 3-4: Usar OPEN LOOPS ("Lo que viene te va a sorprender...") 
+3. SLIDE INTERMEDIO: Pattern interrupt (cambio de ritmo) para re-enganchar.
+4. PENÚLTIMO SLIDE: Cliffhanger o dato bomba que motive llegar al final.
+5. ÚLTIMO SLIDE: CTA persuasivo para SEGUIR LA CUENTA. NO mencionar un próximo post específico. Usar frases como "Sígueme para dominar...", "¿Quieres más contenido así? Sígueme", "No te pierdas lo que viene. ¡Sígueme!". El objetivo es FOLLOWS, no teaser.
+
+PSICOLOGÍA POR SLIDE:
+- Usa CURIOSIDAD al inicio (preguntas, datos impactantes)
+- Usa MIEDO/URGENCIA en el medio (vulnerabilidades reales)
+- Usa SATISFACCIÓN al final (el resultado, la solución, el poder adquirido)
 
 ${indexConfig}
 
 ESTRUCTURA DEL OBJETO JSON SOLICITADO (NO CAMBIES EL ORDEN):
 {
     "seo": {
-        "description": "Escribe aquí una descripción VIRAL para Instagram/LinkedIn/TikTok sobre este post. Usa ganchos, dolor y solución. Máximo 300 caracteres.",
-        "hashtags": "#Ciberseguridad #Hacking #KaliLinux #..."
+        "description": "Descripción VIRAL para Instagram/LinkedIn/TikTok. Usa ganchos, dolor y solución. Máximo 300 caracteres.",
+        "hashtags": "#Ciberseguridad #Hacking #KaliLinux #EthicalHacking #InfoSec #CyberSecurity #PenTest #RedTeam #Linux #Terminal"
     },
     "slides": [
         ${slideInstructions}
@@ -373,11 +913,14 @@ ESTRUCTURA DEL OBJETO JSON SOLICITADO (NO CAMBIES EL ORDEN):
 }
 
 REGLAS:
-1. Genera JSON válido.
+1. Genera JSON válido y PURO (sin markdown fences).
 2. Contenido 100% en Español.
-3. Se profundo y técnico.
-4. Asegura que el Slide 2 (Índice) refleje REALMENTE lo que viene después.
-5. NO incluyas markdown fences (\`\`\`) si es posible, o asegúrate de que sea JSON puro.
+3. Sé PROFUNDO y TÉCNICO. Nada superficial.
+4. Usa comandos, herramientas y técnicas REALES.
+5. Cada slide debe aportar VALOR. Nada de relleno.
+6. Los títulos deben generar CURIOSIDAD (usa números, preguntas, negaciones).
+7. BREVEDAD ADAPTATIVA: ${mode === 'EBOOK_CREATOR' ? 'Este es un E-BOOK. El contenido debe ser EXTENSO y PROFUNDO. Usa párrafos largos, explicaciones detalladas y múltiples ejemplos. NO seas breve.' : 'Hemos aumentado el tamaño de la letra para dispositivos móviles. DEBES RESUMIR TUS TEXTOS AL MÁXIMO. Usa frases CORTAS y directas (no excedas de 6-8 palabras por campo de descripción). Elimina palabras innecesarias.'}
+8. KEYWORDS RESALTADAS: Envuelve 2-3 palabras clave importantes por campo de texto entre *asteriscos* para resaltarlas visualmente con el color del tema.
 
 RETORNA SOLO EL JSON.`;
     }

@@ -36,14 +36,14 @@ export function render(data) {
             background: radial-gradient(circle, rgba(0,217,255,0.1) 0%, transparent 70%);
         }
         .stat-number {
-            font-family: var(--font-mono); font-size: 120px; font-weight: 800;
+            font-family: var(--font-mono); font-size: 204px; font-weight: 800;
             background: linear-gradient(135deg, var(--primary-color), var(--success-color));
             -webkit-background-clip: text; -webkit-text-fill-color: transparent;
             background-clip: text; position: relative;
             filter: drop-shadow(0 0 30px rgba(0,217,255,0.4));
         }
         .stat-label {
-            font-size: 24px; color: #ffffff; margin-top: 12px;
+            font-size: 41px; color: #ffffff; margin-top: 12px;
             position: relative;
         }
     </style>
@@ -58,12 +58,12 @@ export function render(data) {
 
         <!-- Badge -->
         <div style="display:flex; align-items:center; gap:14px; margin-bottom:20px;">
-            <div style="font-family:var(--font-mono); font-size:24px; font-weight:800; color:#0a0a0f; background:linear-gradient(135deg,var(--primary-color),#7c3aed); width:56px; height:56px; border-radius:14px; display:flex; align-items:center; justify-content:center;">${esc(d.EXERCISE_LETTER)}</div>
-            <span class="mono" style="font-size:26px; color:var(--primary-color); letter-spacing:3px;">// DATO CLAVE</span>
+            <div style="font-family:var(--font-mono); font-size:41px; font-weight:800; color:#0a0a0f; background:linear-gradient(135deg,var(--primary-color),#7c3aed); width:56px; height:56px; border-radius:14px; display:flex; align-items:center; justify-content:center;">${esc(d.EXERCISE_LETTER)}</div>
+            <span class="mono" style="font-size:44px; color:var(--primary-color); letter-spacing:3px;">// DATO CLAVE</span>
         </div>
 
-        <h1 class="cyber-title" style="font-size: 44px;">${TemplateUtils.renderEditable('TITLE', `${esc(d.TITLE)}`, data._overrides)}</h1>
-        <div class="cyber-subtitle" style="font-size: 26px;">${esc(d.INTRO_TEXT)}</div>
+        <h1 class="cyber-title" style="font-size: 75px;">${TemplateUtils.renderEditable('TITLE', `${esc(d.TITLE)}`, data._overrides)}</h1>
+        <div class="cyber-subtitle" style="font-size: 44px;">${esc(d.INTRO_TEXT)}</div>
 
         <!-- Command -->
         <div class="terminal-window">
@@ -72,12 +72,12 @@ export function render(data) {
                 <div class="term-dot yellow"></div>
                 <div class="term-dot green"></div>
             </div>
-            <div class="term-body" style="font-size: 26px; font-weight: 700; color: var(--primary-color);">
+            <div class="term-body" style="font-size: 44px; font-weight: 700; color: var(--primary-color);">
                 ${TemplateUtils.renderEditable('COMMAND', `${esc(d.COMMAND)}`, data._overrides)}
             </div>
         </div>
 
-        <div style="font-size: 22px; color: #ffffff; margin-bottom: 20px; line-height: 1.5;">${esc(d.RESULT_TEXT)}</div>
+        <div style="font-size: 41px; color: #ffffff; margin-bottom: 20px; line-height: 1.5;">${esc(d.RESULT_TEXT)}</div>
 
         <!-- Big Stat -->
         <div class="stat-hero">
@@ -87,13 +87,11 @@ export function render(data) {
 
         <!-- Tip -->
         <div class="glass-panel" style="display: flex; gap: 14px; align-items: flex-start; border-color: var(--primary-color);">
-            <span style="font-size: 26px;">💡</span>
+            <span style="font-size: 44px;">💡</span>
             <div>
-                <div class="mono" style="font-size: 20px; font-weight: 600; color: var(--primary-color); margin-bottom: 4px;">${esc(d.TIP_TITLE)}</div>
-                <div style="font-size: 20px; color: #ffffff; line-height: 1.5;">${esc(d.TIP_CONTENT)}</div>
+                <div class="mono" style="font-size: 41px; font-weight: 600; color: var(--primary-color); margin-bottom: 4px;">${esc(d.TIP_TITLE)}</div>
+                <div style="font-size: 41px; color: #ffffff; line-height: 1.5;">${esc(d.TIP_CONTENT)}</div>
             </div>
-        </div>
-            
         </div>
     </div>
 

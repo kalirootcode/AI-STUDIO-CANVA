@@ -32,7 +32,7 @@ export function render(data) {
     const linesHTML = d.TERMINAL_LINES.map(l => {
         const color = colorMap[l.TYPE] || '#ffffff';
         const prefix = l.TYPE === 'prompt' ? '<span style="color:var(--success-color);">❯</span> ' : '  ';
-        return `<div style="padding:6px 0; font-size:22px; color:${color}; font-family:var(--font-mono); line-height:1.6;">${prefix}${esc(l.TEXT)}</div>`;
+        return `<div style="padding:6px 0; font-size: 41px; color:${color}; font-family:var(--font-mono); line-height:1.6;">${prefix}${esc(l.TEXT)}</div>`;
     }).join('');
 
     return `<!DOCTYPE html>
@@ -52,14 +52,14 @@ export function render(data) {
         ${TemplateUtils.renderBrandHeader()}
         ${TemplateUtils.renderMetaBadge(data)}
 
-        <h1 class="cyber-title" style="font-size:42px;">${TemplateUtils.renderEditable('TITLE', `${esc(d.TITLE)}`, data._overrides)}</h1>
+        <h1 class="cyber-title" style="font-size:71px;">${TemplateUtils.renderEditable('TITLE', `${esc(d.TITLE)}`, data._overrides)}</h1>
 
         <div class="pro-terminal">
             <!-- Terminal Window -->
             <div class="terminal-window" style="flex:1;">
                 <div class="term-header">
                     <div class="term-dot red"></div><div class="term-dot yellow"></div><div class="term-dot green"></div>
-                    <span class="mono" style="margin-left:auto; font-size:16px; color:#ffffff;">terminal</span>
+                    <span class="mono" style="margin-left:auto; font-size: 41px; color:#ffffff;">terminal</span>
                 </div>
                 <div class="term-body">
                     ${linesHTML}
@@ -68,8 +68,8 @@ export function render(data) {
 
             <!-- Explanation -->
             <div class="glass-panel" style="display:flex; gap:14px; align-items:flex-start; margin-top:20px;">
-                <span style="font-size:24px;">💡</span>
-                <span style="font-size:22px; color:#e2e8f0; line-height:1.5;">${esc(d.EXPLANATION)}</span>
+                <span style="font-size:41px;">💡</span>
+                <span style="font-size: 41px; color:#e2e8f0; line-height:1.5;">${esc(d.EXPLANATION)}</span>
             </div>
         </div>
 

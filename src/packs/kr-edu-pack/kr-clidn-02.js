@@ -42,7 +42,7 @@ export function render(data) {
                 <div class="term-dot yellow"></div>
                 <div class="term-dot green"></div>
             </div>
-            <div class="term-body" style="font-size: 28px; font-weight: 700; color: var(--primary-color);">
+            <div class="term-body" style="font-size: 48px; font-weight: 700; color: var(--primary-color);">
                 <span style="color: var(--success-color);">$</span> ${esc(d.COMMAND_STRUCTURE)}
             </div>
         </div>
@@ -51,22 +51,21 @@ export function render(data) {
         <div class="flex-col" style="gap: 16px; flex: 1;">
             ${d.COMPONENTS.map((c, i) => `
             <div class="glass-panel" style="display: flex; align-items: center; gap: 20px; padding: 24px; animation: fadeInUp 0.4s ease backwards; animation-delay: ${i * 0.1}s;">
-                <div style="background: var(--primary-color); color: #000; width: 44px; height: 44px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 24px; flex-shrink: 0;" class="mono">${c.NUMBER}</div>
+                <div style="background: var(--primary-color); color: #000; width: 44px; height: 44px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 41px; flex-shrink: 0;" class="mono">${c.NUMBER}</div>
                 <div>
-                    <div class="mono" style="font-size: 28px; font-weight: 700; color: #fff; margin-bottom: 4px;">${esc(c.NAME)}</div>
-                    <div style="font-size: 22px; color: #ffffff;">${esc(c.DESCRIPTION)}</div>
+                    <div class="mono" style="font-size: 48px; font-weight: 700; color: #fff; margin-bottom: 4px;">${esc(c.NAME)}</div>
+                    <div style="font-size: 41px; color: #ffffff;">${esc(c.DESCRIPTION)}</div>
                 </div>
             </div>`).join('')}
         </div>
 
         <!-- Tip -->
         <div class="glass-panel" style="display: flex; gap: 16px; align-items: center; border-color: var(--warning-color);">
-            <span style="font-size: 32px;">💡</span>
-            <span style="font-size: 22px; color: #ffffff;">${TemplateUtils.renderEditable('TIP', `${esc(d.TIP)}`, data._overrides)}</span>
+            <span style="font-size: 54px;">💡</span>
+            <span style="font-size: 41px; color: #ffffff;">${TemplateUtils.renderEditable('TIP', `${esc(d.TIP)}`, data._overrides)}</span>
         </div>
             
         </div>
-    </div>
 
     ${TemplateUtils.getAutoFitScript()}
     <style>

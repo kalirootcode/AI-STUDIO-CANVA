@@ -1,0 +1,49 @@
+{
+    "id": "kr-clidn-44",
+    "name": "KR-CLI: Encuesta Viral",
+    "category": "viral",
+    "description": "Slide interactiva de preguntas para engagement.",
+    "fields": {
+        "TITLE": {
+            "default": "¿Cuál usas tú?",
+            "description": "Título"
+        },
+        "QUESTION": {
+            "default": "¿Mejor OS para Hacking?",
+            "description": "Pregunta principal"
+        },
+        "OPTIONS": {
+            "default": [
+                {
+                    "KEY": "A",
+                    "TEXT": "Kali Linux",
+                    "COLOR": "#00D9FF",
+                    "ICON": "🐉"
+                },
+                {
+                    "KEY": "B",
+                    "TEXT": "Parrot OS",
+                    "COLOR": "#00FF88",
+                    "ICON": "🦜"
+                }
+            ],
+            "description": "Opciones de respuesta"
+        },
+        "CORRECT_KEY": {
+            "default": "A",
+            "description": "Opción ganadora (opcional)"
+        },
+        "REVEAL": {
+            "default": "La mayoría prefiere A...",
+            "description": "Texto revelación"
+        },
+        "COMMENT_CTA": {
+            "default": "¡Vota en comentarios!",
+            "description": "Call to action"
+        },
+        "CATEGORY": {
+            "default": "QUIZ",
+            "description": "Categoría visual"
+        }
+    }
+}

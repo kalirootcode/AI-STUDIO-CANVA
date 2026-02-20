@@ -21,8 +21,8 @@ export function render(data) {
 
     const renderList = (items, icon, color) => items.map(i => `
         <div style="display:flex; align-items:flex-start; gap:10px; margin-bottom:10px;">
-            <span style="color:${color}; font-size:22px; margin-top:2px;">${icon}</span>
-            <span style="font-size:22px; color:#ffffff; line-height:1.4;">${esc(i.TEXT)}</span>
+            <span style="color:${color}; font-size: 41px; margin-top:2px;">${icon}</span>
+            <span style="font-size: 41px; color:#ffffff; line-height:1.4;">${esc(i.TEXT)}</span>
         </div>`).join('');
 
     return `<!DOCTYPE html>
@@ -51,29 +51,28 @@ export function render(data) {
         ${TemplateUtils.renderBrandHeader()}
         ${TemplateUtils.renderMetaBadge(data)}
 
-        <div class="mono" style="font-size:22px; color:#ff9500; letter-spacing:3px; margin-bottom:12px;">// BUENAS PRÁCTICAS</div>
-        <h1 class="cyber-title" style="font-size:44px;">${TemplateUtils.renderEditable('TITLE', `${esc(d.TITLE)}`, data._overrides)}</h1>
+        <div class="mono" style="font-size: 41px; color:#ff9500; letter-spacing:3px; margin-bottom:12px;">// BUENAS PRÁCTICAS</div>
+        <h1 class="cyber-title" style="font-size:75px;">${TemplateUtils.renderEditable('TITLE', `${esc(d.TITLE)}`, data._overrides)}</h1>
 
         <!-- DO / DON'T Columns -->
         <div class="do-dont-grid">
             <div class="do-dont-card do-col">
-                <div class="mono" style="font-size:24px; font-weight:700; color:var(--success-color); margin-bottom:18px;">HACER ✓</div>
+                <div class="mono" style="font-size:41px; font-weight:700; color:var(--success-color); margin-bottom:18px;">HACER ✓</div>
                 ${renderList(d.DO_ITEMS, '✓', 'var(--success-color)')}
             </div>
             <div class="do-dont-card dont-col">
-                <div class="mono" style="font-size:24px; font-weight:700; color:var(--accent-color); margin-bottom:18px;">EVITAR ✗</div>
+                <div class="mono" style="font-size:41px; font-weight:700; color:var(--accent-color); margin-bottom:18px;">EVITAR ✗</div>
                 ${renderList(d.DONT_ITEMS, '✗', 'var(--accent-color)')}
             </div>
         </div>
 
         <!-- Tip -->
         <div class="glass-panel" style="display:flex; gap:12px; align-items:center; border-color:rgba(255,149,0,0.15);">
-            <span style="font-size:24px;">⚖️</span>
-            <span style="font-size:22px; color:#e2e8f0; line-height:1.4;">${esc(d.BOTTOM_TIP)}</span>
+            <span style="font-size:41px;">⚖️</span>
+            <span style="font-size: 41px; color:#e2e8f0; line-height:1.4;">${esc(d.BOTTOM_TIP)}</span>
         </div>
             
         </div>
-    </div>
 
     ${TemplateUtils.getAutoFitScript()}
 </body>

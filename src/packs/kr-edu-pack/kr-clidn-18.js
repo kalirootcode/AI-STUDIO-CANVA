@@ -21,27 +21,29 @@ export function render(data) {
     <style>
         .quote-hero {
             flex: 1; display: flex; flex-direction: column;
-            justify-content: flex-start; /* Changed from center to lift it up */
+            justify-content: center;
             align-items: center; text-align: center;
-            padding-top: 80px; /* Visual centering adjustment */
+            padding: 20px 0;
         }
         .quote-mark {
-            font-size: 100px; color: rgba(168,85,247,0.3); line-height: 1;
+            font-size: 170px; color: color-mix(in srgb, var(--primary-color) 30%, transparent); line-height: 1;
+            margin-bottom: 10px;
         }
         .quote-text {
-            font-size: 32px; font-weight: 700; line-height: 1.5;
+            font-size: 58px; font-weight: 700; line-height: 1.5;
             max-width: 850px; margin-bottom: 24px;
-            background: linear-gradient(135deg, #fff, #ffffff);
-            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-            background-clip: text;
+            color: #ffffff;
         }
         .quote-author {
-            font-family: var(--font-mono); font-size: 24px;
-            font-weight: 600; color: var(--secondary-color); margin-bottom: 8px;
+            font-family: var(--font-mono); font-size: 41px;
+            font-weight: 600; color: var(--primary-color); margin-bottom: 8px;
+        }
+        .quote-context {
+            font-size: 37px; color: #aaaaaa; max-width: 700px;
         }
         .divider-line {
-            width: 120px; height: 2px; margin: 24px auto;
-            background: linear-gradient(90deg, transparent, var(--secondary-color), transparent);
+            width: 120px; height: 2px; margin: 20px auto;
+            background: linear-gradient(90deg, transparent, var(--primary-color), transparent);
         }
     </style>
 </head>
@@ -56,22 +58,20 @@ export function render(data) {
         <div class="quote-hero">
             <div class="quote-mark">❝</div>
             <div class="quote-text">${TemplateUtils.renderEditable('QUOTE_TEXT', `${esc(d.QUOTE_TEXT)}`, data._overrides)}</div>
-            <div class="quote-author">— ${TemplateUtils.renderEditable('QUOTE_AUTHOR', `${esc(d.QUOTE_AUTHOR)}`, data._overrides)}</div>
-            <div style="font-size:22px; color:#ffffff;">${TemplateUtils.renderEditable('CONTEXT', `${esc(d.CONTEXT)}`, data._overrides)}</div>
             <div class="divider-line"></div>
+            <div class="quote-author">— ${TemplateUtils.renderEditable('QUOTE_AUTHOR', `${esc(d.QUOTE_AUTHOR)}`, data._overrides)}</div>
+            <div class="quote-context">${TemplateUtils.renderEditable('CONTEXT', `${esc(d.CONTEXT)}`, data._overrides)}</div>
         </div>
 
         <!-- Extra Fact -->
-        <div class="glass-panel" style="display:flex; gap:14px; align-items:center; border-color:rgba(168,85,247,0.15);">
-            <span style="font-size:24px;">💡</span>
-            <span style="font-size:22px; color:#ffffff; line-height:1.4;">${esc(d.EXTRA_FACT)}</span>
+        <div class="glass-panel" style="display:flex; gap:14px; align-items:center;">
+            <span style="font-size:41px;">💡</span>
+            <span style="font-size: 37px; color:#ffffff; line-height:1.4;">${esc(d.EXTRA_FACT)}</span>
         </div>
-
-        <!-- Footer -->
-        
     </div>
 
     ${TemplateUtils.getAutoFitScript()}
 </body>
 </html>`;
 }
+

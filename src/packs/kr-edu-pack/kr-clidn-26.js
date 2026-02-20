@@ -43,12 +43,12 @@ export function render(data) {
 
         return `
             <div class="glass-panel" style="display:flex; align-items:center; gap:20px; padding:20px 24px; border-color:${borderClr}; ${isTarget ? 'box-shadow:0 0 20px rgba(255,51,102,0.1);' : ''}">
-                <span style="font-size:36px;">${n.ICON}</span>
+                <span style="font-size:61px;">${n.ICON}</span>
                 <div style="flex:1;">
-                    <div style="font-size:24px; font-weight:700; color:#fff;">${esc(n.NAME)}</div>
-                    <div class="mono" style="font-size:18px; color:var(--primary-color);">${esc(n.IP)}</div>
+                    <div style="font-size:41px; font-weight:700; color:#fff;">${esc(n.NAME)}</div>
+                    <div class="mono" style="font-size: 41px; color:var(--primary-color);">${esc(n.IP)}</div>
                 </div>
-                <div class="mono" style="font-size:16px; color:${statusClr}; letter-spacing:2px; font-weight:600;">${statusTxt}</div>
+                <div class="mono" style="font-size: 41px; color:${statusClr}; letter-spacing:2px; font-weight:600;">${statusTxt}</div>
             </div>
             ${connector}`;
     }).join('');
@@ -67,7 +67,7 @@ export function render(data) {
         ${TemplateUtils.renderBrandHeader()}
         ${TemplateUtils.renderMetaBadge(data)}
 
-        <h1 class="cyber-title" style="font-size:42px;">${TemplateUtils.renderEditable('TITLE', `${esc(d.TITLE)}`, data._overrides)}</h1>
+        <h1 class="cyber-title" style="font-size:71px;">${TemplateUtils.renderEditable('TITLE', `${esc(d.TITLE)}`, data._overrides)}</h1>
         <div class="cyber-subtitle">${TemplateUtils.renderEditable('DESCRIPTION', `${esc(d.DESCRIPTION)}`, data._overrides)}</div>
 
         <!-- Network Nodes -->

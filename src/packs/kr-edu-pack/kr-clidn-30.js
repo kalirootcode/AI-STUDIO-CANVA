@@ -19,15 +19,20 @@ export function render(data) {
 
     const stepsHTML = d.STEPS.map(s => `
         <div class="glass-panel" style="display:flex; gap:20px; align-items:flex-start; padding:20px 24px;">
-            <div style="min-width:48px; height:48px; background:linear-gradient(135deg, var(--primary-color), var(--secondary-color)); border-radius:12px; display:flex; align-items:center; justify-content:center; font-family:var(--font-mono); font-size:24px; font-weight:800; color:#000;">
+            <div style="min-width:48px; height:48px; background:linear-gradient(135deg, var(--primary-color), var(--secondary-color)); border-radius:12px; display:flex; align-items:center; justify-content:center; font-family:var(--font-mono); font-size:41px; font-weight:800; color:#000;">
                 ${esc(s.NUM)}
             </div>
             <div style="flex:1;">
-                <div style="font-size:24px; font-weight:700; color:#fff; margin-bottom:8px;">${esc(s.TITLE)}</div>
-                <div style="font-family:var(--font-mono); font-size:20px; color:var(--primary-color); background:#0a0a0a; padding:8px 14px; border-radius:6px; border:1px solid rgba(0,217,255,0.1); margin-bottom:8px; display:inline-block;">
-                    ${esc(s.CMD)}
+                <div style="font-size:41px; font-weight:700; color:#fff; margin-bottom:8px;">${esc(s.TITLE)}</div>
+                <div class="terminal-window" style="margin-bottom: 8px; border-width: 1px;">
+                    <div class="term-header" style="border-bottom: 1px solid var(--primary-color);">
+                        <div class="term-dot red"></div><div class="term-dot yellow"></div><div class="term-dot green"></div>
+                    </div>
+                    <div class="term-body" style="font-family:var(--font-mono); font-size: 41px; color:var(--primary-color); padding: 12px; font-weight: 700;">
+                        ${esc(s.CMD)}
+                    </div>
                 </div>
-                <div style="font-size:18px; color:#ffffff; display:flex; align-items:center; gap:8px;">
+                <div style="font-size: 41px; color:#ffffff; display:flex; align-items:center; gap:8px;">
                     <span style="color:var(--success-color);">→</span> ${esc(s.RESULT)}
                 </div>
             </div>
@@ -47,7 +52,7 @@ export function render(data) {
         ${TemplateUtils.renderBrandHeader()}
         ${TemplateUtils.renderMetaBadge(data)}
 
-        <h1 class="cyber-title" style="font-size:42px;">${TemplateUtils.renderEditable('TITLE', `${esc(d.TITLE)}`, data._overrides)}</h1>
+        <h1 class="cyber-title" style="font-size:71px;">${TemplateUtils.renderEditable('TITLE', `${esc(d.TITLE)}`, data._overrides)}</h1>
         <div class="cyber-subtitle">${TemplateUtils.renderEditable('DESCRIPTION', `${esc(d.DESCRIPTION)}`, data._overrides)}</div>
 
         <!-- Steps -->
@@ -57,8 +62,8 @@ export function render(data) {
 
         <!-- Final Note -->
         <div class="glass-panel" style="display:flex; gap:14px; align-items:center; border-color:rgba(16,185,129,0.15);">
-            <span style="font-size:24px;">✅</span>
-            <span style="font-size:22px; color:var(--success-color); line-height:1.5;">${esc(d.FINAL_NOTE)}</span>
+            <span style="font-size:41px;">✅</span>
+            <span style="font-size: 41px; color:var(--success-color); line-height:1.5;">${esc(d.FINAL_NOTE)}</span>
         </div>
 
         <!-- Footer -->

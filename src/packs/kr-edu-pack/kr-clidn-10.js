@@ -22,8 +22,8 @@ export function render(data) {
 
     const featsHTML = d.FEATURES.map(f => `
         <div class="glass-panel" style="display:flex; align-items:center; gap:14px; padding:16px 20px;">
-            <span style="font-size:24px;">${f.ICON || '✓'}</span>
-            <span style="font-size:22px; color:#e2e8f0;">${esc(f.TEXT)}</span>
+            <span style="font-size:41px;">${f.ICON || '✓'}</span>
+            <span style="font-size: 41px; color:#e2e8f0;">${esc(f.TEXT)}</span>
         </div>`).join('\n');
 
     return `<!DOCTYPE html>
@@ -38,7 +38,7 @@ export function render(data) {
             display: flex; flex-direction: column; align-items: center; gap: 4px;
         }
         .stars-count {
-            font-family: var(--font-mono); font-size: 28px;
+            font-family: var(--font-mono); font-size: 48px;
             font-weight: 700; color: #ff9500;
         }
     </style>
@@ -54,40 +54,39 @@ export function render(data) {
         <!-- Tool Header -->
         <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:20px;">
             <div style="flex:1;">
-                <div class="mono" style="font-size:22px; color:var(--primary-color); letter-spacing:2px; margin-bottom:12px;">// ${esc(d.TOOL_CATEGORY)}</div>
-                <h1 class="cyber-title" style="font-size:44px;">${esc(d.TOOL_NAME)}</h1>
+                <div class="mono" style="font-size: 41px; color:var(--primary-color); letter-spacing:2px; margin-bottom:12px;">// ${esc(d.TOOL_CATEGORY)}</div>
+                <h1 class="cyber-title" style="font-size:75px;">${esc(d.TOOL_NAME)}</h1>
                 <div class="cyber-subtitle">${TemplateUtils.renderEditable('DESCRIPTION', `${TemplateUtils.renderEditable('DESCRIPTION', `${TemplateUtils.renderEditable('DESCRIPTION', `${TemplateUtils.renderEditable('DESCRIPTION', `${TemplateUtils.renderEditable('DESCRIPTION', `${esc(d.DESCRIPTION)}`, data._overrides)}`, data._overrides)}`, data._overrides)}`, data._overrides)}`, data._overrides)}</div>
             </div>
             <div class="stars-badge">
-                <span style="font-size:24px;">⭐</span>
+                <span style="font-size:41px;">⭐</span>
                 <span class="stars-count">${esc(d.GITHUB_STARS)}</span>
-                <span style="font-size:14px; color:rgba(255,149,0,0.6);">STARS</span>
+                <span style="font-size:34px; color:rgba(255,149,0,0.6);">STARS</span>
             </div>
         </div>
 
         <!-- Install -->
-        <div class="mono" style="font-size:18px; color:#ffffff; letter-spacing:2px; margin-bottom:8px;">INSTALACIÓN</div>
+        <div class="mono" style="font-size: 41px; color:#ffffff; letter-spacing:2px; margin-bottom:8px;">INSTALACIÓN</div>
         <div class="terminal-window">
             <div class="term-header">
                 <div class="term-dot red"></div><div class="term-dot yellow"></div><div class="term-dot green"></div>
             </div>
-            <div class="term-body" style="font-size:24px; color:var(--primary-color); font-weight:700;">${esc(d.INSTALL_CMD)}</div>
+            <div class="term-body" style="font-size:41px; color:var(--primary-color); font-weight:700;">${esc(d.INSTALL_CMD)}</div>
         </div>
 
         <!-- Usage -->
-        <div class="mono" style="font-size:18px; color:#ffffff; letter-spacing:2px; margin-bottom:8px;">USO</div>
+        <div class="mono" style="font-size: 41px; color:#ffffff; letter-spacing:2px; margin-bottom:8px;">USO</div>
         <div class="terminal-window">
             <div class="term-header">
                 <div class="term-dot red"></div><div class="term-dot yellow"></div><div class="term-dot green"></div>
             </div>
-            <div class="term-body" style="font-size:24px; color:var(--primary-color); font-weight:700;">${esc(d.USAGE_CMD)}</div>
+            <div class="term-body" style="font-size:41px; color:var(--primary-color); font-weight:700;">${esc(d.USAGE_CMD)}</div>
         </div>
 
         <!-- Features -->
         ${featsHTML}
             
         </div>
-    </div>
 
     ${TemplateUtils.getAutoFitScript()}
 </body>

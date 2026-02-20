@@ -1,0 +1,62 @@
+{
+    "id": "kr-clidn-42",
+    "name": "KR-CLI: Nivel Progresivo",
+    "category": "viral",
+    "description": "Barra de progreso estilo videojuego para mostrar avance.",
+    "fields": {
+        "TITLE": {
+            "default": "Nivel de Hacking",
+            "description": "Título"
+        },
+        "CURRENT_LEVEL": {
+            "default": 3,
+            "description": "Nivel actual (número)"
+        },
+        "TOTAL_LEVELS": {
+            "default": 5,
+            "description": "Total niveles"
+        },
+        "LEVEL_LABEL": {
+            "default": "MID-LEVEL",
+            "description": "Etiqueta del nivel"
+        },
+        "PROGRESS_PCT": {
+            "default": 60,
+            "description": "Porcentaje (0-100)"
+        },
+        "LEVELS": {
+            "default": [
+                {
+                    "NUM": 1,
+                    "LABEL": "Noob",
+                    "DESC": "Script Kiddie",
+                    "DONE": true,
+                    "CURRENT": false
+                },
+                {
+                    "NUM": 2,
+                    "LABEL": "User",
+                    "DESC": "Linux Basics",
+                    "DONE": true,
+                    "CURRENT": false
+                },
+                {
+                    "NUM": 3,
+                    "LABEL": "Pro",
+                    "DESC": "Python & Bash",
+                    "DONE": false,
+                    "CURRENT": true
+                }
+            ],
+            "description": "Lista de niveles"
+        },
+        "NEXT_STEP": {
+            "default": "Siguiente: Reverse Engineering",
+            "description": "Próximo paso"
+        },
+        "CATEGORY": {
+            "default": "SKILL",
+            "description": "Categoría visual"
+        }
+    }
+}

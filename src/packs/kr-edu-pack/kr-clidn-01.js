@@ -42,13 +42,12 @@ export function render(data) {
     if (!cleanTitle) cleanTitle = rawTitle;
 
     // ── DYNAMIC FONT SIZE based on word count ──
-    // 5 words → 82px, 8 words → 72px, 12 words → 60px, 15+ words → 52px
+    // 5 words → 120px, 8 words → 100px, 12 words → 80px, 15+ words → 70px
     function calcTitleSize(text) {
         const wordCount = text.split(/\s+/).filter(w => w.length > 0).length;
-        if (wordCount <= 5) return 82;
-        if (wordCount >= 15) return 52;
-        // Linear interpolation between 82px (5 words) and 52px (15 words)
-        return Math.round(82 - ((wordCount - 5) * 3));
+        if (wordCount <= 5) return 120;
+        if (wordCount >= 15) return 70;
+        return Math.round(120 - ((wordCount - 5) * 5));
     }
 
     const titleFontSize = calcTitleSize(cleanTitle);
@@ -132,8 +131,8 @@ export function render(data) {
             margin-bottom: 20px; /* Reduced from 40px */
             backdrop-filter: blur(5px);
         }
-        .cover-cat { font-family: var(--font-mono); font-size: 28px; font-weight: 800; color: var(--accent-color); letter-spacing: 2px; }
-        .cover-status { font-family: var(--font-mono); font-size: 22px; color: var(--success-color); display: flex; align-items: center; gap: 10px; }
+        .cover-cat { font-family: var(--font-mono); font-size: 48px; font-weight: 800; color: var(--accent-color); letter-spacing: 2px; }
+        .cover-status { font-family: var(--font-mono); font-size: 41px; color: var(--success-color); display: flex; align-items: center; gap: 10px; }
         
         .brand-header-custom {
             display: flex; align-items: center; justify-content: center; gap: 15px; margin-bottom: 30px;
@@ -150,34 +149,15 @@ export function render(data) {
     <div class="bg-grid"></div>
     <div class="bg-glow"></div>
 
-    <!-- 0. EFFECT ZONES (Top & Bottom) -->
-    <div id="cyber-rain-top" style="position: absolute; top: 0; left: 0; width: 100%; height: 500px; z-index: 5; opacity: 0.8; mask-image: linear-gradient(to bottom, black 80%, transparent);"></div>
-    <div id="cyber-rain-bottom" style="position: absolute; bottom: 0; left: 0; width: 100%; height: 500px; z-index: 5; opacity: 0.8; mask-image: linear-gradient(to top, black 80%, transparent);"></div>
-
-    <!-- 1. TOP BLOCK: Military Header (Fixed at 500px from Top) -->
-    <div style="position: absolute; top: 500px; left: 50%; transform: translateX(-50%); width: calc(100% - 100px); z-index: 10;">
-        <div class="military-card" style="
-            background: rgba(10,10,10,0.9);
-            border: 1px solid var(--glass-border);
-            border-top: 4px solid var(--primary-color);
-            padding: 20px 30px;
-            display: flex; align-items: center; justify-content: space-between; gap: 16px;
-            font-family: var(--font-mono);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            width: 100%;
-            border-radius: 4px;
-            box-sizing: border-box;
-        ">
-            <div style="font-weight: 800; letter-spacing: 2px; color: #fff; display:flex; align-items:center; gap:12px; font-size: 22px;">
-                <img src="../assets/kr-clidn-logo-small.png" style="height:50px; width:auto;"/>
-                KR-CLIDN
-            </div>
-            <div style="color: #333; font-size: 20px;">//</div>
-            <div style="font-weight: 700; color: var(--accent-color); letter-spacing: 1px; flex: 1; text-align: center; font-size: 20px;">⚠️ ${category}</div>
-            <div style="color: #333; font-size: 20px;">//</div>
-            <div style="color: var(--success-color); font-weight: 700; display: flex; align-items: center; gap: 8px; font-size: 18px;">
-                <span style="font-size: 14px;">●</span> ACTIVO
-            </div>
+    <!-- 0. EFFECT ZONES: Circuit Board Pattern -->
+    <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none; opacity: 0.25; background: var(--primary-color); -webkit-mask-image: url(&quot;data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Cg fill='none' stroke='%23000' stroke-width='2'%3E%3Cpath d='M0 50h30l20-20h20l20-20h10M0 20h20l20 20h20l20 20h20M30 100V70l20-20h20l20 20v30M10 100V80l20-20h20l20 20h30'/%3E%3Ccircle cx='30' cy='50' r='3' fill='%23000'/%3E%3Ccircle cx='90' cy='10' r='3' fill='%23000'/%3E%3Ccircle cx='20' cy='20' r='3' fill='%23000'/%3E%3Ccircle cx='80' cy='60' r='3' fill='%23000'/%3E%3Ccircle cx='50' cy='50' r='3' fill='%23000'/%3E%3Ccircle cx='90' cy='70' r='3' fill='%23000'/%3E%3Ccircle cx='10' cy='80' r='3' fill='%23000'/%3E%3Ccircle cx='70' cy='80' r='3' fill='%23000'/%3E%3C/g%3E%3C/svg%3E&quot;); -webkit-mask-size: 150px 150px;"></div>
+    <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none; opacity: 0.1; background: var(--accent-color); -webkit-mask-image: url(&quot;data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Cg fill='none' stroke='%23000' stroke-width='2'%3E%3Cpath d='M0 50h30l20-20h20l20-20h10M0 20h20l20 20h20l20 20h20M30 100V70l20-20h20l20 20v30M10 100V80l20-20h20l20 20h30'/%3E%3Ccircle cx='30' cy='50' r='3' fill='%23000'/%3E%3Ccircle cx='90' cy='10' r='3' fill='%23000'/%3E%3Ccircle cx='20' cy='20' r='3' fill='%23000'/%3E%3Ccircle cx='80' cy='60' r='3' fill='%23000'/%3E%3Ccircle cx='50' cy='50' r='3' fill='%23000'/%3E%3Ccircle cx='90' cy='70' r='3' fill='%23000'/%3E%3Ccircle cx='10' cy='80' r='3' fill='%23000'/%3E%3Ccircle cx='70' cy='80' r='3' fill='%23000'/%3E%3C/g%3E%3C/svg%3E&quot;); -webkit-mask-size: 250px 250px; transform: rotate(180deg) scale(-1, 1);"></div>
+    
+    <!-- 1. TOP SAFE ZONE BLOCK: Centered Brand Logo -->
+    <div style="position: absolute; top: 200px; left: 50%; transform: translateX(-50%); z-index: 10; width: 100%; display: flex; align-items: center; justify-content: center;">
+        <div style="display:flex; align-items:center; justify-content:center; gap:15px; font-family: var(--font-mono); font-weight:800; color:#fff; font-size:45px; letter-spacing:4px; text-shadow: 0 0 15px rgba(255,255,255,0.3);">
+            <img src="../assets/kr-clidn-logo-small.png" style="height:70px; width:auto;"/>
+            KR-CLIDN
         </div>
     </div>
 
@@ -199,8 +179,8 @@ export function render(data) {
         </h1>
     </div>
 
-    <!-- 3. BOTTOM BLOCK: Terminal & Hex (Fixed at 500px from Bottom) -->
-    <div style="position: absolute; bottom: 500px; left: 50%; transform: translateX(-50%); width: calc(100% - 100px); z-index: 10;">
+    <!-- 3. BOTTOM BLOCK: Terminal & Hex (Fixed at 200px from Bottom) -->
+    <div style="position: absolute; bottom: 200px; left: 50%; transform: translateX(-50%); width: calc(100% - 100px); z-index: 10;">
         <!-- Terminal Preview -->
         <div class="terminal-window" style="
             border: 2px solid var(--primary-color);
@@ -214,7 +194,7 @@ export function render(data) {
                 <span style="margin-left: 10px; color: var(--primary-color); font-family: var(--font-mono); font-weight:bold; letter-spacing:1px;">kali_secrets.sh</span>
             </div>
             <div class="term-body" style="text-align: center; color: #ffffff; padding: 30px;">
-                <div style="font-size: 24px; line-height: 1.5; font-family: var(--font-mono);">
+                <div style="font-size: 41px; line-height: 1.5; font-family: var(--font-mono);">
                     ${TemplateUtils.renderEditable('SUBTITLE', `<div>${subtitle}</div>`, data._overrides)}
                 </div>
             </div>
@@ -223,7 +203,7 @@ export function render(data) {
         <!-- Hex Ornament -->
         <div style="
             display: flex; align-items: center; justify-content: center; gap: 15px; 
-            font-family: var(--font-mono); font-size: 14px; 
+            font-family: var(--font-mono); font-size: 34px; 
             color: var(--primary-color); opacity: 0.6;
             margin-top: 20px;
         ">
@@ -236,25 +216,14 @@ export function render(data) {
     </div>
 
     <!-- System Footer (Absolute, ignored by flex center) -->
-    <div style="position: absolute; bottom: 40px; opacity: 0.5; font-size: 12px; font-family: var(--font-mono); letter-spacing: 4px; text-align: center; width: 100%;">
+    <div style="position: absolute; bottom: 40px; opacity: 0.5; font-size: 34px; font-family: var(--font-mono); letter-spacing: 4px; text-align: center; width: 100%;">
         AWAITING INPUT...
     </div>
 
     <!-- Auto Fit Script -->
     ${TemplateUtils.getAutoFitScript()}
     
-    <!-- Matrix Rain Inject -->
-    ${TemplateUtils.getCyberEffectsScript()}
-    <script>
-        window.addEventListener('load', () => {
-             if(window.startMatrixRain) {
-                 // Top: Dynamic Theme Color
-                 window.startMatrixRain('cyber-rain-top', true); 
-                 // Bottom: Dynamic Theme Color
-                 window.startMatrixRain('cyber-rain-bottom', true);
-             }
-        });
-    </script>
+    <!-- Script injection is no longer needed since effects are static -->
 
 </body>
 </html>`;

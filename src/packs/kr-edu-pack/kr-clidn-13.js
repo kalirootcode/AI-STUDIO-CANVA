@@ -30,11 +30,11 @@ export function render(data) {
             box-shadow: 0 0 30px rgba(0,217,255,0.25);
         }
         .step-badge .num {
-            font-family: var(--font-mono); font-size: 36px;
+            font-family: var(--font-mono); font-size: 61px;
             font-weight: 800; color: #fff; line-height: 1;
         }
         .step-badge .label {
-            font-family: var(--font-mono); font-size: 14px;
+            font-family: var(--font-mono); font-size: 34px;
             color: rgba(255,255,255,0.7); letter-spacing: 2px;
         }
     </style>
@@ -53,12 +53,12 @@ export function render(data) {
                 <div class="num">${esc(d.STEP_NUMBER)}</div>
                 <div class="label">PASO</div>
             </div>
-            <div class="mono" style="font-size:20px; color:rgba(255,255,255,0.3);">Paso ${esc(d.STEP_NUMBER)} de ${esc(d.TOTAL_STEPS)}</div>
-            <h1 class="cyber-title" style="font-size:44px;">${TemplateUtils.renderEditable('TITLE', `${esc(d.TITLE)}`, data._overrides)}</h1>
+            <div class="mono" style="font-size: 41px; color:rgba(255,255,255,0.3);">Paso ${esc(d.STEP_NUMBER)} de ${esc(d.TOTAL_STEPS)}</div>
+            <h1 class="cyber-title" style="font-size:75px;">${TemplateUtils.renderEditable('TITLE', `${esc(d.TITLE)}`, data._overrides)}</h1>
         </div>
 
         <!-- Description -->
-        <div style="font-size:24px; color:#ffffff; line-height:1.6; padding-left:12px; border-left:3px solid rgba(0,217,255,0.2); margin-bottom:24px;">
+        <div style="font-size:41px; color:#ffffff; line-height:1.6; padding-left:12px; border-left:3px solid rgba(0,217,255,0.2); margin-bottom:24px;">
             ${TemplateUtils.renderEditable('DESCRIPTION', `${esc(d.DESCRIPTION)}`, data._overrides)}
         </div>
 
@@ -67,25 +67,24 @@ export function render(data) {
             <div class="term-header">
                 <div class="term-dot red"></div><div class="term-dot yellow"></div><div class="term-dot green"></div>
             </div>
-            <div class="term-body" style="font-size:26px; font-weight:700; color:var(--primary-color);">
+            <div class="term-body" style="font-size:44px; font-weight:700; color:var(--primary-color);">
                 ${TemplateUtils.renderEditable('COMMAND', `${esc(d.COMMAND)}`, data._overrides)}
             </div>
         </div>
 
         <!-- Expected Result -->
         <div class="glass-panel" style="display:flex; gap:14px; align-items:flex-start;">
-            <span style="color:var(--primary-color); font-size:26px;">→</span>
-            <span style="font-size:22px; color:#e2e8f0; line-height:1.5;">${esc(d.EXPECTED_RESULT)}</span>
+            <span style="color:var(--primary-color); font-size:44px;">→</span>
+            <span style="font-size: 41px; color:#e2e8f0; line-height:1.5;">${esc(d.EXPECTED_RESULT)}</span>
         </div>
 
         <!-- Note -->
         <div class="glass-panel" style="display:flex; gap:12px; align-items:center; border-color:rgba(168,85,247,0.15);">
-            <span style="font-size:24px;">ℹ️</span>
-            <span style="font-size:20px; color:#ffffff;">${esc(d.NOTE)}</span>
+            <span style="font-size:41px;">ℹ️</span>
+            <span style="font-size: 41px; color:#ffffff;">${esc(d.NOTE)}</span>
         </div>
             
         </div>
-    </div>
 
     ${TemplateUtils.getAutoFitScript()}
 </body>
