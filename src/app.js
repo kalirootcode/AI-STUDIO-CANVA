@@ -100,6 +100,9 @@ class App {
             if (!this.slides || !this.slides[this.currentSlideIndex]) return;
             const currentSlide = this.slides[this.currentSlideIndex];
 
+            // Skip re-render for Canvas slides (they are pre-rendered images)
+            if (currentSlide.isCanvas) return;
+
             // Re-render
             const html = this.templateEngine.renderTemplate(currentSlide.templateId, data);
 
@@ -259,7 +262,11 @@ class App {
                 this.setStatus(`🔥 Inyectando Trend: ${this.tiktokSignal.type}`, true);
             }
 
-            const systemPrompt = this.contentEngine.generatePrompt(topic, count, mode, this.tiktokSignal);
+            // Detect Canvas mode vs Template mode
+            const isCanvasMode = (mode === 'CANVAS_MODE');
+            const systemPrompt = isCanvasMode
+                ? this.contentEngine.generateCanvasPrompt(topic, count, 'cyber')
+                : this.contentEngine.generatePrompt(topic, count, mode, this.tiktokSignal);
             this.setProgress(40);
 
             // 3. Call AI
@@ -295,37 +302,206 @@ class App {
             // 4. Parse JSON
             let slidesData;
             let seoData = {};
+            let cleanCode = result.code || "";
             try {
-                // Remove potential markdown fences using Regex (Robust)
-                let cleanCode = result.code;
+                // Step 1: Strip markdown code fences
                 const jsonMatch = cleanCode.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
                 if (jsonMatch) {
                     cleanCode = jsonMatch[1];
-                } else {
-                    // Fallback: Try to find the first { or [ 
-                    const firstCurly = cleanCode.indexOf('{');
-                    const firstBracket = cleanCode.indexOf('[');
+                }
 
-                    if (firstCurly !== -1 && (firstBracket === -1 || firstCurly < firstBracket)) {
-                        // Object wrapper (has seo + slides)
-                        const lastCurly = cleanCode.lastIndexOf('}');
-                        if (lastCurly !== -1) {
-                            cleanCode = cleanCode.substring(firstCurly, lastCurly + 1);
+                // Step 2: Find the outermost JSON structure
+                const firstCurly = cleanCode.indexOf('{');
+                const firstBracket = cleanCode.indexOf('[');
+
+                if (firstCurly !== -1 && (firstBracket === -1 || firstCurly < firstBracket)) {
+                    const lastCurly = cleanCode.lastIndexOf('}');
+                    if (lastCurly !== -1) {
+                        cleanCode = cleanCode.substring(firstCurly, lastCurly + 1);
+                    }
+                } else if (firstBracket !== -1) {
+                    const lastBracket = cleanCode.lastIndexOf(']');
+                    if (lastBracket !== -1) {
+                        cleanCode = cleanCode.substring(firstBracket, lastBracket + 1);
+                    }
+                }
+
+                // Step 3: Fix common AI JSON mistakes
+                // Remove trailing commas before } or ]
+                cleanCode = cleanCode.replace(/,\s*([\]}])/g, '$1');
+                // Remove control characters except \n \r \t
+                cleanCode = cleanCode.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g, '');
+                // Fix unescaped newlines inside JSON strings safely
+                let fixedCode = '';
+                let inString = false;
+                let escapedChar = false;
+                for (let i = 0; i < cleanCode.length; i++) {
+                    const ch = cleanCode[i];
+                    if (escapedChar) {
+                        fixedCode += ch;
+                        escapedChar = false;
+                    } else if (ch === '\\') {
+                        fixedCode += ch;
+                        escapedChar = true;
+                    } else if (ch === '"') {
+                        inString = !inString;
+                        fixedCode += ch;
+                    } else if (inString && (ch === '\n' || ch === '\r')) {
+                        // Escape literal newlines inside strings
+                        fixedCode += (ch === '\n') ? '\\n' : '\\r';
+                    } else {
+                        fixedCode += ch;
+                    }
+                }
+                cleanCode = fixedCode;
+
+                console.log("[DEBUG] Cleaned JSON (first 500 chars):", cleanCode.substring(0, 500));
+
+                let responseData;
+                try {
+                    responseData = JSON.parse(cleanCode);
+                } catch (firstErr) {
+                    // === AGGRESSIVE CLEANUP ===
+                    console.warn("[JSON-FIX] First parse failed:", firstErr.message, "Trying aggressive cleanup...");
+
+                    // 1. Collapse all real newlines to spaces
+                    cleanCode = cleanCode.replace(/\r?\n/g, ' ');
+
+                    // 2. Fix single-quoted strings → double-quoted
+                    cleanCode = cleanCode.replace(/(?<=[\{,]\s*)'([^']+)'\s*:/g, '"$1":');
+                    cleanCode = cleanCode.replace(/:\s*'([^']*)'/g, ': "$1"');
+
+                    // 3. Fix unquoted property names: { key: → { "key":
+                    cleanCode = cleanCode.replace(/(?<=[\{,]\s*)([a-zA-Z_]\w*)\s*:/g, '"$1":');
+
+                    // 4. Remove trailing commas
+                    cleanCode = cleanCode.replace(/,\s*([\]}])/g, '$1');
+
+                    // 5. Escape any remaining problematic chars inside strings
+                    let cleaned2 = '';
+                    let inStr = false, esc = false;
+                    for (let i = 0; i < cleanCode.length; i++) {
+                        const ch = cleanCode[i];
+                        if (esc) { cleaned2 += ch; esc = false; continue; }
+                        if (ch === '\\') { cleaned2 += ch; esc = true; continue; }
+                        if (ch === '"') { inStr = !inStr; cleaned2 += ch; continue; }
+                        if (inStr && ch === '\t') { cleaned2 += '\\t'; continue; }
+                        if (inStr && ch === '\b') { cleaned2 += '\\b'; continue; }
+                        cleaned2 += ch;
+                    }
+                    cleanCode = cleaned2;
+
+                    // 6. Remove text after last valid closer
+                    const lastBrace = cleanCode.lastIndexOf('}');
+                    const lastBrack = cleanCode.lastIndexOf(']');
+                    const lastValid = Math.max(lastBrace, lastBrack);
+                    if (lastValid > 0) {
+                        cleanCode = cleanCode.substring(0, lastValid + 1);
+                    }
+
+                    try {
+                        responseData = JSON.parse(cleanCode);
+                    } catch (secondErr) {
+                        // === LAST RESORT: Fix truncated JSON ===
+                        console.warn("[JSON-FIX] Second parse failed:", secondErr.message, "Trying truncation fix...");
+
+                        // Check if we're inside an unclosed string (truncated mid-value)
+                        let inString2 = false, escaped2 = false;
+                        let lastQuotePos = -1;
+                        for (let i = 0; i < cleanCode.length; i++) {
+                            const c = cleanCode[i];
+                            if (escaped2) { escaped2 = false; continue; }
+                            if (c === '\\') { escaped2 = true; continue; }
+                            if (c === '"') { inString2 = !inString2; lastQuotePos = i; }
                         }
-                    } else if (firstBracket !== -1) {
-                        const lastBracket = cleanCode.lastIndexOf(']');
-                        if (lastBracket !== -1) {
-                            cleanCode = cleanCode.substring(firstBracket, lastBracket + 1);
+
+                        // If string is unclosed, close it at a safe point
+                        if (inString2 && lastQuotePos > 0) {
+                            // Find the last complete-looking content before truncation
+                            // Truncate string at a reasonable point and close it
+                            let truncPoint = cleanCode.length - 1;
+                            // Look backward for end of useful content
+                            const searchBack = cleanCode.substring(lastQuotePos + 1);
+                            const lastSafe = Math.max(
+                                cleanCode.lastIndexOf('\\n'),
+                                cleanCode.lastIndexOf('. '),
+                                cleanCode.lastIndexOf(', ')
+                            );
+                            if (lastSafe > lastQuotePos) {
+                                truncPoint = lastSafe;
+                            }
+                            cleanCode = cleanCode.substring(0, truncPoint) + '..."';
+                        }
+
+                        // Remove trailing incomplete entries
+                        cleanCode = cleanCode.replace(/,\s*"[^"]*"?\s*$/, '');       // trailing incomplete key
+                        cleanCode = cleanCode.replace(/,\s*\{[^}]*$/, '');             // trailing incomplete object
+                        cleanCode = cleanCode.replace(/,\s*$/, '');                    // trailing comma
+
+                        // Recount open brackets/braces
+                        let openBraces = 0, openBrackets = 0;
+                        let inStr3 = false, esc3 = false;
+                        for (const ch of cleanCode) {
+                            if (esc3) { esc3 = false; continue; }
+                            if (ch === '\\') { esc3 = true; continue; }
+                            if (ch === '"') { inStr3 = !inStr3; continue; }
+                            if (inStr3) continue;
+                            if (ch === '{') openBraces++;
+                            if (ch === '}') openBraces--;
+                            if (ch === '[') openBrackets++;
+                            if (ch === ']') openBrackets--;
+                        }
+
+                        // Add missing closers
+                        let suffix = '';
+                        for (let i = 0; i < openBrackets; i++) suffix += ']';
+                        for (let i = 0; i < openBraces; i++) suffix += '}';
+                        cleanCode += suffix;
+
+                        console.log("[JSON-FIX] Truncation repair — added closers:", suffix, "(len:", cleanCode.length, ")");
+
+                        try {
+                            responseData = JSON.parse(cleanCode);
+                            console.log("[JSON-FIX] ✅ Truncation repair succeeded!");
+                        } catch (thirdErr) {
+                            // === NUCLEAR: extract what we can ===
+                            console.error("[JSON-FIX] All repairs failed. Extracting partial content...");
+                            console.error("[JSON-ERROR] Context around position", thirdErr.message);
+
+                            // Try to find and parse just the layers array
+                            const layersMatch = cleanCode.match(/"layers"\s*:\s*\[/);
+                            if (layersMatch) {
+                                const start = layersMatch.index;
+                                // Find the outermost structure
+                                const wrapper = cleanCode.substring(0, start) + '"layers": []}';
+                                try {
+                                    responseData = JSON.parse(wrapper);
+                                    responseData.layers = []; // Empty but valid
+                                    console.warn("[JSON-FIX] ⚠️ Recovered structure with empty layers");
+                                } catch (e) {
+                                    throw new Error('La IA no devolvió un JSON válido. Error: ' + thirdErr.message + '. Intenta de nuevo.');
+                                }
+                            } else {
+                                throw new Error('La IA no devolvió un JSON válido. Error: ' + thirdErr.message + '. Intenta de nuevo.');
+                            }
                         }
                     }
                 }
 
-                const responseData = JSON.parse(cleanCode);
-
-                // Handle new Object structure { seo, slides } vs legacy Array
+                // Handle new Object structure { seo, slides/pages } vs legacy Array
                 slidesData = [];
 
-                if (Array.isArray(responseData)) {
+                if (isCanvasMode) {
+                    // Canvas mode: AI returns { seo, pages: [ sceneGraph, ... ] }
+                    if (responseData.pages && Array.isArray(responseData.pages)) {
+                        slidesData = responseData.pages;
+                    } else if (Array.isArray(responseData)) {
+                        slidesData = responseData;
+                    } else {
+                        throw new Error("La respuesta Canvas no contiene un array de 'pages'.");
+                    }
+                    seoData = responseData.seo || {};
+                } else if (Array.isArray(responseData)) {
                     slidesData = responseData;
                 } else if (responseData.slides && Array.isArray(responseData.slides)) {
                     slidesData = responseData.slides;
@@ -335,8 +511,22 @@ class App {
                 }
 
             } catch (jsonErr) {
-                console.error("JSON Parse Error:", jsonErr, result.code);
-                throw new Error("La IA no devolvió un JSON válido. Intenta de nuevo.");
+                let contextStr = "Snippet not available";
+                if (cleanCode && typeof cleanCode === 'string') {
+                    // Try to extract position from error message, e.g. "at position 14394"
+                    const match = jsonErr.message.match(/position\s+(\d+)/);
+                    if (match && match[1]) {
+                        const pos = parseInt(match[1]);
+                        const start = Math.max(0, pos - 100);
+                        const end = Math.min(cleanCode.length, pos + 100);
+                        contextStr = `...${cleanCode.substring(start, pos)}[ERROR HERE]${cleanCode.substring(pos, end)}...`;
+                        console.error(`[JSON-ERROR] Context around position ${pos}:\n${contextStr}`);
+                    } else {
+                        console.error("[JSON-ERROR] Raw output:", cleanCode.substring(0, 500) + "...\n(Total length: " + cleanCode.length + ")");
+                    }
+                }
+
+                throw new Error(`La IA no devolvió un JSON válido. Error: ${jsonErr.message}. Intenta de nuevo.`);
             }
 
             // Update SEO UI (outside try so it always runs after successful parse)
@@ -347,29 +537,64 @@ class App {
             }
 
             // 5. Render Slides
-            this.setStatus('🖼️ Renderizando slides...', true);
             this.slides = []; // Store generated slides { id, content, html }
 
-            for (const slideData of slidesData) {
-                const templateId = slideData.templateId;
-                const content = slideData.content || {};
+            if (isCanvasMode) {
+                // ─── CANVAS MODE: Store scene graphs for CanvasEditor ───
+                this.setStatus('🎨 Preparando Motor Canvas...', true);
 
-                // Inject Global Theme Meta if missing
-                if (!content.THEME) {
-                    // Map mode to theme using ContentEngine's logic if possible, or default
-                    // We can just rely on what ContentEngine inserted into the prompt, 
-                    // but if AI missed it, we default to CYBER.
-                    content.THEME = slideData.THEME || 'CYBER';
+                // Create shared renderer
+                if (!this.canvasRenderer) {
+                    this.canvasRenderer = window.createRenderer(1080, 1920, 'cyber');
                 }
 
-                // Render HTML
-                const html = this.templateEngine.renderTemplate(templateId, content);
+                for (let i = 0; i < slidesData.length; i++) {
+                    const sceneGraph = slidesData[i];
+                    this.setStatus(`🎨 Procesando página ${i + 1}/${slidesData.length}...`, true);
 
-                this.slides.push({
-                    templateId,
-                    data: content,
-                    html: html
-                });
+                    try {
+                        // Apply branding theme tokens
+                        const themed = this.canvasRenderer.brandingSystem.applyTheme(sceneGraph, sceneGraph.theme || 'cyber');
+
+                        this.slides.push({
+                            templateId: `canvas-page-${i + 1}`,
+                            data: themed,
+                            html: '',  // Will be rendered live via CanvasEditor
+                            isCanvas: true
+                        });
+                    } catch (renderErr) {
+                        console.error(`[Canvas] Error processing page ${i + 1}:`, renderErr);
+                        this.slides.push({
+                            templateId: `canvas-error-${i + 1}`,
+                            data: sceneGraph,
+                            html: '',
+                            isCanvas: true,
+                            error: renderErr.message
+                        });
+                    }
+                }
+            } else {
+                // ─── TEMPLATE MODE: Render via TemplateEngine (original flow) ───
+                this.setStatus('🖼️ Renderizando slides...', true);
+
+                for (const slideData of slidesData) {
+                    const templateId = slideData.templateId;
+                    const content = slideData.content || {};
+
+                    // Inject Global Theme Meta if missing
+                    if (!content.THEME) {
+                        content.THEME = slideData.THEME || 'CYBER';
+                    }
+
+                    // Render HTML
+                    const html = this.templateEngine.renderTemplate(templateId, content);
+
+                    this.slides.push({
+                        templateId,
+                        data: content,
+                        html: html
+                    });
+                }
             }
 
             this.setProgress(100);
@@ -394,11 +619,17 @@ class App {
         if (!this.slides || this.slides.length === 0) return;
 
         const currentSlide = this.slides[this.currentSlideIndex];
-        const studio = this.viewManager.views['studio']; // Access view instance
+        const studio = this.viewManager.views['studio'];
 
         if (studio) {
-            // Update Preview
-            studio.updatePreview(currentSlide.html);
+            if (currentSlide.isCanvas) {
+                // ─── CANVAS MODE: Use CanvasEditor ───
+                this._showCanvasEditor(currentSlide);
+            } else {
+                // ─── TEMPLATE MODE: Use iframe preview ───
+                this._hideCanvasEditor();
+                studio.updatePreview(currentSlide.html);
+            }
 
             // Update Counter
             studio.updateSlideCounter(this.currentSlideIndex + 1, this.slides.length);
@@ -413,6 +644,77 @@ class App {
                 studio.updateInspector(currentSlide.data);
             }
         }
+    }
+
+    /**
+     * Show the CanvasEditor for a canvas slide.
+     */
+    async _showCanvasEditor(slide) {
+        try {
+            const studio = this.viewManager.views['studio'];
+            if (!studio) return;
+
+            // Get or create the editor container
+            let editorContainer = document.getElementById('canvasEditorContainer');
+            const previewFrame = document.getElementById('previewFrame');
+            const previewContainer = document.getElementById('previewContainer');
+
+            if (!editorContainer) {
+                editorContainer = document.createElement('div');
+                editorContainer.id = 'canvasEditorContainer';
+                if (previewContainer) {
+                    previewContainer.appendChild(editorContainer);
+                } else if (previewFrame && previewFrame.parentNode) {
+                    previewFrame.parentNode.appendChild(editorContainer);
+                }
+            }
+
+            // Show editor, hide iframe — match container dimensions
+            if (previewFrame) previewFrame.style.display = 'none';
+            editorContainer.style.display = 'flex';
+
+            // Ensure container has dimensions (match previewContainer)
+            if (previewContainer) {
+                const rect = previewContainer.getBoundingClientRect();
+                editorContainer.style.width = rect.width + 'px';
+                editorContainer.style.height = rect.height + 'px';
+            }
+
+            // Create or reuse the canvas editor
+            if (!this.canvasRenderer) {
+                this.canvasRenderer = window.createRenderer(1080, 1920, 'cyber');
+            }
+
+            if (!this.canvasEditor) {
+                this.canvasEditor = new CanvasEditor(editorContainer, this.canvasRenderer);
+                this.canvasEditor.onChange = (sceneGraph) => {
+                    const currentSlide = this.slides[this.currentSlideIndex];
+                    if (currentSlide) {
+                        currentSlide.data = sceneGraph;
+                        if (studio.editorInstance) {
+                            studio.editorInstance.setValue(JSON.stringify(sceneGraph, null, 2));
+                        }
+                    }
+                };
+            }
+
+            // Load the scene graph into the editor
+            console.log('[CanvasEditor] Loading scene graph...');
+            await this.canvasEditor.load(slide.data);
+            console.log('[CanvasEditor] Scene graph loaded OK');
+        } catch (err) {
+            console.error('[CanvasEditor] Error showing editor:', err);
+        }
+    }
+
+    /**
+     * Hide the CanvasEditor and show the iframe.
+     */
+    _hideCanvasEditor() {
+        const editorContainer = document.getElementById('canvasEditorContainer');
+        const previewFrame = document.getElementById('previewFrame');
+        if (editorContainer) editorContainer.style.display = 'none';
+        if (previewFrame) previewFrame.style.display = '';
     }
 
     handlePrevSlide() {
@@ -434,6 +736,9 @@ class App {
     handleDataChange(newData) {
         if (!this.slides || !this.slides[this.currentSlideIndex]) return;
         const currentSlide = this.slides[this.currentSlideIndex];
+
+        // Skip re-render for Canvas slides (they are pre-rendered images)
+        if (currentSlide.isCanvas) return;
 
         // Update state
         currentSlide.data = newData;
@@ -515,17 +820,56 @@ class App {
     handleThemeChange(newTheme) {
         if (!this.slides || this.slides.length === 0) return;
 
-        console.log(`🎨 Theme Switch (Global): ${newTheme} → Applying to ${this.slides.length} slides`);
-
-        // Apply theme to ALL slides
-        for (const slide of this.slides) {
-            slide.data.THEME = newTheme;
-            slide.html = this.templateEngine.renderTemplate(slide.templateId, slide.data);
+        // Support custom hex color — create dynamic theme on the fly
+        if (newTheme && newTheme.startsWith('#') && newTheme.length >= 7) {
+            const customTheme = {
+                name: 'Custom',
+                colors: {
+                    primary: newTheme,
+                    accent: newTheme,
+                    warning: '#FFD700',
+                    success: '#00FF88',
+                    danger: '#FF3366',
+                    bg: '#030303',
+                    cardBg: '#0a0a0c',
+                    text: '#f0f0f0',
+                    textMuted: '#94a3b8'
+                },
+                fonts: { title: 'BlackOpsOne', body: 'MPLUS Code Latin', mono: 'JetBrains Mono' },
+                background: { fill: '#030303', pattern: null, opacity: 1.0 },
+                brand: { name: 'KR-CLIDN', logo: './assets/kr-clidn-logo.png', badge: 'CUSTOM' }
+            };
+            if (this.canvasRenderer && this.canvasRenderer.brandingSystem) {
+                this.canvasRenderer.brandingSystem.registerTheme('custom', customTheme);
+            }
+            newTheme = 'custom';
         }
 
-        // Update UI (shows current slide with new theme)
+        console.log('🎨 Theme Switch (Global): ' + newTheme + ' → Applying to ' + this.slides.length + ' slides');
+
+        for (const slide of this.slides) {
+            if (slide.isCanvas) {
+                // Apply theme to Canvas slides — set theme name and re-apply tokens
+                slide.data.theme = newTheme;
+                if (this.canvasRenderer && this.canvasRenderer.brandingSystem) {
+                    slide.data = this.canvasRenderer.brandingSystem.applyTheme(slide.data, newTheme);
+                }
+            } else {
+                slide.data.THEME = newTheme;
+                slide.html = this.templateEngine.renderTemplate(slide.templateId, slide.data);
+            }
+        }
+
+        // Re-render canvas editor with new theme in real-time
+        if (this.canvasEditor && this.canvasRenderer) {
+            const currentSlide = this.slides[this.currentSlideIndex];
+            if (currentSlide && currentSlide.isCanvas) {
+                this.canvasRenderer.brandingSystem.setTheme(newTheme);
+                this.canvasEditor.load(currentSlide.data);
+            }
+        }
         this.updateStudioState();
-        this.setStatus(`Tema aplicado globalmente: ${newTheme}`);
+        this.setStatus('Tema aplicado globalmente: ' + newTheme);
     }
 
     handlePreviewAction(action) {
@@ -548,7 +892,7 @@ class App {
 
             // Re-render HTML so named editable overrides persist when switching slides
             // (renderEditable reads _overrides and applies transform inline)
-            if (action.id && !action.id.startsWith('auto_')) {
+            if (action.id && !action.id.startsWith('auto_') && !currentSlide.isCanvas) {
                 currentSlide.html = this.templateEngine.renderTemplate(currentSlide.templateId, currentSlide.data);
             }
             // auto_ drag positions are handled at export time via getExportHTML
@@ -561,6 +905,13 @@ class App {
      * - Strips interactivity styles/scripts (hover outlines, drag cursor)
      */
     getExportHTML(slide) {
+        // Canvas slides: re-render with modified scene graph and export as PNG
+        if (slide.isCanvas && this.canvasRenderer) {
+            // The slide.data contains the modified scene graph
+            // Export will be handled by the export system using canvasRenderer
+            return slide.html || '';
+        }
+
         let html = slide.html || '';
         const overrides = slide.data._overrides || {};
 
@@ -589,13 +940,20 @@ class App {
     }
 }
 
-// Global Error Handler
+// Global Error Handler (suppress benign ResizeObserver errors)
 window.addEventListener('error', (event) => {
+    // ResizeObserver loop errors are benign browser noise — never show alert
+    if (event.message && event.message.includes('ResizeObserver')) {
+        event.preventDefault();
+        return;
+    }
     console.error("Global Error:", event.error);
     alert(`Error Crítico en App:\n${event.message}\n\nRevisa la consola (Ctrl+Shift+I)`);
 });
 
 window.addEventListener('unhandledrejection', (event) => {
+    const reason = String(event.reason || '');
+    if (reason.includes('ResizeObserver')) return;
     console.error("Unhandled Rejection:", event.reason);
     alert(`Promesa rechazada sin manejo:\n${event.reason}`);
 });

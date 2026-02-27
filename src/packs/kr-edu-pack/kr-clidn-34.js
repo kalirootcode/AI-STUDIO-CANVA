@@ -57,8 +57,8 @@ export function render(data) {
 
         <!-- Step Badge -->
         <div class="speed-badge">
-            <span class="mono" style="font-size:34px; color:var(--primary-color); letter-spacing:3px;">⚡ SPEEDRUN</span>
-            <span class="mono" style="font-size:34px; color:#555;">${esc(d.TIME_ESTIMATE)}</span>
+            <span class="mono" style="font-size:38px; color:var(--primary-color); letter-spacing:3px;">⚡ SPEEDRUN</span>
+            <span class="mono" style="font-size:38px; color:#555;">${esc(d.TIME_ESTIMATE)}</span>
         </div>
 
         <!-- Big Step Number -->
@@ -85,7 +85,7 @@ export function render(data) {
         <!-- Result -->
         <div class="glass-panel" style="display:flex; gap:12px; align-items:center;">
             <span style="font-size:41px;">✅</span>
-            <span style="font-size:37px; color:#ffffff; line-height:1.4;">${TemplateUtils.renderEditable('RESULT', `${esc(d.RESULT)}`, data._overrides)}</span>
+            <span style="font-size:38px; color:#ffffff; line-height:1.4;">${TemplateUtils.renderEditable('RESULT', `${esc(d.RESULT)}`, data._overrides)}</span>
         </div>
 
         <!-- Progress Bar -->

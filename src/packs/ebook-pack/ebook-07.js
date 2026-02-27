@@ -48,6 +48,49 @@ const EBOOK_STYLES = `
         display: flex;
         flex-direction: column;
         z-index: 10;
+        overflow: hidden;
+    }
+
+    /* IMAGES & CINEMATIC WRAPPER */
+    img {
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: contain;
+        display: block;
+    }
+
+    .safe-zone img:not([src*="logo"]):not(.emoji) {
+        max-height: calc(100% - 40px);
+        border-radius: 16px;
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        box-shadow: 0 15px 45px color-mix(in srgb, var(--primary-color) 25%, transparent),
+                    inset 0 0 20px rgba(0, 0, 0, 0.5);
+        filter: brightness(0.85) contrast(1.1) saturate(1.2);
+        position: relative;
+        z-index: 1;
+    }
+
+    .image-cinematic-wrapper {
+        position: relative;
+        display: inline-flex;
+        justify-content: center;
+        align-items: center;
+        border-radius: 16px;
+        overflow: hidden;
+        max-height: 100%;
+        max-width: 100%;
+    }
+
+    .image-cinematic-wrapper::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(to bottom, transparent 50%, color-mix(in srgb, var(--bg-color, #0a0a0c) 80%, transparent));
+        background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.08'/%3E%3C/svg%3E");
+        pointer-events: none;
+        z-index: 2;
+        border-radius: inherit;
+        mix-blend-mode: overlay;
     }
 
     /* TYPOGRAPHY */
@@ -60,6 +103,8 @@ const EBOOK_STYLES = `
         text-shadow: 2px 4px 0px rgba(0,0,0,0.6);
         margin-bottom: 32px;
         color: #ffffff;
+        text-wrap: balance;
+        overflow-wrap: break-word;
     }
     
     .highlight {
@@ -80,14 +125,19 @@ const EBOOK_STYLES = `
         text-shadow: 1px 3px 0px rgba(0,0,0,0.5);
         margin-bottom: 24px;
         color: #ffffff;
+        text-wrap: balance;
+        overflow-wrap: break-word;
     }
 
     .ebook-p {
         font-family: var(--font-body);
-        font-size: 48px;
+        font-size: 42px;
         line-height: 1.6;
         color: var(--text-main);
-        margin-bottom: 36px;
+        margin-bottom: 24px;
+        text-align: justify;
+        overflow-wrap: break-word;
+        word-break: break-word;
     }
 
     .ebook-p-muted {
@@ -119,12 +169,14 @@ const EBOOK_STYLES = `
     .term-dot.green { background: #34C759; }
 
     .term-body {
-        padding: 32px;
+        padding: 24px;
         font-family: var(--font-mono);
-        font-size: 40px;
-        line-height: 1.5;
+        font-size: 36px;
+        line-height: 1.4;
         color: var(--primary-color);
         font-weight: 700;
+        white-space: pre-wrap;
+        word-break: break-all;
     }
 
     /* HIGHLIGHTS FOR THEME COLORS */
@@ -160,9 +212,9 @@ function getEbookHeader(customText = 'KR-CLIDN') {
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 40px; padding-bottom: 20px; border-bottom: 2px solid rgba(255,255,255,0.05);">
             <div style="display:flex; align-items:center; gap: 16px;">
                 <img src="../assets/kr-clidn-logo.png" style="height: 48px; width: auto; border-radius: 8px; object-fit: contain;">
-                <span style="font-family:var(--font-title); font-size:42px; font-weight:800; color:#fff; letter-spacing: 2px;">${customText}</span>
+                <span style="font-family:var(--font-title); font-size: 30px; font-weight:800; color:#fff; letter-spacing: 2px;">${customText}</span>
             </div>
-            <div class="mono" style="font-size: 34px; color: var(--text-muted); padding: 8px 16px; background: rgba(255,255,255,0.03); border-radius: 8px;">
+            <div class="mono" style="font-size: 30px; color: var(--text-muted); padding: 8px 16px; background: rgba(255,255,255,0.03); border-radius: 8px;">
                 EDICIÓN PREMIUM
             </div>
         </div>
@@ -172,8 +224,8 @@ function getEbookHeader(customText = 'KR-CLIDN') {
 function getEbookPagination(current, total) {
     if (!current || !total) return '';
     return `
-        <div style="position: absolute; bottom: -80px; left: 0; width: 100%; display:flex; justify-content:center; align-items:center; gap: 24px; z-index: 100;">
-            <div style="font-family: var(--font-mono); font-size: 38px; color: var(--text-muted);">
+        <div style="position: absolute; bottom: 40px; left: 0; width: 100%; display:flex; justify-content:center; align-items:center; gap: 24px; z-index: 100;">
+            <div style="font-family: var(--font-mono); font-size: 30px; color: var(--text-muted);">
                 PÁGINA <span style="color:var(--primary-color); font-weight:bold;">${current}</span> / ${total}
             </div>
             <div style="display:flex; gap: 8px;">
@@ -184,6 +236,27 @@ function getEbookPagination(current, total) {
         </div>
     `;
 }
+
+function getEbookAutoFitScript() {
+    return `
+    <script>
+        (function() {
+            // Pre-processing: Wrap images for cinematic effects
+            function wrapCinematicImages() {
+                const safeZone = document.querySelector('.safe-zone');
+                if (!safeZone) return;
+                
+                const images = safeZone.querySelectorAll('img:not([src*="logo"]):not(.emoji):not(.wrapped-cinematic)');
+                images.forEach(img => {
+                    img.classList.add('wrapped-cinematic');
+                    
+                    const wrapper = document.createElement('div');
+                    wrapper.className = 'image-cinematic-wrapper';
+                    
+                    img.parentNode.insertBefore(wrapper, img);
+                    wrapper.appendChild(img);
+                });
+            }
 
 // --- END INJECTED SHARED CODE ---
 
@@ -236,33 +309,33 @@ export function render(data) {
                 ${TemplateUtils.renderEditable('CTA', formatContent(esc(d.CTA)), data._overrides)}
             </p>
             
-            <p class="ebook-p ebook-p-muted" style="max-width: 80%; font-size: 40px; margin-top: 10px;">
+            <p class="ebook-p ebook-p-muted" style="max-width: 80%; font-size: 30px; margin-top: 10px;">
                 ${TemplateUtils.renderEditable('MOTIVATION', formatContent(esc(d.MOTIVATION)), data._overrides)}
             </p>
 
             <div style="margin-top: 60px; display:flex; gap: 40px; justify-content:center;">
                 <div style="display:flex; flex-direction:column; align-items:center; gap: 12px;">
-                    <div style="width:80px; height:80px; border-radius:50%; border:2px solid var(--primary-color); display:flex; align-items:center; justify-content:center; font-size:40px;">❤️</div>
-                    <span class="mono" style="font-size:32px; color:var(--text-muted)">LIKE</span>
+                    <div style="width:80px; height:80px; border-radius:50%; border:2px solid var(--primary-color); display:flex; align-items:center; justify-content:center; font-size: 30px;">❤️</div>
+                    <span class="mono" style="font-size: 30px; color:var(--text-muted)">LIKE</span>
                 </div>
                 <div style="display:flex; flex-direction:column; align-items:center; gap: 12px;">
-                    <div style="width:80px; height:80px; border-radius:50%; border:2px solid var(--warning-color); display:flex; align-items:center; justify-content:center; font-size:40px;">🔖</div>
-                    <span class="mono" style="font-size:32px; color:var(--text-muted)">SAVE</span>
+                    <div style="width:80px; height:80px; border-radius:50%; border:2px solid var(--warning-color); display:flex; align-items:center; justify-content:center; font-size: 30px;">🔖</div>
+                    <span class="mono" style="font-size: 30px; color:var(--text-muted)">SAVE</span>
                 </div>
                 <div style="display:flex; flex-direction:column; align-items:center; gap: 12px;">
-                    <div style="width:80px; height:80px; border-radius:50%; border:2px solid var(--accent-color); display:flex; align-items:center; justify-content:center; font-size:40px;">🔄</div>
-                    <span class="mono" style="font-size:32px; color:var(--text-muted)">SHARE</span>
+                    <div style="width:80px; height:80px; border-radius:50%; border:2px solid var(--accent-color); display:flex; align-items:center; justify-content:center; font-size: 30px;">🔄</div>
+                    <span class="mono" style="font-size: 30px; color:var(--text-muted)">SHARE</span>
                 </div>
             </div>
 
-            <div class="mono" style="margin-top: 80px; font-size: 34px; color: var(--text-muted); letter-spacing: 2px;">
+            <div class="mono" style="margin-top: 80px; font-size: 30px; color: var(--text-muted); letter-spacing: 2px;">
                 ${esc(d.HASHTAGS)}
             </div>
             
         </div>
     </div>
 
-    ${TemplateUtils.getAutoFitScript()}
+    ${getEbookAutoFitScript()}
 </body>
 </html>`;
 }

@@ -31,7 +31,7 @@ export function render(data) {
     const sectionsHTML = d.SECTIONS.map(s => {
         const cmdsHTML = s.COMMANDS.map(c => `
             <div style="display:flex; flex-direction:column; gap:4px; padding:10px 0; border-bottom:1px solid rgba(255,255,255,0.04);">
-                <span style="font-size:34px; color:#aaa; line-height:1.2;"># ${esc(c.DESC)}</span>
+                <span style="font-size:38px; color:#aaa; line-height:1.2;"># ${esc(c.DESC)}</span>
                 <code style="font-family:var(--font-mono); font-size:38px; color:var(--primary-color); font-weight:700;">$ ${esc(c.CMD)}</code>
             </div>`).join('\n');
 
@@ -41,7 +41,7 @@ export function render(data) {
                 <div style="display:flex; gap:6px;">
                     <div class="term-dot red"></div><div class="term-dot yellow"></div><div class="term-dot green"></div>
                 </div>
-                <div class="mono" style="font-size:24px; color:var(--warning-color); font-weight:700; letter-spacing:1px;">${esc(s.HEADER)}</div>
+                <div class="mono" style="font-size:38px; color:var(--warning-color); font-weight:700; letter-spacing:1px;">${esc(s.HEADER)}</div>
             </div>
             <div class="term-body" style="padding:12px 20px;">
                 ${cmdsHTML}
@@ -76,21 +76,21 @@ export function render(data) {
         ${TemplateUtils.renderBrandHeader()}
         ${TemplateUtils.renderMetaBadge(data)}
 
-        <div class="mono" style="font-size:34px; color:var(--primary-color); letter-spacing:3px; margin-bottom:8px;">📋 REFERENCIA RÁPIDA</div>
+        <div class="mono" style="font-size:38px; color:var(--primary-color); letter-spacing:3px; margin-bottom:8px;">📋 REFERENCIA RÁPIDA</div>
 
         <!-- Dense Container -->
         <div class="dense-container">
             <div class="dense-header">
                 <span class="mono" style="font-size:48px; font-weight:800; color:#fff;">${TemplateUtils.renderEditable('TITLE', `${esc(d.TITLE)}`, data._overrides)}</span>
-                <span class="mono" style="font-size:34px; color:var(--primary-color); background:rgba(0,217,255,0.08); padding:4px 10px; border-radius:6px;">${esc(d.CATEGORY)}</span>
+                <span class="mono" style="font-size:38px; color:var(--primary-color); background:rgba(0,217,255,0.08); padding:4px 10px; border-radius:6px;">${esc(d.CATEGORY)}</span>
             </div>
             ${sectionsHTML}
         </div>
 
         <!-- Note -->
         <div style="display:flex; gap:8px; align-items:center;">
-            <span style="font-size:34px;">⚠️</span>
-            <span class="mono" style="font-size:34px; color:#666;">${esc(d.NOTE)}</span>
+            <span style="font-size:38px;">⚠️</span>
+            <span class="mono" style="font-size:38px; color:#666;">${esc(d.NOTE)}</span>
         </div>
     </div>
 

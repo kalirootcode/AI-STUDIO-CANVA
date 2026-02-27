@@ -37,7 +37,7 @@ export function render(data) {
             text-shadow: 0 0 20px color-mix(in srgb, var(--primary-color) 30%, transparent);
         }
         .tool-cat {
-            font-family: var(--font-mono); font-size: 34px; color: #888;
+            font-family: var(--font-mono); font-size: 38px; color: #888;
             letter-spacing: 3px; text-transform: uppercase; margin-bottom: 16px;
         }
         .rating-row {
@@ -47,8 +47,8 @@ export function render(data) {
         .rating-item {
             display: flex; flex-direction: column; align-items: center; gap: 4px;
         }
-        .rating-label { font-family: var(--font-mono); font-size: 34px; color: #666; text-transform: uppercase; }
-        .rating-value { font-size: 34px; }
+        .rating-label { font-family: var(--font-mono); font-size: 38px; color: #666; text-transform: uppercase; }
+        .rating-value { font-size: 38px; }
     </style>
 </head>
 <body>
@@ -59,14 +59,14 @@ export function render(data) {
         ${TemplateUtils.renderBrandHeader()}
         ${TemplateUtils.renderMetaBadge(data)}
 
-        <div class="mono" style="font-size:34px; color:var(--primary-color); letter-spacing:3px; margin-bottom:8px;">🔫 ARSENAL</div>
+        <div class="mono" style="font-size:38px; color:var(--primary-color); letter-spacing:3px; margin-bottom:8px;">🔫 ARSENAL</div>
 
         <!-- Tool Card -->
         <div class="tool-hero">
             <div class="tool-icon">${d.TOOL_ICON}</div>
             <div class="tool-name">${TemplateUtils.renderEditable('TOOL_NAME', `${esc(d.TOOL_NAME)}`, data._overrides)}</div>
             <div class="tool-cat">${esc(d.CATEGORY)}</div>
-            <div style="font-size:37px; color:#e2e8f0; line-height:1.5; max-width:800px; margin: 0 auto 20px;">
+            <div style="font-size:38px; color:#e2e8f0; line-height:1.5; max-width:800px; margin: 0 auto 20px;">
                 ${TemplateUtils.renderEditable('DESCRIPTION', `${esc(d.DESCRIPTION)}`, data._overrides)}
             </div>
             <div class="rating-row">
@@ -95,8 +95,8 @@ export function render(data) {
 
         <!-- Platform -->
         <div class="glass-panel" style="display:flex; gap:10px; align-items:center; justify-content:center;">
-            <span style="font-size:34px;">💻</span>
-            <span class="mono" style="font-size:34px; color:#aaa;">${esc(d.PLATFORM)}</span>
+            <span style="font-size:38px;">💻</span>
+            <span class="mono" style="font-size:38px; color:#aaa;">${esc(d.PLATFORM)}</span>
         </div>
     </div>
 

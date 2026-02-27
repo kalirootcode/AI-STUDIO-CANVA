@@ -39,7 +39,7 @@ export function render(data) {
             font-weight: 600; color: var(--primary-color); margin-bottom: 8px;
         }
         .quote-context {
-            font-size: 37px; color: #aaaaaa; max-width: 700px;
+            font-size: 38px; color: #aaaaaa; max-width: 700px;
         }
         .divider-line {
             width: 120px; height: 2px; margin: 20px auto;
@@ -66,7 +66,7 @@ export function render(data) {
         <!-- Extra Fact -->
         <div class="glass-panel" style="display:flex; gap:14px; align-items:center;">
             <span style="font-size:41px;">💡</span>
-            <span style="font-size: 37px; color:#ffffff; line-height:1.4;">${esc(d.EXTRA_FACT)}</span>
+            <span style="font-size: 38px; color:#ffffff; line-height:1.4;">${esc(d.EXTRA_FACT)}</span>
         </div>
     </div>
 

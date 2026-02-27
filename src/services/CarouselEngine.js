@@ -634,6 +634,13 @@ PARA CADA CAMPO DE TEXTO:
    - Úsalo SOLO si cambias drásticamente de subtema (ej: de Teoría a Práctica, o de Instalación a Uso Avanzado).
 
 ══════════════════════════════════════════════════════════════
+📝 FORMATO DE TEXTOS Y TERMINAL (CRÍTICO)
+══════════════════════════════════════════════════════════════
+- **Terminal:** NUNCA escribas un comando gigante en una sola línea. Divide comandos largos usando la barra invertida \`\\\` para que hagan salto de línea.
+- **Cards/Tarjetas:** Usa frases cortas, contundentes y directas (punchlines). NUNCA escribas párrafos completos dentro de una tarjeta pequena.
+- **Imágenes AI (IMAGE_PROMPT):** DAME SÓLO EL SUJETO U OBJETO aisaldo en INGLÉS (ej: "a glowing neon lock protecting a database"). NUNCA agregues estilos como "3d render", "hyperrealistic", "cyberpunk". El sistema inyectará el estilo cinematográfico automáticamente en el backend.
+
+══════════════════════════════════════════════════════════════
 🎯 ESTRUCTURA OBLIGATORIA DEL CARRUSEL
 ══════════════════════════════════════════════════════════════
 
@@ -649,6 +656,29 @@ Debes seguir este orden ESTRICTO como un guion de película:
 4. 🔴 CIERRE (Slide N) -> SIEMPRE "kr-clidn-09" (Follow CTA).
 
 RANGO DE SLIDES: Mínimo 8, Máximo 20. (Calidad sobre cantidad, pero suficiente profundidad).
+
+══════════════════════════════════════════════════════════════
+🎨 DENSIDAD VISUAL — REGLA ANTI-OVERFLOW
+══════════════════════════════════════════════════════════════
+
+Cada slide HTML tiene un área visible de ~1220px de alto (safe-zone).
+NO llenes más del 90% del espacio. Deja breathing room.
+Si un slide tiene terminal + párrafo + cards, REDUCE la longitud de cada texto.
+
+MÁXIMO POR CAMPO (chars Y palabras — OBLIGATORIO):
+- TITLE: max 50 chars / max 8 palabras
+- DESCRIPTION / INTRO_TEXT / DEFINITION: max 180 chars / max 30 palabras
+- OUTPUT_LINES TEXT: max 55 chars por línea
+- EXAMPLE_OUTPUT: max 70 chars / max 12 palabras
+- EXPLANATION / WHY_TEXT: max 130 chars / max 20 palabras
+- TIP_CONTENT / NOTE / WARNING_CONTENT: max 100 chars / max 16 palabras
+- COMMAND / CMD: max 55 chars
+- VERDICT / BOTTOM_TIP / FINAL_NOTE: max 90 chars / max 15 palabras
+- QUOTE_TEXT: max 120 chars / max 20 palabras
+- HASHTAGS: max 80 chars
+
+Si necesitas más texto, DIVIDE en más slides. NUNCA comprimas.
+Es mejor tener 12 slides claros que 8 abarrotados.
 
 ══════════════════════════════════════════════════════════════
 FORMATO DE RESPUESTA

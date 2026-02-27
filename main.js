@@ -25,8 +25,17 @@ function createWindow() {
 
     mainWindow.loadFile('src/index.html');
 
-    // Quitar menú en producción
+    // Quitar menú en producción pero habilitar recarga
     Menu.setApplicationMenu(null);
+
+    // Habilitar recarga manual con Ctrl+R o F5 ya que quitamos el menú
+    const { globalShortcut } = require('electron');
+    globalShortcut.register('CommandOrControl+R', () => {
+        if (mainWindow) mainWindow.reload();
+    });
+    globalShortcut.register('F5', () => {
+        if (mainWindow) mainWindow.reload();
+    });
 
     // DEBUG: DevTools deshabilitado para producción
     // mainWindow.webContents.openDevTools({ mode: 'detach' });
@@ -344,6 +353,31 @@ ipcMain.handle('export-image', async (event, { html, width, height, format }) =>
 });
 
 // IPC: Exportar Batch (Lote de imágenes)
+ipcMain.handle('save-canvas-png', async (event, { dataURL, folderName, fileName }) => {
+    const fs = require('fs');
+    const path = require('path');
+    const os = require('os');
+    try {
+        // Resolve path: ~/Pictures/{folderName}/{fileName}
+        const picturesDir = path.join(os.homedir(), 'Pictures', folderName || 'Export');
+        const filePath = path.join(picturesDir, fileName);
+
+        // Ensure directory exists
+        if (!fs.existsSync(picturesDir)) {
+            fs.mkdirSync(picturesDir, { recursive: true });
+        }
+        // Convert data URL to buffer
+        const base64Data = dataURL.replace(/^data:image\/\w+;base64,/, '');
+        const buffer = Buffer.from(base64Data, 'base64');
+        fs.writeFileSync(filePath, buffer);
+        console.log('[Export] Saved:', filePath);
+        return { success: true, path: filePath };
+    } catch (err) {
+        console.error('[Export] Error saving:', err.message);
+        return { success: false, error: err.message };
+    }
+});
+
 ipcMain.handle('export-batch', async (event, { slides, width, height, format, title }) => {
     const puppeteer = require('puppeteer');
     const fs = require('fs');

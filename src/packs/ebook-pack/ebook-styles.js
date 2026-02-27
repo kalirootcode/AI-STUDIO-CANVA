@@ -47,6 +47,49 @@ export const EBOOK_STYLES = `
         display: flex;
         flex-direction: column;
         z-index: 10;
+        overflow: hidden;
+    }
+
+    /* IMAGES & CINEMATIC WRAPPER */
+    img {
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: contain;
+        display: block;
+    }
+
+    .safe-zone img:not([src*="logo"]):not(.emoji) {
+        max-height: calc(100% - 40px);
+        border-radius: 16px;
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        box-shadow: 0 15px 45px color-mix(in srgb, var(--primary-color) 25%, transparent),
+                    inset 0 0 20px rgba(0, 0, 0, 0.5);
+        filter: brightness(0.85) contrast(1.1) saturate(1.2);
+        position: relative;
+        z-index: 1;
+    }
+
+    .image-cinematic-wrapper {
+        position: relative;
+        display: inline-flex;
+        justify-content: center;
+        align-items: center;
+        border-radius: 16px;
+        overflow: hidden;
+        max-height: 100%;
+        max-width: 100%;
+    }
+
+    .image-cinematic-wrapper::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(to bottom, transparent 50%, color-mix(in srgb, var(--bg-color, #0a0a0c) 80%, transparent));
+        background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.08'/%3E%3C/svg%3E");
+        pointer-events: none;
+        z-index: 2;
+        border-radius: inherit;
+        mix-blend-mode: overlay;
     }
 
     /* TYPOGRAPHY */
@@ -59,6 +102,8 @@ export const EBOOK_STYLES = `
         text-shadow: 2px 4px 0px rgba(0,0,0,0.6);
         margin-bottom: 32px;
         color: #ffffff;
+        text-wrap: balance;
+        overflow-wrap: break-word;
     }
     
     .highlight {
@@ -79,14 +124,19 @@ export const EBOOK_STYLES = `
         text-shadow: 1px 3px 0px rgba(0,0,0,0.5);
         margin-bottom: 24px;
         color: #ffffff;
+        text-wrap: balance;
+        overflow-wrap: break-word;
     }
 
     .ebook-p {
         font-family: var(--font-body);
-        font-size: 48px;
+        font-size: 42px;
         line-height: 1.6;
         color: var(--text-main);
-        margin-bottom: 36px;
+        margin-bottom: 24px;
+        text-align: justify;
+        overflow-wrap: break-word;
+        word-break: break-word;
     }
 
     .ebook-p-muted {
@@ -118,12 +168,14 @@ export const EBOOK_STYLES = `
     .term-dot.green { background: #34C759; }
 
     .term-body {
-        padding: 32px;
+        padding: 24px;
         font-family: var(--font-mono);
-        font-size: 40px;
-        line-height: 1.5;
+        font-size: 36px;
+        line-height: 1.4;
         color: var(--primary-color);
         font-weight: 700;
+        white-space: pre-wrap;
+        word-break: break-all;
     }
 
     /* HIGHLIGHTS FOR THEME COLORS */

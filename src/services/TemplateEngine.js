@@ -208,6 +208,19 @@ class TemplateEngine {
 
         try {
             console.log(`Rendering template ${templateId}`);
+
+            // --- ContentValidator Integration ---
+            // Sanitize AI data before render to enforce LayoutConstraints
+            const ContentValidator = (typeof window !== 'undefined' && window.ContentValidator) ? window.ContentValidator : null;
+            if (ContentValidator && data) {
+                const slideObj = { templateId, content: data };
+                const validated = ContentValidator.validateSlide(slideObj, 0, []);
+                if (validated && validated.content) {
+                    // Merge validated content back, preserving non-content fields (THEME, _overrides, etc.)
+                    data = { ...data, ...validated.content };
+                }
+            }
+
             let html = renderFn(data);
 
             // INJECT SHARED ASSETS (inline — srcdoc iframes can't resolve relative <link> paths)

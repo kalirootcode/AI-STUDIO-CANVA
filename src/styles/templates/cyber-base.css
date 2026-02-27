@@ -49,6 +49,64 @@ svg,
     max-width: 100%;
 }
 
+/* Image safety — aspect ratio preservation */
+img {
+    object-fit: cover;
+    display: block;
+}
+
+.safe-zone img {
+    max-height: calc(100% - 40px);
+    object-fit: contain;
+    border-radius: 12px;
+    width: 100%;
+}
+
+.safe-zone img:not([src*="logo"]):not(.emoji) {
+    max-height: calc(100% - 40px);
+    object-fit: contain;
+    border-radius: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    box-shadow: 0 15px 45px color-mix(in srgb, var(--primary-color) 25%, transparent),
+        inset 0 0 20px rgba(0, 0, 0, 0.5);
+    /* Cinematic Filters: Slightly lower contrast, boost saturation, drop brightness to match dark theme */
+    filter: brightness(0.85) contrast(1.1) saturate(1.2);
+    /* Subtle color tinting using background-blend-mode equivalent logic via CSS */
+    position: relative;
+    z-index: 1;
+}
+
+/* Image Container for Overlays */
+.image-cinematic-wrapper {
+    position: relative;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 16px;
+    overflow: hidden;
+    max-height: 100%;
+    max-width: 100%;
+}
+
+.image-cinematic-wrapper::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    /* Gradient Tint */
+    background: linear-gradient(to bottom, transparent 50%, color-mix(in srgb, var(--bg-color) 80%, transparent));
+    /* SVG Noise Overlay */
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.08'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 2;
+    border-radius: inherit;
+    mix-blend-mode: overlay;
+}
+
+/* Overflow guard on safe-zone */
+.safe-zone {
+    overflow: hidden;
+}
+
 /* --- GLOBAL LAYOUT & SAFE ZONE (TikTok Optimized) --- */
 html,
 body {
@@ -120,6 +178,7 @@ body {
     letter-spacing: -1px;
     text-shadow: 0 0 20px color-mix(in srgb, var(--primary-color) 30%, transparent);
     margin-bottom: 20px;
+    text-wrap: balance;
 }
 
 .cyber-subtitle {
@@ -130,6 +189,7 @@ body {
     line-height: 1.5;
     margin-bottom: 40px;
     letter-spacing: 0.5px;
+    text-wrap: balance;
 }
 
 /* Global Paragraph Styling for Legibility */
@@ -141,6 +201,8 @@ p {
     margin-bottom: 20px;
     font-weight: 400;
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+    overflow-wrap: break-word;
+    word-break: break-word;
 }
 
 .highlight {
@@ -165,6 +227,11 @@ p {
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), inset 0 0 0 1px color-mix(in srgb, var(--primary-color) 20%, transparent);
     flex-shrink: 0;
     /* Don't shrink below content */
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    overflow-wrap: break-word;
+    word-break: break-word;
 }
 
 /* Terminal Box - Smart Auto-Size */
@@ -228,6 +295,8 @@ p {
     line-height: 1.6;
     flex-grow: 1;
     font-weight: 500;
+    white-space: pre-wrap;
+    word-break: break-all;
 }
 
 /* 6. UTILITIES */

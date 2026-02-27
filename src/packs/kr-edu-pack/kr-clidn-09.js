@@ -203,13 +203,13 @@ export function render(data) {
 
     <!-- System Footer -->
     <div style="position: absolute; bottom: 35px; width: 100%; text-align: center; z-index: 10;">
-        <div style="font-family: var(--font-mono); font-size: 34px; color: rgba(255,255,255,0.15); letter-spacing: 6px;">
+        <div style="font-family: var(--font-mono); font-size: 38px; color: rgba(255,255,255,0.15); letter-spacing: 6px;">
             END_OF_TRANSMISSION
         </div>
     </div>
 
-    ${TemplateUtils.getAutoFitScript()}
     <!-- Matrix Rain Script Removed for Book Aesthetic -->
+    ${TemplateUtils.getAutoFitScript()}
 </body>
 </html>`;
 }

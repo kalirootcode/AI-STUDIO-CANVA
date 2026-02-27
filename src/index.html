@@ -6,9 +6,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cyber-Canvas AI Studio v2</title>
 
+    <!-- Canvas Editor CSS -->
+    <link rel="stylesheet" href="styles/canvas-editor.css">
+
     <!-- Fonts -->
     <script>
         window.onerror = function (message, source, lineno, colno, error) {
+            // Suppress benign ResizeObserver errors
+            if (message && String(message).includes('ResizeObserver')) return true;
             if (window.cyberCanvas && window.cyberCanvas.log) {
                 window.cyberCanvas.log('error', 'Uncaught Exception:', { message, source, lineno, colno, stack: error ? error.stack : 'No stack' });
             } else {
@@ -53,11 +58,23 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/css/css.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/javascript/javascript.min.js"></script>
 
-    <!-- Legacy Services (Global Scope) -->
+    <!-- Services -->
     <script type="module" src="services/IconSystem.js"></script>
     <script src="services/TemplateEngine.js"></script>
     <script src="services/CarouselEngine.js"></script>
     <script src="services/ContentEngine.js"></script>
+    <script src="services/ContentValidator.js"></script>
+
+    <!-- Canvas Rendering Engine -->
+    <script src="engine/LayoutConstraints.js"></script>
+    <script src="engine/SafeZoneManager.js"></script>
+    <script src="engine/TextFitter.js"></script>
+    <script src="engine/TextEngine.js"></script>
+    <script src="engine/EffectsEngine.js"></script>
+    <script src="engine/BrandingSystem.js"></script>
+    <script src="engine/CanvasRenderer.js"></script>
+    <script src="engine/CanvasEditor.js"></script>
+    <script src="engine/index.js"></script>
 
     <!-- Modular App Entry -->
     <script type="module" src="app.js"></script>

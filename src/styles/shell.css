@@ -2,6 +2,20 @@
 /* CYBER-CANVAS V2 - PROFESSIONAL SHELL THEME (NIGHT CITY) */
 /* ═══════════════════════════════════════════════════════════════════════════ */
 
+@font-face {
+    font-family: 'CODE Bold';
+    src: url('../assets/fonts/CODE\ Bold.otf') format('opentype');
+    font-weight: 700;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'NewComicTitle';
+    src: url('../assets/fonts/newcomictitle.ttf') format('truetype');
+    font-weight: 900;
+    font-style: normal;
+}
+
 :root {
     --bg-core: #050505;
     --bg-panel: #0a0a0a;

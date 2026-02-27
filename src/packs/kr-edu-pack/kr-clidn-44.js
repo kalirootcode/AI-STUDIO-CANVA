@@ -29,8 +29,8 @@ export function render(data) {
 
         return `<div class="poll-option" style="border-color:rgba(${hexToRgb(o.COLOR)},${borderAlpha});background:rgba(${hexToRgb(o.COLOR)},${bgAlpha});">
             <div class="option-key" style="background:rgba(${hexToRgb(o.COLOR)},0.15);border-color:rgba(${hexToRgb(o.COLOR)},0.4);color:${o.COLOR};">${esc(o.KEY)}</div>
-            <span style="font-size:37px;color:#e0e0f0;flex:1;line-height:1.3;">${esc(o.TEXT)}</span>
-            <span style="font-size:37px;">${esc(o.ICON)}</span>
+            <span style="font-size:38px;color:#e0e0f0;flex:1;line-height:1.3;">${esc(o.TEXT)}</span>
+            <span style="font-size:38px;">${esc(o.ICON)}</span>
         </div>`;
     }).join('');
 
@@ -71,10 +71,10 @@ export function render(data) {
             display: flex; align-items: center; justify-content: center;
             border-radius: 8px; border: 1px solid;
             font-family: 'JetBrains Mono', monospace;
-            font-size: 34px; font-weight: 900;
+            font-size: 38px; font-weight: 900;
         }
         .reveal-text {
-            font-size: 34px; color: #666; font-style: italic;
+            font-size: 38px; color: #666; font-style: italic;
             text-align: center; margin: 10px 0 4px;
         }
         .comment-cta {
@@ -94,8 +94,8 @@ export function render(data) {
         ${TemplateUtils.renderMetaBadge(data)}
 
         <div class="quiz-banner">
-            <span style="font-size:34px;">🎯</span>
-            <span class="mono" style="font-size:34px;color:var(--primary-color);font-weight:700;letter-spacing:2px;">${esc(d.CATEGORY)}</span>
+            <span style="font-size:38px;">🎯</span>
+            <span class="mono" style="font-size:38px;color:var(--primary-color);font-weight:700;letter-spacing:2px;">${esc(d.CATEGORY)}</span>
         </div>
 
         <h1 class="cyber-title" style="font-size:71px;margin-bottom:10px;">

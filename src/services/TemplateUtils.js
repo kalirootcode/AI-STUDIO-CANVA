@@ -32,7 +32,7 @@ export const TemplateUtils = {
                 <!-- Text -->
                 <div style="
                     font-family: 'JetBrains Mono', monospace; font-weight: 800; 
-                    font-size: 36px; letter-spacing: 6px; color: #fff;
+                    font-size: 38px; letter-spacing: 6px; color: #fff;
                     text-shadow: 0 0 20px rgba(0,217,255,0.5);
                     text-transform: uppercase;
                 ">KR-CLIDN</div>
@@ -55,44 +55,183 @@ export const TemplateUtils = {
         return `
         <script>
             (function() {
+                // ═══════════════════════════════════════════════════════
+                // AutoFit v2.0 — Proportional Scaling with Tier Minimums
+                // ═══════════════════════════════════════════════════════
+
+                // Guaranteed minimum font sizes by element role
+                const FONT_TIERS = {
+                    title:   54,
+                    subtitle: 36,
+                    body:    28,
+                    mono:    24,
+                    label:   24,
+                };
+
+                function getTier(el) {
+                    const tag = el.tagName;
+                    const cls = el.className || '';
+                    if (tag === 'H1' || cls.includes('cyber-title') || cls.includes('ebook-h1')) return 'title';
+                    if (tag === 'H2' || cls.includes('cyber-subtitle') || cls.includes('ebook-h2')) return 'subtitle';
+                    if (cls.includes('mono') || cls.includes('term-body') || tag === 'CODE' || tag === 'PRE') return 'mono';
+                    if (cls.includes('meta-badge') || cls.includes('speed-badge')) return 'label';
+                    return 'body';
+                }
+
+                // Pre-processing: Wrap images for cinematic effects
+                function wrapCinematicImages() {
+                    const safeZone = document.querySelector('.safe-zone');
+                    if (!safeZone) return;
+                    
+                    const images = safeZone.querySelectorAll('img:not([src*="logo"]):not(.emoji):not(.wrapped-cinematic)');
+                    images.forEach(img => {
+                        img.classList.add('wrapped-cinematic');
+                        const wrapper = document.createElement('div');
+                        wrapper.className = 'image-cinematic-wrapper';
+                        img.parentNode.insertBefore(wrapper, img);
+                        wrapper.appendChild(img);
+                    });
+                }
+
                 function fitContent() {
                     const safeZone = document.querySelector('.safe-zone');
                     if (!safeZone) return;
                     
-                    const maxLoops = 30;
+                    const maxLoops = 25;
                     let loop = 0;
                     
+                    // Collect and categorize text elements with tier-based minimums
+                    const textElements = Array.from(document.querySelectorAll(
+                        '.ebook-h1, .ebook-h2, .ebook-p, .cyber-title, .cyber-subtitle, .term-body, p, ' +
+                        '.glass-panel span, .glass-panel div, ' +
+                        '[style*="font-size"], .mono, h1, h2, h3, code, pre'
+                    )).map(el => {
+                        const style = window.getComputedStyle(el);
+                        const origSize = parseFloat(style.fontSize) || 16;
+                        const tier = getTier(el);
+                        return {
+                            el,
+                            origSize,
+                            currentSize: origSize,
+                            minSize: FONT_TIERS[tier] || FONT_TIERS.body,
+                            tier,
+                        };
+                    });
+
+                    // Collect images
+                    const imageElements = Array.from(safeZone.querySelectorAll('img')).map(img => ({
+                        el: img,
+                        origHeight: img.clientHeight || img.naturalHeight || 300,
+                        shrinkFactor: 1
+                    }));
+
+                    // Collect containers
+                    const containerElements = Array.from(safeZone.querySelectorAll('.terminal-window, .glass-panel')).map(el => ({
+                        el,
+                        origPadding: parseFloat(window.getComputedStyle(el).paddingTop) || 20,
+                        shrinkFactor: 1
+                    }));
+
+                    // Phase 0: Calculate overflow ratio for proportional scaling
+                    const overflowRatio = safeZone.scrollHeight / safeZone.clientHeight;
+                    
+                    if (overflowRatio <= 1.0) return; // No overflow
+
+                    // Initial proportional shrink
+                    if (overflowRatio > 1.0) {
+                        const scale = Math.max(0.7, 1 / overflowRatio);
+                        textElements.forEach(item => {
+                            const newSize = Math.max(item.minSize, Math.round(item.origSize * scale));
+                            if (newSize < item.currentSize) {
+                                item.currentSize = newSize;
+                                item.el.style.fontSize = newSize + 'px';
+                            }
+                        });
+                    }
+                    
+                    // Iterative refinement loop
                     while (safeZone.scrollHeight > safeZone.clientHeight && loop < maxLoops) {
-                        // Target ALL text elements for shrinking
-                        const textElements = document.querySelectorAll(
-                            '.cyber-title, .cyber-subtitle, .term-body, p, ' +
-                            '.glass-panel span, .glass-panel div, ' +
-                            '[style*="font-size"], .mono'
-                        );
                         let resized = false;
                         
-                        textElements.forEach(el => {
-                            let size = parseFloat(window.getComputedStyle(el).fontSize);
-                            const minSize = el.classList.contains('cyber-title') ? 40 : 36;
-                            if (size > minSize) {
-                                el.style.fontSize = (size - 1) + 'px';
+                        // Phase 1: Shrink text with tier minimums
+                        textElements.forEach(item => {
+                            if (item.currentSize > item.minSize) {
+                                const step = item.currentSize > 60 ? 2 : 1;
+                                item.currentSize = Math.max(item.minSize, item.currentSize - step);
+                                item.el.style.fontSize = item.currentSize + 'px';
                                 resized = true;
                             }
                         });
                         
-                        // Also reduce gap if still overflowing
-                        if (loop > 10) {
+                        // Phase 2: Reduce vertical gap/margins
+                        if (loop > 4) {
                             const gap = parseFloat(window.getComputedStyle(safeZone).gap) || 30;
                             if (gap > 8) {
-                                safeZone.style.gap = (gap - 2) + 'px';
+                                safeZone.style.gap = Math.max(8, gap - 3) + 'px';
+                                resized = true;
                             }
+                        }
+
+                        // Phase 3: Shrink images proportionally
+                        if (loop > 7) {
+                            imageElements.forEach(item => {
+                                if (item.shrinkFactor > 0.4) {
+                                    item.shrinkFactor -= 0.05;
+                                    const newH = Math.max(60, item.origHeight * item.shrinkFactor);
+                                    item.el.style.maxHeight = newH + 'px';
+                                    item.el.style.objectFit = 'contain';
+                                    item.el.style.width = 'auto';
+                                    item.el.style.margin = '0 auto';
+                                    resized = true;
+                                }
+                            });
+                        }
+
+                        // Phase 4a: Reduce container padding
+                        if (loop > 10) {
+                            containerElements.forEach(item => {
+                                if (item.shrinkFactor > 0.4) {
+                                    item.shrinkFactor -= 0.1;
+                                    const newPad = Math.max(6, item.origPadding * item.shrinkFactor);
+                                    item.el.style.padding = newPad + 'px';
+                                    resized = true;
+                                }
+                            });
+                        }
+
+                        // Phase 4b: Last resort — truncate long text with ellipsis
+                        if (loop > 18 && safeZone.scrollHeight > safeZone.clientHeight) {
+                            const longTexts = textElements.filter(item => {
+                                return item.tier === 'body' && item.el.textContent.length > 80;
+                            });
+                            longTexts.forEach(item => {
+                                const text = item.el.textContent;
+                                if (text.length > 80 && !text.endsWith('\u2026')) {
+                                    let cut = 77;
+                                    while (cut > 0 && text[cut] !== ' ') cut--;
+                                    if (cut <= 0) cut = 77;
+                                    item.el.textContent = text.substring(0, cut).replace(/[\\s,;:.]+$/, '') + '\u2026';
+                                    resized = true;
+                                }
+                            });
                         }
                         
                         if (!resized) break;
                         loop++;
                     }
+
+                    // Log result
+                    if (loop > 0) {
+                        console.log('[AutoFit v2] Completed in ' + loop + ' iterations. Overflow: ' + 
+                            (safeZone.scrollHeight > safeZone.clientHeight ? 'STILL OVERFLOWING' : 'RESOLVED'));
+                    }
                 }
-                window.addEventListener('load', fitContent);
+
+                // Initialize
+                window.addEventListener('load', () => {
+                    wrapCinematicImages();
+                    setTimeout(fitContent, 100);
+                });
             })();
         </script>
         `;

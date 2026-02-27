@@ -203,7 +203,7 @@ export function render(data) {
         <!-- Hex Ornament -->
         <div style="
             display: flex; align-items: center; justify-content: center; gap: 15px; 
-            font-family: var(--font-mono); font-size: 34px; 
+            font-family: var(--font-mono); font-size: 38px; 
             color: var(--primary-color); opacity: 0.6;
             margin-top: 20px;
         ">
@@ -216,15 +216,15 @@ export function render(data) {
     </div>
 
     <!-- System Footer (Absolute, ignored by flex center) -->
-    <div style="position: absolute; bottom: 40px; opacity: 0.5; font-size: 34px; font-family: var(--font-mono); letter-spacing: 4px; text-align: center; width: 100%;">
+    <div style="position: absolute; bottom: 40px; opacity: 0.5; font-size: 38px; font-family: var(--font-mono); letter-spacing: 4px; text-align: center; width: 100%;">
         AWAITING INPUT...
     </div>
 
     <!-- Auto Fit Script -->
-    ${TemplateUtils.getAutoFitScript()}
     
     <!-- Script injection is no longer needed since effects are static -->
 
+    ${TemplateUtils.getAutoFitScript()}
 </body>
 </html>`;
 }

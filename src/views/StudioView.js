@@ -56,6 +56,7 @@ export class StudioView extends BaseView {
                                     <option value="EBOOK_CREATOR" style="color:#A855F7; font-weight:bold;">📖 E-BOOK VIRAL (8 Páginas)</option>
                                     <option value="TIKTOK_TREND" style="color:#00D9FF; font-weight:bold;">🔥 TIKTOK TREND (AUTO)</option>
                                     <option value="VIRAL_HOOK_TEST">🧪 A/B Hook Test</option>
+                                    <option value="CANVAS_MODE" style="color:#FFD700; font-weight:bold;">🎨 CANVAS ENGINE (AI Libre)</option>
                                 </select>
                             </div>
                         </div>
@@ -119,40 +120,37 @@ export class StudioView extends BaseView {
 
                 <!-- CENTER PANEL: CANVAS -->
                 <div class="panel-center">
-                    <div class="canvas-header">
-                         <div class="nav-controls">
-                            <button id="prevSlide" class="nav-btn">❮</button>
-                            <span id="slideCounter" class="nav-counter">-- / --</span>
-                            <button id="nextSlide" class="nav-btn">❯</button>
-                        </div>
-                        
-                        <!-- THEME SELECTOR -->
-                        <div class="theme-controls" style="display:flex; gap:8px; margin:0 15px; border-left:1px solid #333; border-right:1px solid #333; padding:0 15px; align-items: center;">
-                            <button class="theme-btn active" data-theme="CYBER" style="background:#00D9FF; box-shadow:0 0 5px #00D9FF;" title="Cyber (Blue)"></button>
-                            <button class="theme-btn" data-theme="RED_TEAM" style="background:#FF0000;" title="Red Team"></button>
-                            <button class="theme-btn" data-theme="BLUE_TEAM" style="background:#0088FF;" title="Blue Team"></button>
-                            <button class="theme-btn" data-theme="OSINT" style="background:#d946ef;" title="OSINT (Purple)"></button>
-                            
-                            <!-- CUSTOM COLOR PICKER -->
-                            <div style="width:1px; height:16px; background:#333; margin:0 4px;"></div>
-                            <div style="position:relative; width:20px; height:20px; overflow:hidden; border-radius:50%; border:1px solid #444; cursor:pointer;" title="Color Personalizado">
-                                <input type="color" id="customColorPicker" style="position:absolute; top:-50%; left:-50%; width:200%; height:200%; padding:0; margin:0; cursor:pointer; border:none;" value="#00D9FF">
+                    <div id="previewContainer" class="preview-container" style="position:relative;">
+                        <!-- FLOATING TOOLBAR — top-right overlay -->
+                        <div class="canvas-header" style="position:absolute; top:8px; right:8px; z-index:50; display:flex; flex-direction:row; align-items:center; gap:6px; background:rgba(0,0,0,0.85); border:1px solid #333; border-radius:8px; padding:4px 10px; backdrop-filter:blur(8px);">
+                             <div class="nav-controls" style="display:flex; align-items:center; gap:4px;">
+                                <button id="prevSlide" class="nav-btn" style="padding:2px 6px; font-size:12px;">❮</button>
+                                <span id="slideCounter" class="nav-counter" style="font-size:11px; min-width:50px; text-align:center;">-- / --</span>
+                                <button id="nextSlide" class="nav-btn" style="padding:2px 6px; font-size:12px;">❯</button>
+                            </div>
+                            <div style="width:1px; height:16px; background:#333;"></div>
+                            <!-- THEME SELECTOR -->
+                            <div class="theme-controls" style="display:flex; gap:5px; align-items:center;">
+                                <button class="theme-btn active" data-theme="CYBER" style="background:#00D9FF; width:14px; height:14px; box-shadow:0 0 3px #00D9FF;" title="Cyber"></button>
+                                <button class="theme-btn" data-theme="RED_TEAM" style="background:#FF0000; width:14px; height:14px;" title="Red Team"></button>
+                                <button class="theme-btn" data-theme="BLUE_TEAM" style="background:#0088FF; width:14px; height:14px;" title="Blue Team"></button>
+                                <button class="theme-btn" data-theme="OSINT" style="background:#d946ef; width:14px; height:14px;" title="OSINT"></button>
+                                <div style="position:relative; width:14px; height:14px; overflow:hidden; border-radius:50%; border:1px solid #444; cursor:pointer;" title="Color Personalizado">
+                                    <input type="color" id="customColorPicker" style="position:absolute; top:-50%; left:-50%; width:200%; height:200%; padding:0; margin:0; cursor:pointer; border:none;" value="#00D9FF">
+                                </div>
+                            </div>
+                            <div style="width:1px; height:16px; background:#333;"></div>
+                            <div style="display:flex; gap:6px; align-items:center;">
+                                <button id="toggleSafeZone" class="icon-btn active" title="Zona Segura" style="color:#fff; border:1px solid #444; padding:2px; border-radius:4px; font-size:14px;">
+                                    <span class="material-icons" style="font-size:16px;">crop_free</span>
+                                </button>
+                                <select id="aspectRatio" class="ratio-select" style="font-size:11px; padding:2px 4px;">
+                                    <option value="1080x1920">9:16</option>
+                                    <option value="1080x1080">1:1</option>
+                                    <option value="1080x1350">4:5</option>
+                                </select>
                             </div>
                         </div>
-
-                        <div style="display:flex; gap:10px; align-items:center;">
-                            <button id="toggleSafeZone" class="icon-btn active" title="Ver Zona Segura TikTok" style="color:#fff; border:1px solid #444; padding:4px; border-radius:4px;">
-                                <span class="material-icons">crop_free</span>
-                            </button>
-                            <select id="aspectRatio" class="ratio-select">
-                                <option value="1080x1920">9:16 (TikTok)</option>
-                                <option value="1080x1080">1:1 (Post)</option>
-                                <option value="1080x1350">4:5 (Portrait)</option>
-                            </select>
-                        </div>
-                    </div>
-                    
-                    <div id="previewContainer" class="preview-container">
                         <iframe id="previewFrame" class="preview-frame"></iframe>
                     </div>
 
@@ -403,8 +401,8 @@ export class StudioView extends BaseView {
                 }
 
                 const currentSlide = window.app.slides[window.app.currentSlideIndex];
-                if (!currentSlide || !currentSlide.html) {
-                    alert('⚠️ No hay contenido en la slide actual.');
+                if (!currentSlide) {
+                    alert('⚠️ No hay slides para exportar.');
                     return;
                 }
 
@@ -420,21 +418,41 @@ export class StudioView extends BaseView {
                 exportSingleBtn.disabled = true;
 
                 try {
-                    const exportHtml = window.app.getExportHTML(currentSlide);
-                    const result = await window.cyberCanvas.exportImage({
-                        html: exportHtml,
-                        width,
-                        height,
-                        format: 'png'
-                    });
+                    if (currentSlide.isCanvas && window.app.canvasRenderer) {
+                        // Canvas mode: render scene graph to PNG and download directly
+                        await window.app.canvasRenderer.render(currentSlide.data);
+                        const dataURL = window.app.canvasRenderer.exportDataURL('image/png', 1.0);
 
-                    if (result.success) {
-                        window.app.setStatus(`✅ Exportado: ${result.path}`);
+                        // Convert data URL to blob and trigger download
+                        const response = await fetch(dataURL);
+                        const blob = await response.blob();
+                        const url = URL.createObjectURL(blob);
+                        const link = document.createElement('a');
+                        link.download = 'canvas-slide-' + (window.app.currentSlideIndex + 1) + '.png';
+                        link.href = url;
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                        URL.revokeObjectURL(url);
+                        window.app.setStatus('✅ Slide exportada como PNG');
+                    } else if (currentSlide.html) {
+                        const exportHtml = window.app.getExportHTML(currentSlide);
+                        const result = await window.cyberCanvas.exportImage({
+                            html: exportHtml,
+                            width,
+                            height,
+                            format: 'png'
+                        });
+                        if (result.success) {
+                            window.app.setStatus('✅ Exportado: ' + result.path);
+                        } else {
+                            alert('❌ Error: ' + result.error);
+                        }
                     } else {
-                        alert(`❌ Error: ${result.error}`);
+                        alert('⚠️ No hay contenido exportable en esta slide.');
                     }
                 } catch (err) {
-                    alert(`❌ Error exportando: ${err.message}`);
+                    alert('❌ Error exportando: ' + err.message);
                 } finally {
                     exportSingleBtn.innerHTML = originalText;
                     exportSingleBtn.disabled = false;
@@ -457,9 +475,6 @@ export class StudioView extends BaseView {
                 const width = parseInt(parts[0]);
                 const height = parseInt(parts[1]);
 
-                // Collect all slide HTML (with export overrides baked in)
-                const slidesHtml = window.app.slides.map(s => window.app.getExportHTML(s));
-
                 // Get title for folder name
                 const title = document.getElementById('themeInput')?.value || 'Post_Sin_Titulo';
 
@@ -467,25 +482,62 @@ export class StudioView extends BaseView {
                 const originalText = exportBatchBtn.innerHTML;
                 exportBatchBtn.innerHTML = '<span class="material-icons spin">autorenew</span> Exportando...';
                 exportBatchBtn.disabled = true;
-                window.app.setStatus(`🚀 Exportando ${slidesHtml.length} slides...`, true);
+
+                const slides = window.app.slides;
+                const hasCanvasSlides = slides.some(s => s.isCanvas);
 
                 try {
-                    const result = await window.cyberCanvas.exportBatch({
-                        slides: slidesHtml,
-                        width,
-                        height,
-                        format: 'png',
-                        title
-                    });
+                    if (hasCanvasSlides && window.app.canvasRenderer) {
+                        // Canvas mode: render each slide and save directly to ~/Pictures/
+                        const folderName = title.replace(/[^a-zA-Z0-9_\- ]/g, '_').substring(0, 80);
+                        const homePath = require ? undefined : undefined; // ipc will handle path
+                        window.app.setStatus('🚀 Exportando ' + slides.length + ' slides a Pictures...', true);
+                        let exported = 0;
+                        let savePath = '';
 
-                    if (result.success) {
-                        window.app.setStatus(`✅ ${result.count} slides exportadas en: ${result.path}`);
-                        alert(`✅ Exportación completada!\n${result.count} imágenes guardadas en:\n${result.path}`);
+                        for (let i = 0; i < slides.length; i++) {
+                            const slide = slides[i];
+                            window.app.setStatus('🖼️ Guardando slide ' + (i + 1) + '/' + slides.length + '...', true);
+
+                            if (slide.isCanvas && slide.data) {
+                                await window.app.canvasRenderer.render(slide.data);
+                                const dataURL = window.app.canvasRenderer.exportDataURL('image/png', 1.0);
+
+                                // Save directly to disk via IPC
+                                const fileName = folderName + '_slide_' + String(i + 1).padStart(2, '0') + '.png';
+
+                                const result = await window.cyberCanvas.saveCanvasPng({ dataURL, folderName, fileName });
+                                if (result.success) {
+                                    exported++;
+                                    savePath = result.path.replace('/' + fileName, '');
+                                }
+                            }
+                        }
+
+                        window.app.setStatus('✅ ' + exported + ' slides guardadas en ~/Pictures/' + folderName);
+                        alert('✅ Exportación completada!\n' + exported + ' imágenes guardadas en:\n' + savePath);
                     } else {
-                        alert(`❌ Error: ${result.error}`);
+                        // HTML-only mode: use Puppeteer batch export
+                        const slidesHtml = slides.map(s => window.app.getExportHTML(s));
+                        window.app.setStatus('🚀 Exportando ' + slidesHtml.length + ' slides...', true);
+
+                        const result = await window.cyberCanvas.exportBatch({
+                            slides: slidesHtml,
+                            width,
+                            height,
+                            format: 'png',
+                            title
+                        });
+
+                        if (result.success) {
+                            window.app.setStatus('✅ ' + result.count + ' slides exportadas en: ' + result.path);
+                            alert('✅ Exportación completada!\n' + result.count + ' imágenes guardadas en:\n' + result.path);
+                        } else {
+                            alert('❌ Error: ' + result.error);
+                        }
                     }
                 } catch (err) {
-                    alert(`❌ Error exportando batch: ${err.message}`);
+                    alert('❌ Error exportando batch: ' + err.message);
                 } finally {
                     exportBatchBtn.innerHTML = originalText;
                     exportBatchBtn.disabled = false;
@@ -526,9 +578,9 @@ export class StudioView extends BaseView {
         if (!container) return; // Should exist
 
         const containerRect = container.getBoundingClientRect();
-        // Adjust for padding if any 
-        const availWidth = containerRect.width - 20;
-        const availHeight = containerRect.height - 20;
+        // Adjust for padding to make preview smaller and avoid UI overlap
+        const availWidth = containerRect.width - 100;
+        const availHeight = containerRect.height - 100;
 
         // 3. Calculate Iframe Size (Fit in Container)
         const aspectRatio = targetWidth / targetHeight;

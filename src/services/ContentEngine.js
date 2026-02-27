@@ -278,7 +278,7 @@ class ContentEngine {
             EBOOK_03: {
                 id: 'ebook-03',
                 desc: 'Página de Teoría',
-                schema: `"TITLE": "*Título* del Concepto", "CONTENT": "Dos párrafos extensos y educativos separados por \\\\n\\\\n. Resalta *palabras clave* entre asteriscos. Primer párrafo: explica el concepto en profundidad.\\\\n\\\\nSegundo párrafo: amplía con ejemplos, contexto histórico o aplicaciones prácticas. Se permite ser EXTENSO.", "CURRENT_PAGE": "3", "TOTAL_PAGES": "TOTAL_REAL"`
+                schema: `"TITLE": "*Título* del Concepto", "CONTENT": "Párrafos o HTML fluido y sin alturas fijas. NUNCA uses height o min-height en divs internos. Deja que el texto decida la altura. Resalta *palabras clave*.", "CURRENT_PAGE": "3", "TOTAL_PAGES": "TOTAL_REAL"`
             },
             EBOOK_04: {
                 id: 'ebook-04',
@@ -830,7 +830,7 @@ REGLAS DE ORO (E-BOOK VIRAL):
 - PORTADA (Slide 1): Título IMPACTANTE con *palabras clave* resaltadas. Debe generar curiosidad masiva.
 - ÍNDICE (Slide 2): Descripción del capítulo con contexto rico.
 - PÁGINAS DE TEORÍA: Mínimo 2 PÁRRAFOS LARGOS por página separados por \\n\\n. Resalta *conceptos clave* entre asteriscos.
-- PÁGINAS PRÁCTICAS: Incluye comandos REALES y salidas de terminal realistas junto con 2 párrafos explicativos.
+- PÁGINAS PRÁCTICAS: Comandos REALES y salidas de terminal realistas (MÁXIMO 4 líneas de output para no romper el diseño) junto con 2 párrafos explicativos.
 - ESTADÍSTICAS: Usa datos REALES con 3 barras de progreso y un párrafo de contexto.
 - CHEAT SHEET: Incluye intro + 4 comandos + tip profesional.
 - CONTRAPORTADA: CTA persuasivo + frase motivacional con *keywords*.
@@ -919,7 +919,7 @@ REGLAS:
 4. Usa comandos, herramientas y técnicas REALES.
 5. Cada slide debe aportar VALOR. Nada de relleno.
 6. Los títulos deben generar CURIOSIDAD (usa números, preguntas, negaciones).
-7. BREVEDAD ADAPTATIVA: ${mode === 'EBOOK_CREATOR' ? 'Este es un E-BOOK. El contenido debe ser EXTENSO y PROFUNDO. Usa párrafos largos, explicaciones detalladas y múltiples ejemplos. NO seas breve.' : 'Hemos aumentado el tamaño de la letra para dispositivos móviles. DEBES RESUMIR TUS TEXTOS AL MÁXIMO. Usa frases CORTAS y directas (no excedas de 6-8 palabras por campo de descripción). Elimina palabras innecesarias.'}
+7. BREVEDAD ADAPTATIVA: ${mode === 'EBOOK_CREATOR' ? 'Este es un E-BOOK. El contenido debe ser EXTENSO y PROFUNDO. Usa párrafos largos, explicaciones detalladas y múltiples ejemplos. NO seas breve.' : 'Hemos aumentado el tamaño de la letra para dispositivos móviles. DEBES RESUMIR TUS TEXTOS AL MÁXIMO. LÍMITES POR CAMPO: TITLE max 8 palabras, DESCRIPTION/INTRO max 30 palabras, TIP/NOTE max 16 palabras, COMMAND max 55 chars. Usa frases CORTAS y directas. El sistema TRUNCARÁ automáticamente textos que excedan los límites.'}
 8. KEYWORDS RESALTADAS: Envuelve 2-3 palabras clave importantes por campo de texto entre *asteriscos* para resaltarlas visualmente con el color del tema.
 
 RETORNA SOLO EL JSON.`;
@@ -937,6 +937,172 @@ UPDATE the JSON content based on instruction: "${instruction}"
 CURRENT JSON: ${JSON.stringify(currentData)}
 SCHEMA RULES: ${schemaDesc}
 RETURN ONLY UPDATED JSON.`;
+    }
+
+    /**
+     * Generate a prompt for the Canvas Scene Graph rendering mode.
+     * The AI returns a Scene Graph JSON that the CanvasRenderer interprets directly.
+     */
+    generateCanvasPrompt(topic, slideCount = 10, theme = 'cyber') {
+
+        const themeColors = {
+            cyber: { primary: '#00D9FF', accent: '#A855F7', warning: '#FF9500', success: '#00FF88', danger: '#FF3366', text: '#f0f0f0', muted: '#94a3b8' },
+            hacker: { primary: '#00FF41', accent: '#FF00FF', warning: '#FFD700', success: '#00FF41', danger: '#FF0040', text: '#e0ffe0', muted: '#5a8a5a' },
+            minimal: { primary: '#3B82F6', accent: '#8B5CF6', warning: '#F59E0B', success: '#10B981', danger: '#EF4444', text: '#ffffff', muted: '#9ca3af' }
+        };
+
+        const colors = themeColors[theme] || themeColors.cyber;
+
+        return `ACTÚA COMO UN DISEÑADOR GRÁFICO PROFESIONAL Y ESTRATEGA DE CONTENIDO VIRAL.
+TEMA: "${topic}"
+PÁGINAS: ${slideCount}
+TEMA VISUAL: "${theme}"
+
+OBJETIVO: Generar ${slideCount} páginas de contenido VISUAL PREMIUM sobre "${topic}" en formato Scene Graph JSON.
+Cada página es un lienzo de 1080x1920 píxeles. TÚ decides la composición visual de CADA página.
+
+## TIPOS DE LAYER DISPONIBLES
+
+Cada página tiene un array de "layers" que se dibujan en orden (de atrás hacia adelante).
+IMPORTANTE: Genera SOLO JSON válido. No uses comentarios, pipes ni "...". Cada ejemplo es un JSON válido que puedes copiar.
+
+### 1. background (Fondo sólido)
+{ "type": "background", "fill": "#000000" }
+
+### 1b. background (Fondo alternativo, muy oscuro)
+{ "type": "background", "fill": "#030303" }
+
+### 1c. background (PORTADA página 1 — fondo de libro hacking)
+{ "type": "background", "fill": "#000000", "isCover": true }
+
+### 2. brand (Header con logo — incluir en CADA página)
+PORTADA (página 1): { "type": "brand", "logo": "./assets/kr-clidn-logo.png", "text": "KR-CLIDN", "badge": "EDICIÓN PREMIUM", "position": "top", "isCover": true }
+RESTO DE PÁGINAS: { "type": "brand", "logo": "./assets/kr-clidn-logo.png", "text": "KR-CLIDN", "badge": "EDICIÓN PREMIUM", "position": "top" }
+NOTA: En la portada, el logo se muestra centrado a 200px con el nombre debajo. En el resto, el logo va al lado del nombre.
+
+### 3. text (Título grande — MAX 50 caracteres)
+{ "type": "text", "content": "TÍTULO AQUÍ", "x": 60, "y": 300, "width": 960, "font": { "family": "BlackOpsOne", "size": 88, "weight": 900 }, "color": "#ffffff", "align": "center", "effects": [{ "type": "shadow", "offsetY": 4, "blur": 8, "color": "rgba(0,0,0,0.6)" }], "highlights": [{ "text": "AQUÍ", "color": "${colors.primary}" }] }
+
+### 3b. text (Párrafo con highlights — MAX 180 caracteres)
+{ "type": "text", "content": "Texto largo del párrafo aquí con palabras clave importantes.", "x": 60, "y": 600, "width": 960, "font": { "family": "MPLUS Code Latin", "size": 42, "weight": 700 }, "color": "#f0f0f0", "align": "justify", "lineHeight": 1.6, "highlights": [{ "text": "palabras clave", "color": "${colors.accent}" }] }
+
+### 3c. text (Label técnico con glow)
+{ "type": "text", "content": "CAPÍTULO 01", "x": 60, "y": 280, "width": 960, "font": { "family": "JetBrains Mono", "size": 54, "weight": 800 }, "color": "${colors.primary}", "align": "center", "letterSpacing": 8, "effects": [{ "type": "glow", "color": "${colors.primary}", "blur": 15 }] }
+
+### 4. terminal (Ventana de terminal — MAX 5 líneas de output, comando MAX 55 chars)
+{ "type": "terminal", "x": 60, "y": 800, "width": 960, "command": "nmap -sV 192.168.1.1", "output": "PORT     STATE SERVICE\\n22/tcp   open  ssh\\n80/tcp   open  http\\n443/tcp  open  https" }
+
+### 5. rect (Rectángulo o tarjeta — con barra de acento lateral automática)
+{ "type": "rect", "x": 60, "y": 500, "width": 960, "height": 300, "fill": "#0a0a0c", "border": { "color": "${colors.primary}33", "width": 2 }, "radius": 16, "accentColor": "${colors.primary}", "title": "TÍTULO OPCIONAL DE LA TARJETA" }
+
+### 6. statbar (Barra de estadística)
+{ "type": "statbar", "x": 60, "y": 600, "width": 960, "label": "Nmap", "value": 85, "maxValue": 100, "color": "${colors.primary}", "showPercent": true }
+
+### 7. divider (Línea divisoria)
+{ "type": "divider", "x": 60, "y": 500, "width": 960, "color": "rgba(255,255,255,0.1)", "thickness": 2 }
+
+### 7b. accent_bar (Barra de acento visual — separador premium con gradiente)
+{ "type": "accent_bar", "x": 60, "y": 420, "width": 300, "height": 6, "color": "${colors.primary}" }
+
+### 8. bulletlist (Lista con viñetas)
+{ "type": "bulletlist", "x": 60, "y": 500, "width": 900, "items": ["Item uno", "Item dos", "Item tres"], "font": { "family": "MPLUS Code Latin", "size": 40, "weight": 700 }, "color": "#f0f0f0", "bulletColor": "${colors.primary}" }
+
+### 9. swipe (Flecha de desplazamiento — incluir en TODAS las páginas EXCEPTO la última)
+{ "type": "swipe", "current": 1, "total": ${slideCount} }
+NOTA: NO incluir el swipe en la última página. La flecha aparece a la derecha de la imagen.
+
+### 10. icon (Emoji decorativo grande)
+{ "type": "icon", "content": "🔒", "x": 60, "y": 400, "width": 960, "size": 120, "align": "center" }
+
+### 11. image (Imagen)
+{ "type": "image", "src": "./assets/kr-clidn-logo.png", "x": 100, "y": 100, "width": 200, "height": 200, "radius": 16 }
+
+## COLORES DEL TEMA "${theme}"
+- Primary: ${colors.primary}
+- Accent: ${colors.accent}
+- Warning: ${colors.warning}
+- Success: ${colors.success}
+- Danger: ${colors.danger}
+- Text: ${colors.text}
+- Muted: ${colors.muted}
+
+## FUENTES DISPONIBLES
+- "BlackOpsOne" — Para TODOS los títulos principales (bold, impactante). NUNCA uses otra fuente para títulos.
+- "MPLUS Code Latin" — Para TODO el resto: párrafos, descripciones, listas, tarjetas, labels. NUNCA uses "Inter" ni "MPLUS Code Latin".
+- "JetBrains Mono" — Únicamente para código y ventanas de terminal.
+
+## REGLAS DE DISEÑO OBLIGATORIAS
+
+1. **TIPOGRAFÍA:** Usa "BlackOpsOne" para títulos (80-100px) y "MPLUS Code Latin" para subtítulos (54-64px), párrafos (42px) y notas (30px). NUNCA uses texto menor a 30px. NUNCA uses "BlackOpsOne", "MPLUS Code Latin" ni "Inter".
+2. **ESPACIO Y COORDENADAS Y (CRÍTICO — PRESUPUESTO EXACTO):**
+   - ZONA PROHIBIDA SUPERIOR: y < 180 (reservado para brand header + separador de línea). NUNCA coloques contenido aquí.
+   - ZONA PROHIBIDA INFERIOR: y > 1710 (reservado para pagination + margen aéreo obligatorio de 80px). NUNCA coloques contenido aquí.
+   - ÁREA SEGURA: y=180 a y=1710 → Tienes exactamente 1530px verticales para TODO el contenido.
+   - TABLA DE ALTURA EXACTA DE CADA ELEMENTO (úsala para calcular el Y del siguiente bloque):
+     | Elemento                            | Alto aproximado |
+     |-------------------------------------|----------------|
+     | Texto título (90px)                 | 150px          |
+     | Texto subtítulo (60px, 1 línea)     | 100px          |
+     | Texto párrafo (42px, 3-4 líneas)    | 280px          |
+     | Texto párrafo (42px, 5-6 líneas)    | 400px          |
+     | Terminal con 3-4 líneas de output   | 360px          |
+     | Terminal con 6+ líneas de output    | 520px          |
+     | Rect/Card (depende de su "height")  | height px      |
+     | StatBar                             | 80px           |
+     | Divider                             | 30px           |
+     | AccentBar                           | 20px           |
+     | BulletList (4 items)                | 320px          |
+     | BulletList (3 items)                | 250px          |
+     | Icon (120px size)                   | 150px          |
+   - ENTRE cada bloque: +40px de gap.
+   - MÁXIMO 4-5 bloques de contenido por página. Si necesitas más, DIVIDE en más páginas.
+   - PROHIBIDO: Colocar un bloque si su Y + altura estimada > 1710.
+   - EJEMPLO CORRECTO: brand(y=0) → Título(y=220, 150px) → AccentBar(y=420,20px) → Párrafo(y=480, 280px) → Divider(y=800, 30px) → BulletList(y=870, 320px) → pagination(bottom). TOTAL: 1190px ✅
+3. **MÁRGENES (OBLIGATORIO):** x mínimo = 20. Ancho máximo de contenido = 1040 (1080 - 20*2). Margen superior = 40px, inferior = 40px. NUNCA uses x=0. Las tarjetas (rect) NO tienen altura fija — su altura se ajusta dinámicamente al contenido.
+4. **JERARQUÍA:** Cada página debe tener una jerarquía visual clara: título dominante → contenido secundario → detalles.
+5. **VARIEDAD:** NO repitas el mismo layout en páginas consecutivas. Alterna entre heavy-text, terminal, stats, lists, etc.
+6. **FORMATO DE TEXTO (CRÍTICO):**
+   - **Terminal:** NUNCA escribas un comando gigante en una sola línea. Divide comandos largos usando la barra invertida \`\\\` para que hagan salto de línea.
+   - **Tarjetas/Cards:** Usa frases cortas, contundentes y directas (punchlines). NUNCA escribas párrafos completos dentro de una tarjeta pequena. Añade siempre el campo \"accentColor\" y opcionalmente \"title\" para el header de la tarjeta.
+7. **HIGHLIGHTS (OBLIGATORIO):** En TODOS los títulos principales (BlackOpsOne) y en los párrafos, DEBES resaltar de 1 a 3 palabras clave usando el array "highlights" con el color del tema (ej. "${colors.primary}").
+8. **BRANDING:** CADA página DEBE incluir el layer "brand" al inicio y "swipe" al final (EXCEPTO la última página que NO lleva swipe).
+9. **FONDO:** Usa un fondo NEGRO SÓLIDO de forma obligatoria ("fill": "#000000"). Opcionalmente puedes añadir "ambientColor" y "accentColor" (hex) para los orbes atmosféricos de color. NUNCA uses el pattern de circuit.
+10. **CONTENIDO:** 100% en Español. Técnico, profundo y educativo sobre ciberseguridad/hacking ético.
+11. **JSON ESCAPE (CRÍTICO):** Las propiedades "content", "output" y "text" a menudo contienen texto. DEBES escapar las comillas dobles (usa \\") y los saltos de línea (usa \\n). NUNCA uses comillas dobles sin escapar dentro de un string JSON. NUNCA uses saltos de línea literales en el JSON.
+12. **DENSIDAD (CRÍTICO):** El total acumulado de alturas de todos los elementos en una página NO puede superar 1530px. Si el contenido que necesitas comunicar no cabe, DIVIDE en más slides. Es mejor tener 12 slides perfectos que 10 slides apretados.
+
+## ESTRUCTURA NARRATIVA POR PÁGINA
+
+- Página 1: PORTADA — Usar background con "isCover": true para fondo de libro hacking. Usar brand con "isCover": true. El logo 200px aparece centrado con el nombre debajo. Debajo del brand: título GRANDE centrado (100px) en y=450, descripción debajo del título (y=650). Distancia separada entre logo, título y descripción para un look premium.
+- Página 2: CAPÍTULO — Separador con número de capítulo
+- Páginas 3-${slideCount - 1}: CONTENIDO — Mezcla de teoría, terminales, estadísticas, listas, tips
+- Última página: CIERRE — CTA para seguir + hashtags + iconos sociales
+
+## FORMATO DE RESPUESTA
+
+Genera un JSON con la estructura:
+{
+    "seo": {
+        "description": "Descripción viral de 300 chars max",
+        "hashtags": "#Ciberseguridad #Hacking #KaliLinux ..."
+    },
+    "pages": [
+        {
+            "canvas": { "width": 1080, "height": 1920 },
+            "theme": "${theme}",
+            "layers": [ ... layers aquí ... ]
+        }
+    ]
+}
+
+REGLAS FINALES:
+1. Genera JSON PURO (sin markdown fences, sin explicaciones).
+2. Exactamente ${slideCount} objetos en el array "pages".
+3. Contenido PROFUNDO y TÉCNICO. Nada superficial.
+4. Cada página debe ser visualmente DISTINTA pero con branding CONSISTENTE.
+5. Los títulos deben generar CURIOSIDAD.
+
+RETORNA SOLO EL JSON.`;
     }
 }
 

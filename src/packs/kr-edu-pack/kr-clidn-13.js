@@ -34,7 +34,7 @@ export function render(data) {
             font-weight: 800; color: #fff; line-height: 1;
         }
         .step-badge .label {
-            font-family: var(--font-mono); font-size: 34px;
+            font-family: var(--font-mono); font-size: 38px;
             color: rgba(255,255,255,0.7); letter-spacing: 2px;
         }
     </style>

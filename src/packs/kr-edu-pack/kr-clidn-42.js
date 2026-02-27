@@ -33,14 +33,14 @@ export function render(data) {
         const bg = current ? 'rgba(0,217,255,0.08)' : done ? 'rgba(0,255,157,0.04)' : 'transparent';
         const numColor = current ? 'var(--primary-color)' : done ? 'var(--success-color)' : '#333';
         const textColor = done ? '#e0e0f0' : '#555';
-        const badge = current ? `<span class="mono" style="font-size:34px;color:var(--primary-color);background:rgba(0,217,255,0.1);padding:2px 8px;border-radius:4px;margin-left:8px;">← AQUÍ</span>` : '';
-        const check = done && !current ? `<span style="color:var(--success-color);font-size:34px;">✓</span>` : '';
+        const badge = current ? `<span class="mono" style="font-size:38px;color:var(--primary-color);background:rgba(0,217,255,0.1);padding:2px 8px;border-radius:4px;margin-left:8px;">← AQUÍ</span>` : '';
+        const check = done && !current ? `<span style="color:var(--success-color);font-size:38px;">✓</span>` : '';
 
         return `<div style="display:flex;align-items:center;gap:12px;padding:10px 14px;border-radius:10px;border:1px solid ${borderColor};background:${bg};margin-bottom:8px;">
-            <div class="mono" style="width:36px;height:36px;display:flex;align-items:center;justify-content:center;border-radius:50%;background:rgba(255,255,255,0.05);border:1px solid ${numColor};font-size:34px;font-weight:700;color:${numColor};flex-shrink:0;">${esc(String(l.NUM))}</div>
+            <div class="mono" style="width:36px;height:36px;display:flex;align-items:center;justify-content:center;border-radius:50%;background:rgba(255,255,255,0.05);border:1px solid ${numColor};font-size:38px;font-weight:700;color:${numColor};flex-shrink:0;">${esc(String(l.NUM))}</div>
             <div style="flex:1;">
-                <div style="font-size:34px;font-weight:700;color:${textColor};">${esc(l.LABEL)}${badge}</div>
-                <div style="font-size:34px;color:${done ? '#999' : '#444'};margin-top:2px;">${esc(l.DESC)}</div>
+                <div style="font-size:38px;font-weight:700;color:${textColor};">${esc(l.LABEL)}${badge}</div>
+                <div style="font-size:38px;color:${done ? '#999' : '#444'};margin-top:2px;">${esc(l.DESC)}</div>
             </div>
             ${check}
         </div>`;
@@ -75,7 +75,7 @@ export function render(data) {
             padding: 12px 16px;
             background: rgba(0,255,157,0.06); border: 1px solid rgba(0,255,157,0.2);
             border-radius: 10px; margin-top: 10px;
-            font-size: 37px; color: var(--success-color); line-height: 1.4;
+            font-size: 38px; color: var(--success-color); line-height: 1.4;
         }
     </style>
 </head>
@@ -94,12 +94,12 @@ export function render(data) {
         <!-- Progress Bar Header -->
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:2px;">
             <div class="level-badge">
-                <span style="font-size:34px;">🎯</span>
-                <span class="mono" style="font-size:34px;font-weight:700;color:var(--primary-color);">
+                <span style="font-size:38px;">🎯</span>
+                <span class="mono" style="font-size:38px;font-weight:700;color:var(--primary-color);">
                     NIVEL ${esc(String(d.CURRENT_LEVEL))} / ${esc(String(d.TOTAL_LEVELS))} — ${esc(d.LEVEL_LABEL)}
                 </span>
             </div>
-            <span class="mono" style="font-size:37px;color:var(--primary-color);font-weight:700;">${pct}%</span>
+            <span class="mono" style="font-size:38px;color:var(--primary-color);font-weight:700;">${pct}%</span>
         </div>
 
         <!-- Progress Bar -->

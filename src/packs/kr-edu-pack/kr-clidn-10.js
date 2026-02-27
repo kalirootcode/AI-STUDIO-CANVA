@@ -61,7 +61,7 @@ export function render(data) {
             <div class="stars-badge">
                 <span style="font-size:41px;">⭐</span>
                 <span class="stars-count">${esc(d.GITHUB_STARS)}</span>
-                <span style="font-size:34px; color:rgba(255,149,0,0.6);">STARS</span>
+                <span style="font-size:38px; color:rgba(255,149,0,0.6);">STARS</span>
             </div>
         </div>
 

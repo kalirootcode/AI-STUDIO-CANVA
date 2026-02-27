@@ -29,15 +29,15 @@ export function render(data) {
 
     const mythItems = d.MYTH_POINTS.map(p =>
         `<div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:10px;">
-            <span style="color:#ff4466;font-size:34px;flex-shrink:0;">✗</span>
-            <span style="font-size:37px;color:#ccc;line-height:1.3;">${esc(p)}</span>
+            <span style="color:#ff4466;font-size:38px;flex-shrink:0;">✗</span>
+            <span style="font-size:38px;color:#ccc;line-height:1.3;">${esc(p)}</span>
         </div>`
     ).join('');
 
     const realityItems = d.REALITY_POINTS.map(p =>
         `<div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:10px;">
-            <span style="color:var(--success-color);font-size:34px;flex-shrink:0;">✓</span>
-            <span style="font-size:37px;color:#e0e0f0;line-height:1.3;">${esc(p)}</span>
+            <span style="color:var(--success-color);font-size:38px;flex-shrink:0;">✓</span>
+            <span style="font-size:38px;color:#e0e0f0;line-height:1.3;">${esc(p)}</span>
         </div>`
     ).join('');
 
@@ -69,7 +69,7 @@ export function render(data) {
             background: rgba(0,217,255,0.06);
             border: 1px solid rgba(0,217,255,0.2);
             border-radius: 10px;
-            font-size: 37px; color: var(--primary-color);
+            font-size: 38px; color: var(--primary-color);
             line-height: 1.4; text-align: center;
         }
         .category-badge {
@@ -89,8 +89,8 @@ export function render(data) {
         ${TemplateUtils.renderMetaBadge(data)}
 
         <div class="category-badge">
-            <span style="font-size:34px;">🔥</span>
-            <span class="mono" style="font-size:34px;color:var(--warning-color);letter-spacing:2px;">${esc(d.CATEGORY)}</span>
+            <span style="font-size:38px;">🔥</span>
+            <span class="mono" style="font-size:38px;color:var(--warning-color);letter-spacing:2px;">${esc(d.CATEGORY)}</span>
         </div>
 
         <h1 class="cyber-title" style="font-size:78px;margin-bottom:14px;">
@@ -102,7 +102,7 @@ export function render(data) {
             <div class="compare-col col-myth">
                 <div class="col-header">
                     <span style="font-size:44px;">${esc(d.MYTH_ICON)}</span>
-                    <span class="mono" style="font-size:34px;color:#ff4466;font-weight:700;letter-spacing:2px;">${esc(d.MYTH_LABEL)}</span>
+                    <span class="mono" style="font-size:38px;color:#ff4466;font-weight:700;letter-spacing:2px;">${esc(d.MYTH_LABEL)}</span>
                 </div>
                 ${mythItems}
             </div>
@@ -111,7 +111,7 @@ export function render(data) {
             <div class="compare-col col-reality">
                 <div class="col-header">
                     <span style="font-size:44px;">${esc(d.REALITY_ICON)}</span>
-                    <span class="mono" style="font-size:34px;color:var(--success-color);font-weight:700;letter-spacing:2px;">${esc(d.REALITY_LABEL)}</span>
+                    <span class="mono" style="font-size:38px;color:var(--success-color);font-weight:700;letter-spacing:2px;">${esc(d.REALITY_LABEL)}</span>
                 </div>
                 ${realityItems}
             </div>

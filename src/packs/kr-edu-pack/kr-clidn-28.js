@@ -29,7 +29,7 @@ export function render(data) {
             </div>
             <div class="term-body" style="padding: 12px; display:flex; justify-content:space-between; align-items:center;">
                 <code style="font-family:var(--font-mono); font-size:41px; color:var(--primary-color); font-weight:700;">${esc(c.CMD)}</code>
-                <span style="font-size: 34px; color:#ffffff; opacity:0.8;">// ${esc(c.DESC)}</span>
+                <span style="font-size: 38px; color:#ffffff; opacity:0.8;">// ${esc(c.DESC)}</span>
             </div>
         </div>`).join('');
 

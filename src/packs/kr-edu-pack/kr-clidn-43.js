@@ -39,12 +39,12 @@ export function render(data) {
         return `<div class="myth-row">
             <div class="myth-header">
                 <span class="myth-tag">MITO</span>
-                <span style="font-size:36px;font-weight:700;color:#fff;flex:1;">${esc(m.MYTH)}</span>
+                <span style="font-size:38px;font-weight:700;color:#fff;flex:1;">${esc(m.MYTH)}</span>
                 <span class="verdict-badge">${esc(m.VERDICT)}</span>
             </div>
             <div class="reality-body">
-                <span style="color:var(--success-color);font-size:34px;margin-right:8px;">✓ REALIDAD:</span>
-                <span style="font-size:34px;color:#ccc;line-height:1.4;">${esc(m.REALITY)}</span>
+                <span style="color:var(--success-color);font-size:38px;margin-right:8px;">✓ REALIDAD:</span>
+                <span style="font-size:38px;color:#ccc;line-height:1.4;">${esc(m.REALITY)}</span>
                 <span class="danger-badge" style="background:${dangerColor}22;border-color:${dangerColor}44;color:${dangerColor};">⚠ ${esc(m.DANGER)}</span>
             </div>
         </div>`;
@@ -75,13 +75,13 @@ export function render(data) {
         }
         .myth-tag {
             font-family: 'JetBrains Mono', monospace;
-            font-size: 34px; color: #666; letter-spacing: 1px;
+            font-size: 38px; color: #666; letter-spacing: 1px;
             padding: 2px 6px; border: 1px solid #333; border-radius: 4px;
             white-space: nowrap;
         }
         .verdict-badge {
             font-family: 'JetBrains Mono', monospace;
-            font-size: 34px; font-weight: 900; letter-spacing: 2px;
+            font-size: 38px; font-weight: 900; letter-spacing: 2px;
             padding: 3px 10px; border-radius: 4px;
             background: rgba(255,0,85,0.15); border: 1px solid rgba(255,0,85,0.4);
             color: #ff4466; white-space: nowrap;
@@ -92,7 +92,7 @@ export function render(data) {
             display: flex; flex-wrap: wrap; align-items: center; gap: 8px;
         }
         .danger-badge {
-            font-size: 34px; font-weight: 700; letter-spacing: 1px;
+            font-size: 38px; font-weight: 700; letter-spacing: 1px;
             padding: 2px 8px; border-radius: 4px; border: 1px solid;
             margin-left: auto;
         }
@@ -112,8 +112,8 @@ export function render(data) {
         ${TemplateUtils.renderMetaBadge(data)}
 
         <div class="category-pill">
-            <span style="font-size:34px;">🔍</span>
-            <span class="mono" style="font-size:34px;color:#ff4466;letter-spacing:2px;font-weight:700;">${esc(d.CATEGORY)}</span>
+            <span style="font-size:38px;">🔍</span>
+            <span class="mono" style="font-size:38px;color:#ff4466;letter-spacing:2px;font-weight:700;">${esc(d.CATEGORY)}</span>
         </div>
 
         <h1 class="cyber-title" style="font-size:68px;margin-bottom:14px;">

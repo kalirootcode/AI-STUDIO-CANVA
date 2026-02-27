@@ -23,7 +23,7 @@ export function render(data) {
 
     const colorMap = { prompt: 'var(--success-color)', output: '#aaa', error: 'var(--accent-color)', success: 'var(--success-color)' };
     const termLines = d.TERMINAL_LINES.map(l =>
-        `<div style="font-size:37px; color:${colorMap[l.TYPE] || '#aaa'}; line-height:1.6; ${l.TYPE === 'prompt' ? 'font-weight:700;' : ''}">${esc(l.TEXT)}</div>`
+        `<div style="font-size:38px; color:${colorMap[l.TYPE] || '#aaa'}; line-height:1.6; ${l.TYPE === 'prompt' ? 'font-weight:700;' : ''}">${esc(l.TEXT)}</div>`
     ).join('\n');
 
     const diffColor = d.DIFFICULTY === 'FÁCIL' ? 'var(--success-color)' : d.DIFFICULTY === 'DIFÍCIL' ? 'var(--accent-color)' : 'var(--warning-color)';
@@ -58,16 +58,16 @@ export function render(data) {
         <!-- Header -->
         <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;">
             <div class="puzzle-badge">
-                <span style="font-size:37px;">🧩</span>
-                <span class="mono" style="font-size:34px; color:var(--warning-color); letter-spacing:2px;">CHALLENGE #${esc(d.CHALLENGE_NUM)}</span>
+                <span style="font-size:38px;">🧩</span>
+                <span class="mono" style="font-size:38px; color:var(--warning-color); letter-spacing:2px;">CHALLENGE #${esc(d.CHALLENGE_NUM)}</span>
             </div>
-            <div class="mono" style="font-size:34px; color:${diffColor}; font-weight:700;">[${esc(d.DIFFICULTY)}]</div>
+            <div class="mono" style="font-size:38px; color:${diffColor}; font-weight:700;">[${esc(d.DIFFICULTY)}]</div>
         </div>
 
         <h1 class="cyber-title" style="font-size:71px;">${TemplateUtils.renderEditable('TITLE', `${esc(d.TITLE)}`, data._overrides)}</h1>
 
         <!-- Scenario -->
-        <div style="font-size:37px; color:#ccc; line-height:1.5; border-left:3px solid var(--warning-color); padding-left:14px; margin-bottom:8px;">
+        <div style="font-size:38px; color:#ccc; line-height:1.5; border-left:3px solid var(--warning-color); padding-left:14px; margin-bottom:8px;">
             ${esc(d.SCENARIO)}
         </div>
 
@@ -77,7 +77,7 @@ export function render(data) {
                 <div class="term-dot red"></div>
                 <div class="term-dot yellow"></div>
                 <div class="term-dot green"></div>
-                <span class="mono" style="font-size:34px; color:#888; margin-left:auto;">evidence.log</span>
+                <span class="mono" style="font-size:38px; color:#888; margin-left:auto;">evidence.log</span>
             </div>
             <div class="term-body" style="padding:16px;">
                 ${termLines}
@@ -86,11 +86,11 @@ export function render(data) {
 
         <!-- Hint -->
         <div class="glass-panel" style="display:flex; gap:12px; align-items:center; border-color:rgba(255,184,0,0.15);">
-            <span style="font-size:37px; color:#ffffff; line-height:1.4;">${TemplateUtils.renderEditable('HINT', `${esc(d.HINT)}`, data._overrides)}</span>
+            <span style="font-size:38px; color:#ffffff; line-height:1.4;">${TemplateUtils.renderEditable('HINT', `${esc(d.HINT)}`, data._overrides)}</span>
         </div>
 
         <!-- Answer prompt -->
-        <div class="mono" style="font-size:34px; color:#555; display:flex; align-items:center;">
+        <div class="mono" style="font-size:38px; color:#555; display:flex; align-items:center;">
             root@ctf:~$ <span class="blink-cursor"></span>
         </div>
     </div>

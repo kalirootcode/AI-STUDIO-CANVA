@@ -36,7 +36,7 @@ export function render(data) {
         }
         .myth-icon { font-size: 82px; margin-bottom: 12px; }
         .myth-label {
-            font-family: var(--font-mono); font-size: 34px; font-weight: 800;
+            font-family: var(--font-mono); font-size: 38px; font-weight: 800;
             letter-spacing: 3px; margin-bottom: 12px;
         }
     </style>
@@ -49,7 +49,7 @@ export function render(data) {
         ${TemplateUtils.renderBrandHeader()}
         ${TemplateUtils.renderMetaBadge(data)}
 
-        <div class="mono" style="font-size:34px; color:var(--accent-color); letter-spacing:3px; margin-bottom:8px;">💥 MYTHBUSTER</div>
+        <div class="mono" style="font-size:38px; color:var(--accent-color); letter-spacing:3px; margin-bottom:8px;">💥 MYTHBUSTER</div>
         <h1 class="cyber-title" style="font-size:71px;">${TemplateUtils.renderEditable('MYTH_TITLE', `${esc(d.MYTH_TITLE)}`, data._overrides)}</h1>
 
         <!-- Myth vs Reality Grid -->
@@ -57,12 +57,12 @@ export function render(data) {
             <div class="myth-card">
                 <div class="myth-icon">❌</div>
                 <div class="myth-label" style="color:var(--accent-color);">MITO</div>
-                <div style="font-size:37px; color:#e2e8f0; line-height:1.5; font-style:italic;">${esc(d.MYTH_TEXT)}</div>
+                <div style="font-size:38px; color:#e2e8f0; line-height:1.5; font-style:italic;">${esc(d.MYTH_TEXT)}</div>
             </div>
             <div class="reality-card">
                 <div class="myth-icon">✅</div>
                 <div class="myth-label" style="color:var(--success-color);">REALIDAD</div>
-                <div style="font-size:37px; color:#e2e8f0; line-height:1.5;">${esc(d.REALITY_TEXT)}</div>
+                <div style="font-size:38px; color:#e2e8f0; line-height:1.5;">${esc(d.REALITY_TEXT)}</div>
             </div>
         </div>
 
@@ -72,20 +72,20 @@ export function render(data) {
                 <div class="term-dot red"></div>
                 <div class="term-dot yellow"></div>
                 <div class="term-dot green"></div>
-                <span class="mono" style="font-size:34px; color:#888; margin-left:auto;">PRUEBA</span>
+                <span class="mono" style="font-size:38px; color:#888; margin-left:auto;">PRUEBA</span>
             </div>
-            <div class="term-body" style="font-size:37px; font-weight:700; color:var(--accent-color);">
+            <div class="term-body" style="font-size:38px; font-weight:700; color:var(--accent-color);">
                 ${esc(d.PROOF_CMD)}
             </div>
         </div>
 
-        <div style="font-size:37px; color:#ccc; line-height:1.5; padding-left:14px; border-left:3px solid var(--success-color);">
+        <div style="font-size:38px; color:#ccc; line-height:1.5; padding-left:14px; border-left:3px solid var(--success-color);">
             ${TemplateUtils.renderEditable('PROOF_EXPLAIN', `${esc(d.PROOF_EXPLAIN)}`, data._overrides)}
         </div>
 
         <!-- Verdict -->
         <div class="glass-panel" style="display:flex; gap:12px; align-items:center; border-color:rgba(0,255,157,0.15);">
-            <span style="font-size:37px; color:#ffffff; line-height:1.4; font-weight:600;">${TemplateUtils.renderEditable('VERDICT', `${esc(d.VERDICT)}`, data._overrides)}</span>
+            <span style="font-size:38px; color:#ffffff; line-height:1.4; font-weight:600;">${TemplateUtils.renderEditable('VERDICT', `${esc(d.VERDICT)}`, data._overrides)}</span>
         </div>
     </div>
 

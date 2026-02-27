@@ -85,13 +85,13 @@ export function render(data) {
 
     <!-- UTILS -->
     <!-- UTILS -->
-    ${TemplateUtils.getAutoFitScript()}
     <style>
         @keyframes fadeInUp {
             from { opacity: 0; transform: translateY(20px); }
             to { opacity: 1; transform: translateY(0); }
         }
     </style>
+    ${TemplateUtils.getAutoFitScript()}
 </body>
 </html>`;
 }

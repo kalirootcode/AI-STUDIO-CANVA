@@ -25,7 +25,7 @@ export function render(data) {
     const contextCards = d.CONTEXT_CARDS.map(c =>
         `<div class="context-card">
             <span style="font-size:48px;">${esc(c.ICON)}</span>
-            <span style="font-size:34px;color:#ccc;line-height:1.3;">${esc(c.TEXT)}</span>
+            <span style="font-size:38px;color:#ccc;line-height:1.3;">${esc(c.TEXT)}</span>
         </div>`
     ).join('');
 
@@ -62,7 +62,7 @@ export function render(data) {
             margin-top: -10px;
         }
         .stat-detail {
-            font-size: 37px; color: rgba(0,217,255,0.8);
+            font-size: 38px; color: rgba(0,217,255,0.8);
             margin-top: 6px; font-style: italic;
         }
         .context-grid {
@@ -77,7 +77,7 @@ export function render(data) {
             border-radius: 10px;
         }
         .source-tag {
-            font-size: 34px; color: #444;
+            font-size: 38px; color: #444;
             font-family: 'JetBrains Mono', monospace;
             text-align: right; margin-bottom: 8px;
         }

@@ -10,6 +10,9 @@ contextBridge.exposeInMainWorld('cyberCanvas', {
     // Exportar batch
     exportBatch: (options) => ipcRenderer.invoke('export-batch', options),
 
+    // Save canvas PNG directly to disk
+    saveCanvasPng: (options) => ipcRenderer.invoke('save-canvas-png', options),
+
     // Llamar a AI
     callAI: (options) => ipcRenderer.invoke('call-ai', options),
 

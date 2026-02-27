@@ -1,0 +1,47 @@
+/**
+ * Canvas Editor Styles
+ * Styles for the interactive visual editor overlay.
+ */
+
+.canvas-editor-wrapper {
+    position: relative;
+    background: #000;
+}
+
+.canvas-editor-wrapper canvas {
+    display: block;
+}
+
+/* Text editor overlay */
+.canvas-text-editor {
+    position: absolute;
+    background: rgba(0, 0, 0, 0.9);
+    color: #00D9FF;
+    border: 2px solid #00D9FF;
+    border-radius: 8px;
+    padding: 12px;
+    font-family: 'MPLUS Code Latin', 'JetBrains Mono', monospace;
+    font-size: 28px;
+    resize: none;
+    outline: none;
+    z-index: 100;
+    box-shadow: 0 0 30px rgba(0, 217, 255, 0.3);
+    overflow-y: auto;
+    line-height: 1.5;
+}
+
+.canvas-text-editor::placeholder {
+    color: rgba(0, 217, 255, 0.3);
+}
+
+/* Canvas editor container in preview */
+#canvasEditorContainer {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: flex-start;
+    justify-content: flex-start;
+    background: #0a0a0a;
+    overflow: hidden;
+    position: relative;
+}

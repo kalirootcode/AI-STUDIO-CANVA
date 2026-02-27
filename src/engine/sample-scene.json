@@ -1,0 +1,143 @@
+{
+    "canvas": {
+        "width": 1080,
+        "height": 1920
+    },
+    "theme": "cyber",
+    "layers": [
+        {
+            "type": "background",
+            "fill": {
+                "type": "linear",
+                "angle": 160,
+                "stops": [
+                    "#030303",
+                    "#0a1628"
+                ]
+            },
+            "pattern": "circuit",
+            "opacity": 0.12
+        },
+        {
+            "type": "brand",
+            "logo": "./assets/kr-clidn-logo.png",
+            "text": "KR-CLIDN",
+            "badge": "EDICIÓN PREMIUM",
+            "position": "top"
+        },
+        {
+            "type": "text",
+            "content": "CAPÍTULO 01",
+            "x": 540,
+            "y": 280,
+            "font": {
+                "family": "JetBrains Mono",
+                "size": 54,
+                "weight": 800
+            },
+            "color": "#00D9FF",
+            "align": "center",
+            "width": 960,
+            "letterSpacing": 8,
+            "effects": [
+                {
+                    "type": "glow",
+                    "color": "#00D9FF",
+                    "blur": 15
+                }
+            ]
+        },
+        {
+            "type": "divider",
+            "x": 200,
+            "y": 310,
+            "width": 680,
+            "color": "rgba(0,217,255,0.3)",
+            "thickness": 2
+        },
+        {
+            "type": "text",
+            "content": "EL MAPA DEL TESORO",
+            "x": 60,
+            "y": 440,
+            "width": 960,
+            "font": {
+                "family": "NewComicTitle",
+                "size": 100,
+                "weight": 900
+            },
+            "color": "#FFFFFF",
+            "align": "center",
+            "effects": [
+                {
+                    "type": "shadow",
+                    "offsetY": 4,
+                    "blur": 8,
+                    "color": "rgba(0,0,0,0.6)"
+                }
+            ]
+        },
+        {
+            "type": "text",
+            "content": "MÁS ALLÁ DE LAS CARPETAS",
+            "x": 60,
+            "y": 580,
+            "width": 960,
+            "font": {
+                "family": "NewComicTitle",
+                "size": 64,
+                "weight": 700
+            },
+            "color": "#FFFFFF",
+            "align": "center",
+            "highlights": [
+                {
+                    "text": "CARPETAS",
+                    "color": "#00D9FF",
+                    "bold": true
+                }
+            ]
+        },
+        {
+            "type": "text",
+            "content": "La mayoría ve el sistema de archivos de Kali como un simple conjunto de directorios. Un error fatal. En realidad, es el mapa de batalla de todo pentester. Aquí aprenderás a leer este mapa, a encontrar el arsenal de herramientas ocultas en '/usr/share', a manipular logs en '/var' y a entender por qué directorios como '/proc' son la verdadera llave maestra para el control total del sistema operativo.",
+            "x": 60,
+            "y": 680,
+            "width": 960,
+            "font": {
+                "family": "Inter",
+                "size": 42,
+                "weight": 400
+            },
+            "color": "#94a3b8",
+            "align": "justify",
+            "lineHeight": 1.6,
+            "highlights": [
+                {
+                    "text": "mapa de batalla",
+                    "color": "#A855F7",
+                    "bold": true
+                },
+                {
+                    "text": "llave maestra",
+                    "color": "#00D9FF",
+                    "bold": true
+                }
+            ]
+        },
+        {
+            "type": "terminal",
+            "x": 60,
+            "y": 1150,
+            "width": 960,
+            "command": "tree -L 2 /usr/share/",
+            "output": "/usr/share/\n├── nmap/\n├── wordlists/\n├── metasploit-framework/\n└── exploitdb/"
+        },
+        {
+            "type": "pagination",
+            "current": 2,
+            "total": 10,
+            "position": "bottom"
+        }
+    ]
+}

@@ -31,7 +31,7 @@ const TIKTOK_SAFE_ZONE_STYLES = `
     .bracket {
         position: absolute;
         font-family: 'JetBrains Mono', monospace;
-        font-size: 34px;
+        font-size: 38px;
         opacity: 0.2;
     }
     .bracket-tl { top: 210px; left: 15px; }
@@ -51,7 +51,7 @@ const TIKTOK_SAFE_ZONE_STYLES = `
 
     .label {
         font-family: 'JetBrains Mono', monospace;
-        font-size: 34px;
+        font-size: 38px;
         letter-spacing: 3px;
     }
 
@@ -113,6 +113,7 @@ export function renderTemplate(data) {
     <div class="safe-zone">
         <!-- Contenido aquí -->
     </div>
+    ${TemplateUtils.getAutoFitScript()}
 </body>
 </html>`;
 }
