@@ -446,35 +446,28 @@ class CanvasRenderer {
         }
         this.ctx.fillRect(0, 0, this.width, this.height);
 
-        // ── HACKING BOOK COVER BACKGROUND (first slide only) ──
+        // ── PROFESSIONAL GEOMETRIC COVER BACKGROUND ──
         if (isCover) {
             const primary = this._getThemeColor('primary');
-            const accent = this._getThemeColor('accent');
             const primaryRgb = this._hexToRgb(primary);
-            const accentRgb = this._hexToRgb(accent);
 
-            // Dark gradient overlay from top
-            const coverGrad = this.ctx.createLinearGradient(0, 0, 0, this.height);
-            coverGrad.addColorStop(0, 'rgba(' + primaryRgb + ', 0.12)');
-            coverGrad.addColorStop(0.3, 'rgba(0,0,0,0.95)');
-            coverGrad.addColorStop(0.7, 'rgba(0,0,0,0.9)');
-            coverGrad.addColorStop(1, 'rgba(' + accentRgb + ', 0.08)');
-            this.ctx.fillStyle = coverGrad;
-            this.ctx.fillRect(0, 0, this.width, this.height);
+            // Removed radial gradient as requested, keeping the solid base fill from above
 
-            // Decorative border frame
+            // Draw professional geometric net (denser and enhanced)
+            this.effectsEngine.drawGeometricNetPattern(0.35, primary, 42);
+
+            // Draw clean subtle border frame
             this.ctx.save();
-            const borderInset = 40;
-            this.ctx.strokeStyle = 'rgba(' + primaryRgb + ', 0.25)';
-            this.ctx.lineWidth = 2;
-            this.ctx.setLineDash([12, 8]);
+            const borderInset = 35;
+            this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.04)';
+            this.ctx.lineWidth = 1;
             this.ctx.strokeRect(borderInset, borderInset, this.width - borderInset * 2, this.height - borderInset * 2);
-            this.ctx.setLineDash([]);
 
-            // Corner accents (4 corners)
-            const cornerSize = 60;
-            this.ctx.strokeStyle = primary;
-            this.ctx.lineWidth = 3;
+            // Minimalist modern corners (L-shapes)
+            const cornerSize = 25;
+            this.ctx.strokeStyle = 'rgba(' + primaryRgb + ', 0.6)';
+            this.ctx.lineWidth = 2.5;
+
             // Top-left
             this.ctx.beginPath();
             this.ctx.moveTo(borderInset, borderInset + cornerSize);
@@ -500,42 +493,16 @@ class CanvasRenderer {
             this.ctx.lineTo(this.width - borderInset, this.height - borderInset - cornerSize);
             this.ctx.stroke();
 
-            // Matrix-style falling characters (decorative)
-            this.ctx.font = '400 14px "JetBrains Mono"';
-            this.ctx.fillStyle = 'rgba(' + primaryRgb + ', 0.06)';
-            const matrixChars = '01アイウエオカキクケコ{}[]<>/\\|;:$#@&%!?';
-            for (let col = 0; col < 20; col++) {
-                const x = 60 + col * 50 + (Math.sin(col * 1.3) * 15);
-                for (let row = 0; row < 30; row++) {
-                    const y = 80 + row * 62;
-                    const ch = matrixChars[Math.floor((col * 7 + row * 3) % matrixChars.length)];
-                    this.ctx.fillText(ch, x, y);
-                }
-            }
-
-            // Horizontal accent lines
-            this.ctx.strokeStyle = 'rgba(' + primaryRgb + ', 0.1)';
-            this.ctx.lineWidth = 1;
-            for (let i = 0; i < 5; i++) {
-                const lineY = 200 + i * 350;
-                const lineGrad2 = this.ctx.createLinearGradient(0, 0, this.width, 0);
-                lineGrad2.addColorStop(0, 'rgba(0,0,0,0)');
-                lineGrad2.addColorStop(0.3, 'rgba(' + primaryRgb + ', 0.08)');
-                lineGrad2.addColorStop(0.7, 'rgba(' + primaryRgb + ', 0.08)');
-                lineGrad2.addColorStop(1, 'rgba(0,0,0,0)');
-                this.ctx.strokeStyle = lineGrad2;
-                this.ctx.beginPath();
-                this.ctx.moveTo(borderInset + 20, lineY);
-                this.ctx.lineTo(this.width - borderInset - 20, lineY);
-                this.ctx.stroke();
-            }
-
             this.ctx.restore();
         }
 
         // Pattern overlay (legacy support)
         if (pattern === 'circuit') {
             this.effectsEngine.drawCircuitPattern(opacity || 0.15);
+        }
+
+        if (pattern === 'net') {
+            this.effectsEngine.drawGeometricNetPattern(opacity || 0.15, this._getThemeColor('primary'));
         }
 
         // Premium ambient orbs — uses active theme colors
@@ -950,7 +917,7 @@ class CanvasRenderer {
 
             // Brand text (beside logo)
             this.ctx.save();
-            this.ctx.font = `800 ${textSize}px "Space Grotesk"`;
+            this.ctx.font = `700 ${textSize}px "CODE Bold"`;
             this.ctx.fillStyle = '#ffffff';
             this.ctx.textAlign = 'left';
             this.ctx.fillText(text, logoEndX, y + textSize - 4);

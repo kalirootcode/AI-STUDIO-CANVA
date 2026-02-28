@@ -574,7 +574,10 @@ class CanvasEditor {
 
     _closeTextEditor() {
         if (this.textEditor && this.textEditor.parentNode) {
-            this.textEditor.parentNode.removeChild(this.textEditor);
+            // Defensive check to avoid NotFoundError on double-triggers (e.g., blur + Escape)
+            if (this.textEditor.parentNode.contains(this.textEditor)) {
+                this.textEditor.parentNode.removeChild(this.textEditor);
+            }
         }
         this.textEditor = null;
         this.editingIdx = -1;

@@ -490,7 +490,6 @@ export class StudioView extends BaseView {
                     if (hasCanvasSlides && window.app.canvasRenderer) {
                         // Canvas mode: render each slide and save directly to ~/Pictures/
                         const folderName = title.replace(/[^a-zA-Z0-9_\- ]/g, '_').substring(0, 80);
-                        const homePath = require ? undefined : undefined; // ipc will handle path
                         window.app.setStatus('🚀 Exportando ' + slides.length + ' slides a Pictures...', true);
                         let exported = 0;
                         let savePath = '';
@@ -500,7 +499,13 @@ export class StudioView extends BaseView {
                             window.app.setStatus('🖼️ Guardando slide ' + (i + 1) + '/' + slides.length + '...', true);
 
                             if (slide.isCanvas && slide.data) {
-                                await window.app.canvasRenderer.render(slide.data);
+                                // Deep-clone the scene graph so the render pass 
+                                // does NOT mutate the original slide data
+                                const exportData = JSON.parse(JSON.stringify(slide.data));
+
+                                // Render with skipLayout=true to preserve user modifications
+                                // (moved elements, resized items, edited text positions)
+                                await window.app.canvasRenderer.render(exportData, { skipLayout: true });
                                 const dataURL = window.app.canvasRenderer.exportDataURL('image/png', 1.0);
 
                                 // Save directly to disk via IPC

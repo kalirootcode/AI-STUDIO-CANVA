@@ -62,12 +62,16 @@ class TextEngine {
             let bold = false;
 
             if (!isSpace) {
+                // Strip leading/trailing punctuation from token for comparison, 
+                // but keep the original token intact for rendering.
+                const cleanToken = token.replace(/^[^a-zA-Z0-9\-\/\\]+|[^a-zA-Z0-9\-\/\\]+$/g, '').toLowerCase();
+
                 // Check if this word matches any highlight
                 for (const h of highlights) {
-                    // Exact match or full word match, not substring (to avoid "De" matching "DECONSTRUYENDO")
-                    if (h.text && token.toLowerCase() === h.text.toLowerCase()) {
+                    if (h.text && cleanToken === h.text.toLowerCase()) {
                         color = h.color;
-                        bold = h.bold || false;
+                        // Always apply bold to highlighted text for better readability
+                        bold = true;
                         break;
                     }
                 }
@@ -194,8 +198,8 @@ class TextEngine {
     }
 
     /**
-     * Auto-detect 1-2 important keywords in title text and return highlights.
-     * Keywords are the longest or most significant words.
+     * Auto-detect keywords, CLI commands, paths, and flags.
+     * Highlights them intelligently using the active theme color.
      */
     _autoHighlightKeywords(text, fontSize) {
         if (!text || text.length < 3) return [];
@@ -209,19 +213,41 @@ class TextEngine {
             }
         }
 
-        // Split into words, find meaningful words (4+ chars)
-        const words = text.split(/\s+/).filter(w => w.replace(/[^a-zA-Z0-9\u00C0-\u024F]/g, '').length >= 4);
-        if (words.length === 0) return [];
+        const keywords = [];
+        const seen = new Set();
 
-        // Sort by length descending, pick top 1-2
-        const sorted = [...words].sort((a, b) => b.length - a.length);
-        const numKeywords = fontSize >= 64 ? 2 : 1;
-        const keywords = sorted.slice(0, Math.min(numKeywords, sorted.length));
+        const addKw = (word) => {
+            const clean = word.replace(/^[^a-zA-Z0-9\-\/\\]+|[^a-zA-Z0-9\-\/\\]+$/g, '');
+            if (clean && clean.length > 1 && !seen.has(clean.toLowerCase())) {
+                seen.add(clean.toLowerCase());
+                keywords.push({ text: clean, color: themeColor });
+            }
+        };
 
-        return keywords.map(kw => {
-            const clean = kw.replace(/[^a-zA-Z0-9\u00C0-\u024F]/g, '');
-            return { text: clean, color: themeColor };
-        });
+        // 1. Detect technical terms (CLI commands, flags, paths)
+        const techRegex = /\b(npm|yarn|pnpm|npx|node|python|nmap|docker|kubectl|git|sudo|apt|brew|bash|curl|wget)\b|--[a-z\-]+|-[a-zA-Z]|\/[a-zA-Z0-9\._\-]+\/[a-zA-Z0-9\._\-]*|\b[A-Z][a-z]+(?:[A-Z][a-z]+)+\b/g;
+        let match;
+        while ((match = techRegex.exec(text)) !== null) {
+            addKw(match[0]);
+        }
+
+        // 2. Detect text in quotes or brackets (e.g. "API", [CONFIG])
+        const bracketRegex = /["'\[\(\{]([^"'\/\n\r\t\[\(\{]{3,20})["'\]\)\}]/g;
+        while ((match = bracketRegex.exec(text)) !== null) {
+            addKw(match[1]);
+        }
+
+        // 3. Fallback: If no tech terms found, highlight 1 or 2 longest words (like titles usually do)
+        if (keywords.length === 0) {
+            const words = text.split(/\s+/).filter(w => w.replace(/[^a-zA-Z0-9\u00C0-\u024F]/g, '').length >= 4);
+            const sorted = [...words].sort((a, b) => b.length - a.length);
+            // Titles (large font) get 2 highlights, paragraphs get 1
+            const numKeywords = fontSize >= 50 ? 2 : 1;
+            const topWords = sorted.slice(0, Math.min(numKeywords, sorted.length));
+            topWords.forEach(w => addKw(w));
+        }
+
+        return keywords;
     }
 
     /**
@@ -294,10 +320,11 @@ class TextEngine {
         }
         this._applyTextEffects(effects);
 
-        // Auto-highlight keywords in titles if no highlights specified
-        let effectiveHighlights = highlights || [];
-        if (effectiveHighlights.length === 0 && content && content.length > 5) {
-            effectiveHighlights = this._autoHighlightKeywords(content, font.size || 36);
+        // Auto-highlight keywords dynamically using active theme color
+        let effectiveHighlights = this._autoHighlightKeywords(content, font.size || 36);
+        // Append explicit template highlights as fallback
+        if (highlights && highlights.length > 0) {
+            effectiveHighlights = [...effectiveHighlights, ...highlights];
         }
 
         // 1. Tokenize the entire content

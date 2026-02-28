@@ -237,6 +237,74 @@ class EffectsEngine {
         this.ctx.restore();
     }
 
+    drawGeometricNetPattern(opacity = 0.15, color = '#00D9FF', seed = 42) {
+        this.ctx.save();
+        this.ctx.strokeStyle = color;
+        this.ctx.fillStyle = color;
+        this.ctx.lineWidth = 1;
+
+        const w = this.canvas.width;
+        const h = this.canvas.height;
+        const numNodes = 160; // Increased density
+        const connectionDist = 220;
+
+        // Simple LCG pseudo-random function for consistent rendering
+        let currentSeed = seed;
+        const random = () => {
+            currentSeed = (currentSeed * 1664525 + 1013904223) % 4294967296;
+            return currentSeed / 4294967296;
+        };
+
+        const nodes = [];
+        for (let i = 0; i < numNodes; i++) {
+            // 5% chance of being a larger 'hub' node
+            const isHub = random() > 0.95;
+            nodes.push({
+                x: random() * w,
+                y: random() * h,
+                size: isHub ? random() * 4 + 4 : random() * 2 + 1.5,
+                isHub: isHub
+            });
+        }
+
+        // Draw connections with distance-based opacity and glow
+        this.ctx.shadowColor = color;
+        this.ctx.shadowBlur = 10; // Subtle glow for connections
+        for (let i = 0; i < numNodes; i++) {
+            for (let j = i + 1; j < numNodes; j++) {
+                const dx = nodes[i].x - nodes[j].x;
+                const dy = nodes[i].y - nodes[j].y;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+                if (dist < connectionDist) {
+                    const lineOpacity = (1 - (dist / connectionDist)) * opacity;
+                    // Hub connections are slightly brighter
+                    this.ctx.globalAlpha = (nodes[i].isHub || nodes[j].isHub) ? lineOpacity * 1.5 : lineOpacity;
+                    this.ctx.lineWidth = (nodes[i].isHub || nodes[j].isHub) ? 1.5 : 1;
+
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(nodes[i].x, nodes[i].y);
+                    this.ctx.lineTo(nodes[j].x, nodes[j].y);
+                    this.ctx.stroke();
+                }
+            }
+        }
+
+        // Draw nodes over lines
+        this.ctx.shadowBlur = 15; // Stronger glow for nodes
+        for (const node of nodes) {
+            this.ctx.globalAlpha = node.isHub ? Math.min(1, opacity * 4) : Math.min(1, opacity * 2.5);
+            this.ctx.beginPath();
+            this.ctx.arc(node.x, node.y, node.size, 0, Math.PI * 2);
+            this.ctx.fill();
+        }
+
+        // Reset shadow
+        this.ctx.shadowBlur = 0;
+        this.ctx.shadowColor = 'transparent';
+
+        this.ctx.restore();
+    }
+
     /**
      * Draw the circuit board background pattern.
      */
