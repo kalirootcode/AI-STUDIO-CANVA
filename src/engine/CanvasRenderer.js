@@ -177,8 +177,8 @@ class CanvasRenderer {
 
         const SAFE_START_Y = zone ? zone.content.top : 140;
         const SAFE_END_Y = zone ? zone.content.bottom : (this.height - 140);
-        const SAFE_MARGIN_X = 20;   // 20px side margins
-        const MIN_GAP = 30;          // Gap between elements
+        const SAFE_MARGIN_X = 60;   // 60px side margins for professional look
+        const MIN_GAP = 40;          // Gap between elements
 
         let globalMaxBottom = SAFE_START_Y;
         let lastContentRealBottom = SAFE_START_Y;
@@ -200,6 +200,15 @@ class CanvasRenderer {
                     prevOrigY = layer.y || 0;
                     prevRealY = layer.y || 0;
                     continue;
+                }
+
+                // ── ENFORCE X MARGINS ── Ensure elements don't exceed canvas edges
+                if (layer.x !== undefined && layer.x < SAFE_MARGIN_X && layer.type !== 'background' && layer.type !== 'brand' && layer.type !== 'pagination' && layer.type !== 'swipe') {
+                    layer.x = SAFE_MARGIN_X;
+                }
+                const maxContentWidth = this.width - (SAFE_MARGIN_X * 2);
+                if (layer.width && layer.width > maxContentWidth && layer.type !== 'background') {
+                    layer.width = maxContentWidth;
                 }
                 const isFixed = layer.type === 'background' || layer.type === 'brand' || layer.type === 'pagination' || layer.type === 'swipe';
 
@@ -247,6 +256,26 @@ class CanvasRenderer {
                                     childEstH = ((child.items || []).length * 68) + 20;
                                 } else if (child.type === 'divider' || child.type === 'accent_bar') {
                                     childEstH = 30;
+                                } else if (child.type === 'warningbox') {
+                                    childEstH = child.height || 180;
+                                } else if (child.type === 'checklist') {
+                                    childEstH = ((child.items || []).length * 66) + 20;
+                                } else if (child.type === 'gridbox') {
+                                    const cols = child.columns || 2;
+                                    childEstH = Math.ceil((child.cells || []).length / cols) * 270;
+                                } else if (child.type === 'toolgrid') {
+                                    const cols = (child.tools || []).length > 4 ? 3 : 2;
+                                    childEstH = Math.ceil((child.tools || []).length / cols) * 174;
+                                } else if (child.type === 'attackflow') {
+                                    childEstH = ((child.stages || []).length * 180);
+                                } else if (child.type === 'architecturediag') {
+                                    childEstH = ((child.layers || []).length * 190);
+                                } else if (child.type === 'nodegraph') {
+                                    childEstH = child.height || 500;
+                                } else if (child.type === 'directorytree') {
+                                    childEstH = 60 + ((child.items || []).length * 50);
+                                } else if (child.type === 'barchart') {
+                                    childEstH = child.height || 400;
                                 }
 
                                 // Simulate cascade: if this child would overlap previous, push it down
@@ -300,6 +329,17 @@ class CanvasRenderer {
 
                         let estH = layer.height || 60;
                         if (layer.type === 'text') estH = this.textEngine.measureTextBlockHeight(layer);
+                        else if (layer.type === 'terminal') { const oL = (layer.output || layer.content || '').split('\n').length; const cL = (layer.command || '').split('\n').length; estH = 80 + (oL + cL) * 55; }
+                        else if (layer.type === 'warningbox') estH = layer.height || 180;
+                        else if (layer.type === 'checklist') estH = ((layer.items || []).length * 66) + 20;
+                        else if (layer.type === 'gridbox') { const cols = layer.columns || 2; estH = Math.ceil((layer.cells || []).length / cols) * 270; }
+                        else if (layer.type === 'toolgrid') { const cols = (layer.tools || []).length > 4 ? 3 : 2; estH = Math.ceil((layer.tools || []).length / cols) * 174; }
+                        else if (layer.type === 'attackflow') estH = ((layer.stages || []).length * 180);
+                        else if (layer.type === 'architecturediag') estH = ((layer.layers || []).length * 190);
+                        else if (layer.type === 'nodegraph') estH = layer.height || 500;
+                        else if (layer.type === 'directorytree') estH = 60 + ((layer.items || []).length * 50);
+                        else if (layer.type === 'barchart') estH = layer.height || 400;
+                        else if (layer.type === 'bulletlist') estH = ((layer.items || []).length * 68) + 20;
                         lastContentRealBottom = Math.max(lastContentRealBottom, realY + estH);
                     }
 
@@ -361,7 +401,8 @@ class CanvasRenderer {
      * Route a layer to its specific renderer.
      */
     async renderLayer(layer) {
-        switch (layer.type) {
+        if (!layer || !layer.type) return;
+        switch (layer.type.toLowerCase()) {
             case 'background': return this.drawBackground(layer);
             case 'text': return this.drawText(layer);
             case 'rect': return this.drawRect(layer);
@@ -375,6 +416,15 @@ class CanvasRenderer {
             case 'bulletlist': return this.drawBulletList(layer);
             case 'icon': return this.drawIcon(layer);
             case 'swipe': return this.drawSwipeArrow(layer);
+            case 'nodegraph': return this.drawNodeGraph(layer);
+            case 'barchart': return this.drawBarChart(layer);
+            case 'checklist': return this.drawChecklist(layer);
+            case 'gridbox': return this.drawGridBox(layer);
+            case 'warningbox': return this.drawWarningBox(layer);
+            case 'directorytree': return this.drawDirectoryTree(layer);
+            case 'toolgrid': return this.drawToolGrid(layer);
+            case 'attackflow': return this.drawAttackFlow(layer);
+            case 'architecturediag': return this.drawArchitectureDiag(layer);
             default:
                 console.warn(`[CanvasRenderer] Unknown layer type: ${layer.type}`);
         }
@@ -1083,25 +1133,34 @@ class CanvasRenderer {
     }
 
     /**
-     * Draw an emoji or icon.
+     * Cross-platform smart icon renderer.
+     * Detects if it's an emoji or a material icon and uses the correct font.
+     */
+    _renderSmartIcon(ctx, icon, px, py, size, color, align = 'center') {
+        if (!icon) return;
+
+        // Detect if content is an emoji
+        const isEmoji = /\p{Extended_Pictographic}/u.test(icon);
+        const isMaterialIcon = !isEmoji && icon.length > 1 && !/[<>&]/.test(icon);
+
+        ctx.textAlign = align;
+        ctx.textBaseline = 'middle';
+
+        if (isMaterialIcon) {
+            ctx.font = size + 'px "Material Icons"';
+            ctx.fillStyle = color || this._getThemeColor('primary');
+        } else {
+            ctx.font = size + 'px serif'; // OS native fallback for emojis
+        }
+
+        ctx.fillText(icon, px, py);
+    }
+
+    /**
+     * Draw an emoji or icon (Original Layer).
      */
     drawIcon(layer) {
         const { content, x, y, width, size = 80, align = 'center', color } = layer;
-
-        // Detect if content is a Material Icon name (no emoji) or emoji
-        const isEmoji = /\p{Extended_Pictographic}/u.test(content || '');
-        const isMaterialIcon = !isEmoji && content && content.length > 1 && !/[<>&]/.test(content);
-
-        if (isMaterialIcon) {
-            // Material Icon — render with icon font, single theme color
-            this.ctx.font = size + 'px "Material Icons"';
-            this.ctx.fillStyle = color || this._getThemeColor('primary');
-        } else {
-            // Emoji fallback
-            this.ctx.font = size + 'px serif';
-        }
-
-        this.ctx.textAlign = align;
 
         let drawX = x;
         if (align === 'center' && width) {
@@ -1110,17 +1169,786 @@ class CanvasRenderer {
             drawX = x + width;
         }
 
-        this.ctx.fillText(content, drawX, y);
+        this._renderSmartIcon(this.ctx, content, drawX, y, size, color, align);
         this.ctx.textAlign = 'left';
+        this.ctx.textBaseline = 'top';
         return y + size / 2;
     }
 
     // =========================================================================
     // EXPORT
+
+    // ════════════════ NUEVOS LAYER TYPES AVANZADOS ════════════════
+
+    /**
+     * Draw Node Graph (Network topology)
+     */
+    drawNodeGraph(layer) {
+        const x = layer.x || 60;
+        const y = layer.y || 400;
+        const w = layer.width || 960;
+        const h = layer.height || 500;
+        const nodes = layer.nodes || [];
+        const connections = layer.connections || [];
+        const themeColor = this._getThemeColor();
+
+        // Save context
+        this.ctx.save();
+        this.ctx.translate(x, y);
+
+        // Map node IDs to their computed pixel coordinates
+        const nodeMap = {};
+        nodes.forEach(n => {
+            nodeMap[n.id] = {
+                px: (n.x || 0.5) * w,
+                py: (n.y || 0.5) * h,
+                label: n.label || '',
+                icon: n.icon || ''
+            };
+        });
+
+        // Draw connections first (so they go under nodes)
+        connections.forEach(conn => {
+            const numA = nodeMap[conn.from];
+            const numB = nodeMap[conn.to];
+            if (!numA || !numB) return;
+
+            const connColor = conn.color || themeColor;
+
+            this.ctx.beginPath();
+            this.ctx.moveTo(numA.px, numA.py);
+            // Draw a subtle curve if they are mostly horizontal, else straight line
+            if (Math.abs(numA.py - numB.py) < 100) {
+                const midX = (numA.px + numB.px) / 2;
+                this.ctx.bezierCurveTo(midX, numA.py - 50, midX, numB.py - 50, numB.px, numB.py);
+            } else {
+                this.ctx.lineTo(numB.px, numB.py);
+            }
+
+            this.ctx.strokeStyle = connColor;
+            this.ctx.lineWidth = 4;
+            // Glow effect
+            this.ctx.shadowColor = connColor;
+            this.ctx.shadowBlur = 15;
+            this.ctx.stroke();
+            this.ctx.shadowBlur = 0;
+
+            // Draw connection label if exists
+            if (conn.label) {
+                const midX = (numA.px + numB.px) / 2;
+                const midY = (numA.py + numB.py) / 2;
+
+                this.ctx.fillStyle = '#111';
+                const metrics = this.ctx.measureText(conn.label);
+                const lw = Math.max(metrics.width + 20, 80);
+                this.ctx.fillRect(midX - lw / 2, midY - 15, lw, 30);
+
+                this.ctx.font = '600 20px "MPLUS Code Latin"';
+                this.ctx.fillStyle = connColor;
+                this.ctx.textAlign = 'center';
+                this.ctx.textBaseline = 'middle';
+                this.ctx.fillText(conn.label, midX, midY);
+            }
+        });
+
+        // Draw nodes
+        const nodeRadius = 40;
+        nodes.forEach(n => {
+            const px = nodeMap[n.id].px;
+            const py = nodeMap[n.id].py;
+
+            // Outer glow
+            this.ctx.beginPath();
+            this.ctx.arc(px, py, nodeRadius + 5, 0, Math.PI * 2);
+            this.ctx.fillStyle = `rgba(${this._hexToRgb(themeColor)}, 0.2)`;
+            this.ctx.fill();
+
+            // Inner circle
+            this.ctx.beginPath();
+            this.ctx.arc(px, py, nodeRadius, 0, Math.PI * 2);
+            this.ctx.fillStyle = '#0a0a0c';
+            this.ctx.strokeStyle = themeColor;
+            this.ctx.lineWidth = 3;
+            this.ctx.fill();
+            this.ctx.stroke();
+
+            // Icon
+            if (n.icon) {
+                this._renderSmartIcon(this.ctx, n.icon, px, py + 2, 40, themeColor, 'center');
+            }
+
+            // Label
+            if (n.label) {
+                this.ctx.font = '700 24px "MPLUS Code Latin"';
+                this.ctx.fillStyle = '#ffffff';
+                this.ctx.textAlign = 'center';
+                this.ctx.fillText(n.label, px, py + nodeRadius + 25);
+            }
+        });
+
+        this.ctx.restore();
+        return y + (layer.height || 500);
+    }
+
+    /**
+     * Draw Bar Chart (Statistics)
+     */
+    drawBarChart(layer) {
+        const x = layer.x || 60;
+        const y = layer.y || 500;
+        const w = layer.width || 960;
+        const h = layer.height || 400;
+        const title = layer.title || '';
+        const data = layer.data || [];
+        const color = layer.color || this._getThemeColor();
+
+        this.ctx.save();
+        this.ctx.translate(x, y);
+
+        // Draw title
+        if (title) {
+            this.ctx.font = '800 36px "BlackOpsOne"';
+            this.ctx.fillStyle = '#ffffff';
+            this.ctx.textAlign = 'left';
+            this.ctx.textBaseline = 'top';
+            this.ctx.fillText(title, 0, 0);
+        }
+
+        const startY = title ? 60 : 0;
+        const chartH = h - startY;
+
+        if (data.length === 0) {
+            this.ctx.restore();
+            return;
+        }
+
+        const maxVal = Math.max(...data.map(d => d.value || 0));
+        const barHeight = Math.min(60, (chartH / data.length) - 20);
+        const labelWidth = 250;
+        const maxBarWidth = w - labelWidth - 80;
+
+        let currentY = startY + 20;
+
+        data.forEach(item => {
+            const val = item.value || 0;
+            const barW = maxVal > 0 ? (val / maxVal) * maxBarWidth : 0;
+
+            // Label
+            this.ctx.font = '700 32px "MPLUS Code Latin"';
+            this.ctx.fillStyle = '#cccccc';
+            this.ctx.textAlign = 'right';
+            this.ctx.textBaseline = 'middle';
+            this.ctx.fillText(item.label || '', labelWidth - 20, currentY + barHeight / 2);
+
+            // Bar background
+            this.ctx.fillStyle = '#111111';
+            this.effectsEngine.roundRect(labelWidth, currentY, maxBarWidth, barHeight, 6);
+            this.ctx.fill();
+
+            // Bar fill
+            if (barW > 0) {
+                this.ctx.fillStyle = color;
+                this.ctx.shadowColor = color;
+                this.ctx.shadowBlur = 10;
+                this.effectsEngine.roundRect(labelWidth, currentY, barW, barHeight, 6);
+                this.ctx.fill();
+                this.ctx.shadowBlur = 0;
+            }
+
+            // Value text
+            this.ctx.font = '800 32px "MPLUS Code Latin"';
+            this.ctx.fillStyle = '#ffffff';
+            this.ctx.textAlign = 'left';
+            this.ctx.fillText(val.toString(), labelWidth + barW + 15, currentY + barHeight / 2);
+
+            currentY += barHeight + 20;
+        });
+
+        this.ctx.restore();
+        return y + h;
+    }
+
+    /**
+     * Draw Checklist (Interactive tasks)
+     */
+    drawChecklist(layer) {
+        const x = layer.x || 60;
+        const y = layer.y || 600;
+        const w = layer.width || 960;
+        const items = layer.items || [];
+        const themeColor = this._getThemeColor();
+
+        this.ctx.save();
+        this.ctx.translate(x, y);
+
+        let currentY = 0;
+        const boxSize = 36;
+        const gap = 24;
+
+        items.forEach(item => {
+            const status = item.status || 'pending';
+
+            // Draw Checkbox
+            this.ctx.lineWidth = 3;
+            this.ctx.strokeStyle = '#555';
+            this.ctx.fillStyle = 'transparent';
+
+            if (status === 'done') {
+                this.ctx.fillStyle = '#00FF88'; // Success green
+                this.ctx.strokeStyle = '#00FF88';
+                this.ctx.shadowColor = '#00FF88';
+                this.ctx.shadowBlur = 10;
+            } else if (status === 'active') {
+                this.ctx.fillStyle = 'transparent';
+                this.ctx.strokeStyle = themeColor;
+                this.ctx.shadowColor = themeColor;
+                this.ctx.shadowBlur = 10;
+            }
+
+            this.effectsEngine.roundRect(0, currentY, boxSize, boxSize, 6);
+            this.ctx.fill();
+            this.ctx.stroke();
+            this.ctx.shadowBlur = 0;
+
+            // Draw checkmark or loader
+            this.ctx.textAlign = 'center';
+            this.ctx.textBaseline = 'middle';
+            if (status === 'done') {
+                this.ctx.font = 'bold 24px monospace';
+                this.ctx.fillStyle = '#000';
+                this.ctx.fillText('✓', boxSize / 2, currentY + boxSize / 2 + 2);
+            } else if (status === 'active') {
+                this.ctx.font = 'bold 20px monospace';
+                this.ctx.fillStyle = themeColor;
+                this.ctx.fillText('▶', boxSize / 2 + 2, currentY + boxSize / 2 + 1);
+            }
+
+            // Draw text
+            this.ctx.font = '700 38px "MPLUS Code Latin"';
+            this.ctx.textAlign = 'left';
+            this.ctx.textBaseline = 'top';
+
+            if (status === 'done') {
+                this.ctx.fillStyle = '#888';
+                // Strikethrough
+                const metrics = this.ctx.measureText(item.text);
+                this.ctx.beginPath();
+                this.ctx.moveTo(boxSize + gap, currentY + boxSize / 2);
+                this.ctx.lineTo(boxSize + gap + metrics.width, currentY + boxSize / 2);
+                this.ctx.lineWidth = 2;
+                this.ctx.strokeStyle = '#888';
+                this.ctx.stroke();
+            } else if (status === 'active') {
+                this.ctx.fillStyle = '#ffffff';
+            } else {
+                this.ctx.fillStyle = '#cccccc';
+            }
+
+            this.ctx.fillText(item.text || '', boxSize + gap, currentY - 4);
+
+            currentY += boxSize + 30; // Spacing between items
+        });
+
+        this.ctx.restore();
+        return y + currentY;
+    }
+
+    /**
+     * Draw GridBox (Matrices/Pros vs Cons)
+     */
+    drawGridBox(layer) {
+        const x = layer.x || 60;
+        const y = layer.y || 400;
+        const w = layer.width || 960;
+        const cols = layer.columns || 2;
+        const cells = layer.cells || [];
+
+        this.ctx.save();
+        this.ctx.translate(x, y);
+
+        const gap = 20;
+        const colWidth = (w - (gap * (cols - 1))) / cols;
+        const baseHeight = 250;
+
+        let curX = 0;
+        let curY = 0;
+
+        cells.forEach((cell, i) => {
+            if (i > 0 && i % cols === 0) {
+                curX = 0;
+                curY += baseHeight + gap;
+            }
+
+            const cellColor = cell.color || '#333';
+
+            // Background
+            this.ctx.fillStyle = '#0a0a0c';
+            this.effectsEngine.roundRect(curX, curY, colWidth, baseHeight, 12);
+            this.ctx.fill();
+
+            // Accent Top
+            this.ctx.fillStyle = cellColor;
+            this.ctx.beginPath();
+            this.ctx.moveTo(curX + 12, curY);
+            this.ctx.lineTo(curX + colWidth - 12, curY);
+            this.ctx.arcTo(curX + colWidth, curY, curX + colWidth, curY + 12, 12);
+            this.ctx.lineTo(curX + colWidth, curY + 8);
+            this.ctx.lineTo(curX, curY + 8);
+            this.ctx.arcTo(curX, curY, curX + 12, curY, 12);
+            this.ctx.fill();
+
+            // Border
+            this.ctx.strokeStyle = '#222';
+            this.ctx.lineWidth = 2;
+            this.effectsEngine.roundRect(curX, curY, colWidth, baseHeight, 12);
+            this.ctx.stroke();
+
+            // Cell Title
+            this.ctx.font = '900 36px "BlackOpsOne"';
+            this.ctx.fillStyle = '#ffffff';
+            this.ctx.textAlign = 'center';
+            this.ctx.textBaseline = 'top';
+            this.ctx.fillText(cell.title || '', curX + colWidth / 2, curY + 30);
+
+            // Divider
+            this.ctx.strokeStyle = '#222';
+            this.ctx.beginPath();
+            this.ctx.moveTo(curX + 20, curY + 80);
+            this.ctx.lineTo(curX + colWidth - 20, curY + 80);
+            this.ctx.stroke();
+
+            // Cell Text (wrapped)
+            const words = (cell.text || '').split(' ');
+            let tLine = '';
+            let tY = curY + 110;
+            this.ctx.font = '600 30px "MPLUS Code Latin"';
+            this.ctx.fillStyle = '#cccccc';
+
+            for (let w = 0; w < words.length; w++) {
+                const testLine = tLine + words[w] + ' ';
+                const metrics = this.ctx.measureText(testLine);
+                if (metrics.width > colWidth - 40 && w > 0) {
+                    this.ctx.fillText(tLine, curX + colWidth / 2, tY);
+                    tLine = words[w] + ' ';
+                    tY += 40;
+                } else {
+                    tLine = testLine;
+                }
+            }
+            this.ctx.fillText(tLine, curX + colWidth / 2, tY);
+
+            curX += colWidth + gap;
+        });
+
+        this.ctx.restore();
+        return y + curY + baseHeight;
+    }
+
+    /**
+     * Draw WarningBox (Alerts/Tips)
+     */
+    drawWarningBox(layer) {
+        const x = layer.x || 60;
+        const y = layer.y || 800;
+        const w = layer.width || 960;
+        const title = layer.title || 'ATENCIÓN';
+        const message = layer.message || '';
+        const icon = layer.icon || '⚠️';
+
+        let color = '#FF9500'; // warning default
+        if (layer.style === 'danger') color = '#FF3366';
+        if (layer.style === 'success') color = '#00FF88';
+        if (layer.style === 'info') color = '#00D9FF';
+
+        this.ctx.save();
+        this.ctx.translate(x, y);
+
+        // Box dimensions — respect user resize
+        this.ctx.font = '600 36px "MPLUS Code Latin"';
+        const h = layer.height || 180;
+
+        // Background
+        this.ctx.fillStyle = `rgba(${this._hexToRgb(color)}, 0.1)`;
+        this.effectsEngine.roundRect(0, 0, w, h, 12);
+        this.ctx.fill();
+
+        // Border
+        this.ctx.strokeStyle = `rgba(${this._hexToRgb(color)}, 0.4)`;
+        this.ctx.lineWidth = 2;
+        this.ctx.stroke();
+
+        // Left accent bar
+        this.ctx.fillStyle = color;
+        this.ctx.shadowColor = color;
+        this.ctx.shadowBlur = 10;
+        this.effectsEngine.roundRect(-2, -2, 10, h + 4, 8);
+        this.ctx.fill();
+        this.ctx.shadowBlur = 0;
+
+        // Icon
+        this._renderSmartIcon(this.ctx, icon, 70, h / 2 + 5, 70, color, 'center');
+
+        // Title
+        this.ctx.font = '900 42px "BlackOpsOne"';
+        this.ctx.fillStyle = color;
+        this.ctx.textAlign = 'left';
+        this.ctx.textBaseline = 'top';
+        this.ctx.fillText(title, 140, 30);
+
+        // Message
+        this.ctx.font = '700 34px "MPLUS Code Latin"';
+        this.ctx.fillStyle = '#ffffff';
+
+        const words = message.split(' ');
+        let tLine = '';
+        let tY = 90;
+        for (let idx = 0; idx < words.length; idx++) {
+            const testLine = tLine + words[idx] + ' ';
+            const metrics = this.ctx.measureText(testLine);
+            if (metrics.width > w - 170 && idx > 0) {
+                this.ctx.fillText(tLine, 140, tY);
+                tLine = words[idx] + ' ';
+                tY += 45;
+            } else {
+                tLine = testLine;
+            }
+        }
+        this.ctx.fillText(tLine, 140, tY);
+
+        this.ctx.restore();
+        return y + h;
+    }
+
+
+    /**
+     * Draw Directory Tree (File system visualization)
+     */
+    drawDirectoryTree(layer) {
+        const x = layer.x || 60;
+        const y = layer.y || 400;
+        const w = layer.width || 960;
+        const root = layer.root || '/';
+        const items = layer.items || [];
+        const themeColor = this._getThemeColor();
+
+        this.ctx.save();
+        this.ctx.translate(x, y);
+
+        // Root background
+        this.ctx.fillStyle = '#0a0a0c';
+        this.effectsEngine.roundRect(0, 0, w, 60, 8);
+        this.ctx.fill();
+
+        // Root border
+        this.ctx.strokeStyle = '#222';
+        this.ctx.lineWidth = 1;
+        this.effectsEngine.roundRect(0, 0, w, 60, 8);
+        this.ctx.stroke();
+
+        this._renderSmartIcon(this.ctx, 'folder', 30, 30, 30, themeColor);
+        this.ctx.font = '800 32px "MPLUS Code Latin"';
+        this.ctx.fillStyle = themeColor;
+        this.ctx.textAlign = 'left';
+        this.ctx.fillText(root, 60, 32);
+
+        let curY = 90;
+        const indentX = 40;
+
+        items.forEach((item, index) => {
+            const isLast = index === items.length - 1;
+            const depth = item.depth || 1;
+            const icon = item.isDir ? 'folder' : 'description';
+            const color = item.isDir ? themeColor : '#aaaaaa';
+            const px = depth * indentX;
+
+            // Draw line from parent
+            this.ctx.strokeStyle = '#444';
+            this.ctx.lineWidth = 2;
+            this.ctx.beginPath();
+
+            // Vertical line piece
+            if (isLast) {
+                this.ctx.moveTo(px - 15, curY - 30);
+                this.ctx.lineTo(px - 15, curY);
+                this.ctx.lineTo(px + 10, curY);
+            } else {
+                this.ctx.moveTo(px - 15, curY - 30);
+                this.ctx.lineTo(px - 15, curY + 40); // continue down
+                this.ctx.moveTo(px - 15, curY);
+                this.ctx.lineTo(px + 10, curY);
+            }
+            this.ctx.stroke();
+
+            // Item Icon
+            this._renderSmartIcon(this.ctx, icon, px + 30, curY, 26, color);
+
+            // Item Name
+            this.ctx.font = item.isDir ? '700 28px "MPLUS Code Latin"' : '500 28px "MPLUS Code Latin"';
+            this.ctx.fillStyle = '#ffffff';
+            this.ctx.textAlign = 'left';
+            this.ctx.fillText(item.path || '', px + 55, curY + 2);
+
+            // Item Description
+            if (item.desc) {
+                this.ctx.font = 'italic 400 24px "MPLUS Code Latin"';
+                this.ctx.fillStyle = '#777777';
+                const pathWidth = this.ctx.measureText(item.path).width;
+                this.ctx.fillText('// ' + item.desc, px + 55 + pathWidth + 15, curY + 2);
+            }
+
+            curY += 50;
+        });
+
+        this.ctx.restore();
+        return y + curY;
+    }
+
+    /**
+     * Draw Tool Grid (Kali Arsenal)
+     */
+    drawToolGrid(layer) {
+        const x = layer.x || 60;
+        const y = layer.y || 400;
+        const w = layer.width || 960;
+        const tools = layer.tools || [];
+        const themeColor = this._getThemeColor();
+        const cols = tools.length > 4 ? 3 : 2;
+
+        this.ctx.save();
+        this.ctx.translate(x, y);
+
+        const gap = 24;
+        const colWidth = (w - (gap * (cols - 1))) / cols;
+        const boxH = layer._userResized && layer.height ? Math.max(80, (layer.height / Math.ceil(tools.length / cols)) - gap) : 150;
+
+        let curX = 0;
+        let curY = 0;
+
+        tools.forEach((tool, i) => {
+            if (i > 0 && i % cols === 0) {
+                curX = 0;
+                curY += boxH + gap;
+            }
+
+            // Box Background
+            this.ctx.fillStyle = '#0a0a0c';
+            this.effectsEngine.roundRect(curX, curY, colWidth, boxH, 12);
+            this.ctx.fill();
+
+            // Box Border / Glow
+            this.ctx.strokeStyle = themeColor;
+            this.ctx.lineWidth = 1;
+            this.ctx.shadowColor = themeColor;
+            this.ctx.shadowBlur = 5;
+            this.ctx.stroke();
+            this.ctx.shadowBlur = 0;
+
+            // Decorator bar
+            this.ctx.fillStyle = themeColor;
+            this.effectsEngine.roundRect(curX + 15, curY + 15, 6, 40, 3);
+            this.ctx.fill();
+
+            // Category Label
+            this.ctx.font = '600 20px "MPLUS Code Latin"';
+            this.ctx.fillStyle = '#888';
+            this.ctx.textAlign = 'left';
+            this.ctx.fillText((tool.category || '').toUpperCase(), curX + 35, curY + 35);
+
+            // Tool Name
+            this.ctx.font = '900 38px "BlackOpsOne"';
+            this.ctx.fillStyle = '#ffffff';
+            this.ctx.fillText(tool.name || '', curX + 35, curY + 95);
+
+            // Icon
+            this._renderSmartIcon(this.ctx, tool.icon || 'build', curX + colWidth - 45, curY + boxH / 2, 50, themeColor);
+
+            curX += colWidth + gap;
+        });
+
+        this.ctx.restore();
+        return y + curY + boxH;
+    }
+
+    /**
+     * Draw Attack Flow (Kill Chain process)
+     */
+    drawAttackFlow(layer) {
+        const x = layer.x || 60;
+        const y = layer.y || 400;
+        const w = layer.width || 960;
+        const stages = layer.stages || [];
+        const themeColor = this._getThemeColor();
+
+        this.ctx.save();
+        this.ctx.translate(x, y);
+
+        const boxH = layer._userResized && layer.height ? Math.max(80, layer.height / Math.max(1, stages.length)) : 120;
+        const gap = 60; // Space for arrow
+        let curY = 0;
+
+        stages.forEach((stage, index) => {
+            const isLast = index === stages.length - 1;
+
+            // Box
+            this.ctx.fillStyle = '#0f0f12';
+            this.ctx.strokeStyle = '#222';
+            this.ctx.lineWidth = 2;
+            this.effectsEngine.roundRect(0, curY, w, boxH, 12);
+            this.ctx.fill();
+            this.ctx.stroke();
+
+            // Colored Left Border
+            this.ctx.fillStyle = themeColor;
+            this.ctx.shadowColor = themeColor;
+            this.ctx.shadowBlur = 10;
+            this.effectsEngine.roundRect(0, curY, 8, boxH, { tl: 12, bl: 12, tr: 0, br: 0 });
+            this.ctx.fill();
+            this.ctx.shadowBlur = 0;
+
+            // Step Number bg
+            this.ctx.fillStyle = 'rgba(255,255,255,0.05)';
+            this.ctx.beginPath();
+            this.ctx.arc(60, curY + boxH / 2, 35, 0, Math.PI * 2);
+            this.ctx.fill();
+
+            // Step Number
+            this.ctx.font = '900 36px "BlackOpsOne"';
+            this.ctx.fillStyle = themeColor;
+            this.ctx.textAlign = 'center';
+            this.ctx.textBaseline = 'middle';
+            this.ctx.fillText(index + 1, 60, curY + boxH / 2);
+
+            // Title
+            this.ctx.font = '800 38px "MPLUS Code Latin"';
+            this.ctx.fillStyle = '#ffffff';
+            this.ctx.textAlign = 'left';
+            this.ctx.fillText(stage.title || '', 120, curY + boxH / 2 - 15);
+
+            // Desc
+            this.ctx.font = '500 26px "MPLUS Code Latin"';
+            this.ctx.fillStyle = '#999';
+            this.ctx.fillText(stage.desc || '', 120, curY + boxH / 2 + 25);
+
+            curY += boxH;
+
+            // Draw glowing arrow to next box if not last
+            if (!isLast) {
+                const arrowX = w / 2;
+
+                this.ctx.shadowColor = themeColor;
+                this.ctx.shadowBlur = 8;
+                this.ctx.fillStyle = themeColor;
+
+                // Polygon downward arrow
+                this.ctx.beginPath();
+                this.ctx.moveTo(arrowX - 8, curY + 10);
+                this.ctx.lineTo(arrowX + 8, curY + 10);
+                this.ctx.lineTo(arrowX + 8, curY + gap - 20);
+                this.ctx.lineTo(arrowX + 20, curY + gap - 20);
+                this.ctx.lineTo(arrowX, curY + gap - 5);
+                this.ctx.lineTo(arrowX - 20, curY + gap - 20);
+                this.ctx.lineTo(arrowX - 8, curY + gap - 20);
+                this.ctx.closePath();
+                this.ctx.fill();
+
+                this.ctx.shadowBlur = 0;
+
+                curY += gap;
+            }
+        });
+
+        this.ctx.restore();
+        return y + curY;
+    }
+
+    /**
+     * Draw Architecture Diagram (Stacked server layers)
+     */
+    drawArchitectureDiag(layer) {
+        const x = layer.x || 60;
+        const y = layer.y || 400;
+        const w = layer.width || 960;
+        const layersData = layer.layers || [];
+        const themeColor = this._getThemeColor();
+
+        this.ctx.save();
+        this.ctx.translate(x, y);
+
+        const totalH = layersData.length * 160 + (layersData.length - 1) * 30; // 160px box + 30px gap
+        let curY = 0;
+
+        layersData.forEach((ld, index) => {
+            const isLast = index === layersData.length - 1;
+            const boxW = w - (index * 60); // Pyramid effect
+            const boxX = (w - boxW) / 2;
+            const boxH = layer._userResized && layer.height ? Math.max(80, (layer.height - (layersData.length - 1) * 30) / layersData.length) : 160;
+
+            // Shadow / Depth
+            this.ctx.fillStyle = 'rgba(0,0,0,0.5)';
+            this.effectsEngine.roundRect(boxX + 10, curY + 10, boxW, boxH, 8);
+            this.ctx.fill();
+
+            // Main Plate
+            this.ctx.fillStyle = '#0a0a0c';
+            this.ctx.strokeStyle = index === 0 ? themeColor : '#333';
+            this.ctx.lineWidth = index === 0 ? 3 : 2;
+            this.effectsEngine.roundRect(boxX, curY, boxW, boxH, 8);
+            this.ctx.fill();
+            this.ctx.stroke();
+
+            // Accent Glow on Top edge
+            if (index === 0) {
+                this.ctx.shadowColor = themeColor;
+                this.ctx.shadowBlur = 15;
+                this.ctx.beginPath();
+                this.ctx.moveTo(boxX + 20, curY);
+                this.ctx.lineTo(boxX + boxW - 20, curY);
+                this.ctx.strokeStyle = themeColor;
+                this.ctx.stroke();
+                this.ctx.shadowBlur = 0;
+            }
+
+            // Tech Stack labels
+            this.ctx.font = '600 24px "MPLUS Code Latin"';
+            this.ctx.fillStyle = '#888';
+            this.ctx.textAlign = 'right';
+            this.ctx.fillText(ld.tech || '', boxX + boxW - 30, curY + boxH - 25);
+
+            // Layer Name
+            this.ctx.font = '900 42px "BlackOpsOne"';
+            this.ctx.fillStyle = '#ffffff';
+            this.ctx.textAlign = 'left';
+            this.ctx.textBaseline = 'middle';
+            this.ctx.fillText(ld.name || '', boxX + 120, curY + boxH / 2);
+
+            // Icon
+            this._renderSmartIcon(this.ctx, ld.icon || 'storage', boxX + 60, curY + boxH / 2, 50, themeColor);
+
+            // Draw connection downwards
+            if (!isLast) {
+                this.ctx.beginPath();
+                this.ctx.setLineDash([8, 8]);
+                this.ctx.moveTo(w / 2, curY + boxH);
+                this.ctx.lineTo(w / 2, curY + boxH + 30);
+                this.ctx.strokeStyle = themeColor;
+                this.ctx.lineWidth = 3;
+                this.ctx.stroke();
+                this.ctx.setLineDash([]);
+            }
+
+            curY += boxH + 30;
+        });
+
+        this.ctx.restore();
+        return y + curY;
+    }
+
     // =========================================================================
 
     /**
-     * Export canvas to a Blob (PNG or WebP).
+     * Export canvas to a Blob
+ (PNG or WebP).
+ (PNG or WebP).
      */
     async exportBlob(format = 'image/png', quality = 1.0) {
         return new Promise(resolve => {

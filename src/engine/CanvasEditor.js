@@ -145,6 +145,336 @@ class CanvasEditor {
     }
 
     /**
+     * Helper to flatten complex components into base primitives for independent editing.
+     * Normalizes type names and extracts nested text from ALL widget types.
+     */
+    _flattenSceneGraph(graph) {
+        if (!graph || !graph.layers) return false;
+        const newLayers = [];
+        let flattened = false;
+
+        for (let i = 0; i < graph.layers.length; i++) {
+            const layer = graph.layers[i];
+            newLayers.push(layer);
+
+            // Ignore background
+            if (layer.type === 'background') continue;
+
+            // Normalize the type to lowercase for consistent matching
+            const t = (layer.type || '').toLowerCase();
+
+            const x = layer.x || 0;
+            const y = layer.y || 0;
+            const w = layer.width || 200;
+
+            // ─── RECT (Cards) ───
+            if (t === 'rect' && layer.title) {
+                newLayers.push({
+                    type: 'text',
+                    content: layer.title,
+                    x: x + 24,
+                    y: y + 46,
+                    font: { size: 36, weight: 700, family: 'BlackOpsOne' },
+                    color: layer.accentColor || '#00D9FF'
+                });
+                delete layer.title;
+            }
+
+            // ─── WARNINGBOX (Alerts / Tips / Danger) ───
+            if (t === 'warningbox') {
+                if (layer.title) {
+                    newLayers.push({
+                        type: 'text',
+                        content: layer.title,
+                        x: x + 140,
+                        y: y + 30,
+                        font: { size: 42, weight: 900, family: 'BlackOpsOne' },
+                        color: layer.style === 'danger' ? '#FF3366' : (layer.style === 'success' ? '#00FF88' : (layer.style === 'info' ? '#00D9FF' : '#FF9500'))
+                    });
+                    delete layer.title;
+                }
+                if (layer.message) {
+                    newLayers.push({
+                        type: 'text',
+                        content: layer.message,
+                        x: x + 140,
+                        y: y + 90,
+                        width: w - 170,
+                        font: { size: 34, weight: 700, family: 'MPLUS Code Latin' },
+                        color: '#ffffff'
+                    });
+                    delete layer.message;
+                }
+            }
+
+            // ─── BARCHART (Statistics) ───
+            if (t === 'barchart' && layer.title) {
+                newLayers.push({
+                    type: 'text',
+                    content: layer.title,
+                    x: x,
+                    y: y,
+                    font: { size: 36, weight: 800, family: 'BlackOpsOne' },
+                    color: '#ffffff'
+                });
+                delete layer.title;
+            }
+
+            // ─── CHECKLIST (Interactive Tasks) ───
+            if (t === 'checklist' && layer.items) {
+                let currentY = 0;
+                const boxSize = 36;
+                const gap = 24;
+                for (let j = 0; j < layer.items.length; j++) {
+                    const item = layer.items[j];
+                    if (item.text) {
+                        newLayers.push({
+                            type: 'text',
+                            content: item.text,
+                            x: x + boxSize + gap,
+                            y: y + currentY - 4,
+                            font: { size: 38, weight: 700, family: 'MPLUS Code Latin' },
+                            color: item.status === 'done' ? '#888888' : (item.status === 'active' ? '#ffffff' : '#cccccc')
+                        });
+                        delete layer.items[j].text;
+                    }
+                    currentY += boxSize + 30;
+                }
+            }
+
+            // ─── GRIDBOX (Matrices / Pros vs Cons) ───
+            if (t === 'gridbox' && layer.cells) {
+                const cols = layer.columns || 2;
+                const gap = 20;
+                const colWidth = (w - (gap * (cols - 1))) / cols;
+                const baseHeight = 250;
+                let curX = 0;
+                let curY = 0;
+
+                for (let j = 0; j < layer.cells.length; j++) {
+                    if (j > 0 && j % cols === 0) { curX = 0; curY += baseHeight + gap; }
+                    const cell = layer.cells[j];
+
+                    if (cell.title) {
+                        newLayers.push({
+                            type: 'text', content: cell.title,
+                            x: x + curX + colWidth / 2, y: y + curY + 30,
+                            align: 'center',
+                            font: { size: 36, weight: 900, family: 'BlackOpsOne' },
+                            color: '#ffffff'
+                        });
+                        delete layer.cells[j].title;
+                    }
+                    if (cell.text) {
+                        newLayers.push({
+                            type: 'text', content: cell.text,
+                            x: x + curX + 20, y: y + curY + 110,
+                            width: colWidth - 40,
+                            font: { size: 30, weight: 600, family: 'MPLUS Code Latin' },
+                            color: '#cccccc'
+                        });
+                        delete layer.cells[j].text;
+                    }
+                    curX += colWidth + gap;
+                }
+            }
+
+            // ─── ATTACKFLOW (Kill Chain) ───
+            if (t === 'attackflow' && layer.stages) {
+                const boxH = 120;
+                const gap = 60;
+                let curY = 0;
+                for (let j = 0; j < layer.stages.length; j++) {
+                    const stage = layer.stages[j];
+                    if (stage.title) {
+                        newLayers.push({
+                            type: 'text', content: stage.title,
+                            x: x + 120, y: y + curY + boxH / 2 - 15,
+                            font: { size: 38, weight: 800, family: 'MPLUS Code Latin' },
+                            color: '#ffffff'
+                        });
+                        delete layer.stages[j].title;
+                    }
+                    if (stage.desc) {
+                        newLayers.push({
+                            type: 'text', content: stage.desc,
+                            x: x + 120, y: y + curY + boxH / 2 + 25,
+                            font: { size: 26, weight: 500, family: 'MPLUS Code Latin' },
+                            color: '#999999'
+                        });
+                        delete layer.stages[j].desc;
+                    }
+                    curY += boxH;
+                    if (j < layer.stages.length - 1) curY += gap;
+                }
+            }
+
+            // ─── ARCHITECTUREDIAG (Stacked Servers) ───
+            if (t === 'architecturediag' && layer.layers) {
+                let curY = 0;
+                for (let j = 0; j < layer.layers.length; j++) {
+                    const ld = layer.layers[j];
+                    const boxW = w - (j * 60);
+                    const boxX = (w - boxW) / 2;
+                    const boxH = 160;
+
+                    if (ld.name) {
+                        newLayers.push({
+                            type: 'text', content: ld.name,
+                            x: x + boxX + 120, y: y + curY + boxH / 2,
+                            font: { size: 42, weight: 900, family: 'BlackOpsOne' },
+                            color: '#ffffff'
+                        });
+                        delete layer.layers[j].name;
+                    }
+                    if (ld.tech) {
+                        newLayers.push({
+                            type: 'text', content: ld.tech,
+                            x: x + boxX + boxW - 30, y: y + curY + boxH - 25,
+                            align: 'right',
+                            font: { size: 24, weight: 600, family: 'MPLUS Code Latin' },
+                            color: '#888888'
+                        });
+                        delete layer.layers[j].tech;
+                    }
+                    curY += boxH + 30;
+                }
+            }
+
+            // ─── TOOLGRID (Kali Arsenal) ───
+            if (t === 'toolgrid' && layer.tools) {
+                const cols = layer.tools.length > 4 ? 3 : 2;
+                const gap = 24;
+                const colWidth = (w - (gap * (cols - 1))) / cols;
+                const boxH = 150;
+                let curX = 0;
+                let curY = 0;
+
+                for (let j = 0; j < layer.tools.length; j++) {
+                    if (j > 0 && j % cols === 0) { curX = 0; curY += boxH + gap; }
+                    const tool = layer.tools[j];
+
+                    if (tool.name) {
+                        newLayers.push({
+                            type: 'text', content: tool.name,
+                            x: x + curX + 35, y: y + curY + 95,
+                            font: { size: 38, weight: 900, family: 'BlackOpsOne' },
+                            color: '#ffffff'
+                        });
+                        delete layer.tools[j].name;
+                    }
+                    if (tool.category) {
+                        newLayers.push({
+                            type: 'text', content: tool.category.toUpperCase(),
+                            x: x + curX + 35, y: y + curY + 35,
+                            font: { size: 20, weight: 600, family: 'MPLUS Code Latin' },
+                            color: '#888888'
+                        });
+                        delete layer.tools[j].category;
+                    }
+                    curX += colWidth + gap;
+                }
+            }
+
+            // ─── DIRECTORYTREE (File System) ───
+            if (t === 'directorytree') {
+                if (layer.root) {
+                    newLayers.push({
+                        type: 'text', content: layer.root,
+                        x: x + 60, y: y + 32,
+                        font: { size: 32, weight: 800, family: 'MPLUS Code Latin' },
+                        color: '#00D9FF'
+                    });
+                    delete layer.root;
+                }
+                if (layer.items) {
+                    let curY = 90;
+                    const indentX = 40;
+                    for (let j = 0; j < layer.items.length; j++) {
+                        const item = layer.items[j];
+                        const depth = item.depth || 1;
+                        const px = depth * indentX;
+                        if (item.path) {
+                            newLayers.push({
+                                type: 'text', content: item.path,
+                                x: x + px + 55, y: y + curY + 2,
+                                font: { size: 28, weight: item.isDir ? 700 : 500, family: 'MPLUS Code Latin' },
+                                color: '#ffffff'
+                            });
+                            delete layer.items[j].path;
+                        }
+                        curY += 50;
+                    }
+                }
+            }
+
+            // ─── STATBAR (Label + Progress) ───
+            if (t === 'statbar' && layer.label) {
+                newLayers.push({
+                    type: 'text', content: layer.label,
+                    x: x, y: y,
+                    font: { size: 42, weight: 700, family: 'MPLUS Code Latin' },
+                    color: '#ffffff'
+                });
+                delete layer.label;
+            }
+
+            // ─── BULLETLIST (Bullet Items) ───
+            if (t === 'bulletlist' && layer.items) {
+                const fontSize = layer.font?.size || 40;
+                const lineH = fontSize * 1.5;
+                const spacing = layer.spacing || 20;
+                let curY = 0;
+                for (let j = 0; j < layer.items.length; j++) {
+                    const item = layer.items[j];
+                    if (item) {
+                        newLayers.push({
+                            type: 'text', content: item,
+                            x: x + 60, y: y + curY,
+                            width: w - 68,
+                            font: layer.font || { size: 40, weight: 400, family: 'MPLUS Code Latin' },
+                            color: layer.color || '#f0f0f0'
+                        });
+                    }
+                    curY += lineH + spacing;
+                }
+                // Keep bullets but remove items text (renderer will skip text if items are empty strings)
+                layer.items = layer.items.map(() => '');
+            }
+
+            // ─── NODEGRAPH (Network Topology) — Extract Node Labels ───
+            if (t === 'nodegraph' && layer.nodes) {
+                const h = layer.height || 500;
+                for (let j = 0; j < layer.nodes.length; j++) {
+                    const n = layer.nodes[j];
+                    if (n.label) {
+                        const nodeRadius = 40;
+                        newLayers.push({
+                            type: 'text', content: n.label,
+                            x: x + (n.x || 0.5) * w,
+                            y: y + (n.y || 0.5) * h + nodeRadius + 25,
+                            align: 'center',
+                            font: { size: 24, weight: 700, family: 'MPLUS Code Latin' },
+                            color: '#ffffff'
+                        });
+                        delete layer.nodes[j].label;
+                    }
+                }
+            }
+        }
+        for (let j = 0; j < newLayers.length; j++) {
+            // Extracted text layers won't have an ID. We set _freeMove to stop layout engine from restacking them.
+            if (newLayers[j].type === 'text' && !newLayers[j].id && !newLayers[j]._freeMove) {
+                newLayers[j]._freeMove = true;
+                flattened = true;
+            }
+        }
+
+        graph.layers = newLayers;
+        return flattened;
+    }
+
+    /**
      * Load a scene graph and render it.
      */
     async load(sceneGraph) {
@@ -156,8 +486,22 @@ class CanvasEditor {
         // Check if any layer has been user-moved (_freeMove) — skip layout to preserve positions
         const hasUserMods = this.sceneGraph.layers && this.sceneGraph.layers.some(l => l._freeMove);
 
-        // Render (skip layout if user has modified any element positions)
-        await this.renderer.render(this.sceneGraph, { skipLayout: hasUserMods });
+        if (!hasUserMods) {
+            // Pass 1: Layout computes valid x, y, width, height for all widgets
+            await this.renderer.render(this.sceneGraph, { skipLayout: false });
+
+            // Pass 2: Flatten using precise bounds from Pass 1
+            const flattened = this._flattenSceneGraph(this.sceneGraph);
+
+            // Pass 3: Re-render to correctly draw the newly independent text layers
+            if (flattened) {
+                await this.renderer.render(this.sceneGraph, { skipLayout: true });
+            }
+        } else {
+            // Already flattened / user-modified
+            this._flattenSceneGraph(this.sceneGraph);
+            await this.renderer.render(this.sceneGraph, { skipLayout: true });
+        }
 
         // Sync overlay size
         this.overlayCanvas.width = this.renderer.width;
@@ -188,6 +532,9 @@ class CanvasEditor {
             // Skip non-interactive layers
             if (layer.type === 'background') continue;
 
+            // Normalize type for matching
+            const t = (layer.type || '').toLowerCase();
+
             // Find bounds from renderer (if available)
             const bound = bounds.find(b => b.layerIndex === i);
 
@@ -204,11 +551,25 @@ class CanvasEditor {
 
             // Estimate height for layers without explicit height
             if (!box.height || box.height < 20) {
-                if (layer.type === 'text') box.height = (layer.font?.size || 42) * 2;
-                else if (layer.type === 'divider') box.height = 10;
-                else if (layer.type === 'accent_bar') box.height = layer.height || 6;
-                else if (layer.type === 'icon') box.height = layer.size || 80;
-                else box.height = 60;
+                if (t === 'text') box.height = (layer.font?.size || 42) * 2;
+                else if (t === 'divider') box.height = 10;
+                else if (t === 'accent_bar') box.height = layer.height || 6;
+                else if (t === 'icon') box.height = layer.size || 80;
+                else if (t === 'terminal') box.height = 200;
+                else if (t === 'rect') box.height = 120;
+                else if (t === 'barchart') box.height = 400;
+                else if (t === 'checklist') box.height = (layer.items?.length || 3) * 66;
+                else if (t === 'gridbox') box.height = 250;
+                else if (t === 'warningbox') box.height = 180;
+                else if (t === 'directorytree') box.height = 60 + (layer.items?.length || 3) * 50;
+                else if (t === 'toolgrid') { const cols = (layer.tools?.length || 4) > 4 ? 3 : 2; box.height = Math.ceil((layer.tools?.length || 4) / cols) * 174; }
+                else if (t === 'attackflow') box.height = (layer.stages?.length || 3) * 180;
+                else if (t === 'architecturediag') box.height = (layer.layers?.length || 3) * 190;
+                else if (t === 'nodegraph') box.height = layer.height || 500;
+                else if (t === 'statbar') box.height = 60;
+                else if (t === 'bulletlist') box.height = (layer.items?.length || 3) * 80;
+                else if (t === 'image') box.height = box.width;
+                else box.height = 80;
             }
 
             this.editableLayers.push(box);
@@ -300,6 +661,11 @@ class CanvasEditor {
     _onMouseDown(e) {
         const { x, y } = this._toCanvasCoords(e);
 
+        // ── AUTO-SAVE: If text editor is open, commit and close it first ──
+        if (this.textEditor && this.editingIdx >= 0) {
+            this._commitTextEdit();
+        }
+
         // Check resize handle first
         const handle = this._hitTestHandle(x, y);
         if (handle) {
@@ -331,7 +697,6 @@ class CanvasEditor {
         } else {
             // Deselect
             this.selectedIdx = -1;
-            this._closeTextEditor();
             this._drawOverlay();
         }
 
@@ -380,22 +745,65 @@ class CanvasEditor {
             let newW = this.dragStartLayerW;
             let newH = this.dragStartLayerH;
 
-            // Horizontal resize
-            if (h.includes('e')) { newW += dx; }
-            if (h.includes('w')) { newX += dx; newW -= dx; }
+            // Maintain Aspect Ratio for Images or if Shift is held (can implement shift key tracking later)
+            const keepRatio = layer.type === 'image' || layer.type === 'icon';
+            const ratio = this.dragStartLayerW / this.dragStartLayerH;
 
-            // Vertical resize
-            if (h.includes('s')) { newH += dy; }
-            if (h.includes('n')) { newY += dy; newH -= dy; }
+            if (keepRatio) {
+                // Proportional resize
+                const movement = Math.abs(dx) > Math.abs(dy) ? dx : dy;
+                let scale = 1;
 
-            // Enforce minimums
-            if (newW < 60) newW = 60;
-            if (newH < 30) newH = 30;
+                if (h.includes('e') || h.includes('s')) scale = (this.dragStartLayerW + movement) / this.dragStartLayerW;
+                else if (h.includes('w') || h.includes('n')) scale = (this.dragStartLayerW - movement) / this.dragStartLayerW;
+
+                newW = this.dragStartLayerW * scale;
+                newH = this.dragStartLayerH * scale;
+
+                if (h.includes('w')) newX = this.dragStartLayerX - (newW - this.dragStartLayerW);
+                if (h.includes('n')) newY = this.dragStartLayerY - (newH - this.dragStartLayerH);
+            } else {
+                // Free resize
+                // Horizontal resize
+                if (h.includes('e')) { newW += dx; }
+                if (h.includes('w')) { newX += dx; newW -= dx; }
+
+                // Vertical resize
+                if (h.includes('s')) { newH += dy; }
+                if (h.includes('n')) { newY += dy; newH -= dy; }
+            }
+
+            // Enforce minimums per layer type
+            let minW = 60;
+            let minH = 30;
+
+            if (layer.type === 'terminal') { minW = 200; minH = 100; }
+            else if (layer.type === 'rect') { minW = 100; minH = 80; }
+            else if (layer.type === 'bar_chart') { minW = 200; minH = 150; }
+            else if (layer.type === 'check_list') { minW = 150; minH = 100; }
+
+            if (newW < minW) {
+                if (h.includes('w')) newX -= (minW - newW);
+                newW = minW;
+            }
+            if (newH < minH) {
+                if (h.includes('n')) newY -= (minH - newH);
+                newH = minH;
+            }
+
+            // Apply changes
+            layer._userResized = true; // Flag for renderer to respect sizes
+            layer._freeMove = true;    // Prevent layout engine from moving it
 
             layer.x = Math.round(newX);
             layer.y = Math.round(newY);
             layer.width = Math.round(newW);
-            if (layer.height !== undefined) layer.height = Math.round(newH);
+            // Special case: some layers don't naturally store height, but we should start tracking it if user resized
+            layer.height = Math.round(newH);
+
+            // Update the cached box so the overlay redraws cleanly
+            this.editableLayers[this.selectedIdx].width = layer.width;
+            this.editableLayers[this.selectedIdx].height = layer.height;
 
             this._reRender();
 
@@ -439,10 +847,8 @@ class CanvasEditor {
         const hitIdx = this._hitTest(x, y);
 
         if (hitIdx >= 0) {
-            const box = this.editableLayers[hitIdx];
-            if (box.type === 'text') {
-                this._openTextEditor(hitIdx);
-            }
+            // Universal double-click: open text editor on ANY element that has editable text
+            this._openTextEditor(hitIdx);
         }
     }
 
@@ -505,14 +911,23 @@ class CanvasEditor {
 
         const box = this.editableLayers[editableIdx];
         const layer = box.layer;
-        if (!layer.content && layer.type !== 'text') return;
+
+        // Find editable text property
+        let textValue = '';
+        let textProp = null;
+        if (layer.content !== undefined) { textValue = layer.content; textProp = 'content'; }
+        else if (layer.title !== undefined) { textValue = layer.title; textProp = 'title'; }
+        else if (layer.label !== undefined) { textValue = layer.label; textProp = 'label'; }
+
+        if (!textProp && layer.type !== 'text') return;
 
         this.editingIdx = editableIdx;
+        this.editingProp = textProp || 'content'; // Store which property we are editing
 
         // Create textarea overlay
         const ta = document.createElement('textarea');
         ta.className = 'canvas-text-editor';
-        ta.value = layer.content || '';
+        ta.value = textValue || '';
 
         // Position over the element (in native canvas coordinates — CSS transform handles display scaling)
         const displayX = box.x;
@@ -558,29 +973,44 @@ class CanvasEditor {
     }
 
     _commitTextEdit() {
+        // Guard against re-entry (blur fires when we remove the node below)
+        if (this._isClosingEditor) return;
         if (this.editingIdx < 0 || !this.textEditor) return;
 
         const box = this.editableLayers[this.editingIdx];
         const newText = this.textEditor.value;
+        const prop = this.editingProp || 'content';
 
-        if (newText !== box.layer.content) {
-            box.layer.content = newText;
+        if (newText !== box.layer[prop]) {
+            box.layer[prop] = newText;
+            this._closeTextEditor();   // Close FIRST to detach blur
             this._reRender();
             if (this.onChange) this.onChange(this.sceneGraph);
+        } else {
+            this._closeTextEditor();
         }
-
-        this._closeTextEditor();
     }
 
     _closeTextEditor() {
-        if (this.textEditor && this.textEditor.parentNode) {
-            // Defensive check to avoid NotFoundError on double-triggers (e.g., blur + Escape)
-            if (this.textEditor.parentNode.contains(this.textEditor)) {
-                this.textEditor.parentNode.removeChild(this.textEditor);
+        if (this._isClosingEditor) return; // Prevent re-entry
+        this._isClosingEditor = true;
+
+        if (this.textEditor) {
+            // Remove blur listener BEFORE detaching to avoid recursive calls
+            this.textEditor.onblur = null;
+            this.textEditor.replaceWith(this.textEditor.cloneNode(false)); // strips all listeners
+
+            try {
+                if (this.textEditor.parentNode) {
+                    this.textEditor.parentNode.removeChild(this.textEditor);
+                }
+            } catch (e) {
+                // Already removed — safe to ignore
             }
         }
         this.textEditor = null;
         this.editingIdx = -1;
+        this._isClosingEditor = false;
     }
 
     // ═══════════════════════════════════════════
@@ -696,15 +1126,17 @@ class CanvasEditor {
             ctx.fillText(label, labelX + 8, labelY + labelH / 2);
             ctx.textBaseline = 'alphabetic';
 
-            // Position label (X, Y)
+            // Position label (X, Y) + Size label (W × H)
             const posLabel = Math.round(box.x) + ', ' + Math.round(box.y);
+            const sizeLabel = Math.round(box.width) + ' × ' + Math.round(box.height);
+            const fullLabel = posLabel + '  |  ' + sizeLabel;
             ctx.font = '500 18px "MPLUS Code Latin", monospace';
-            const posW = ctx.measureText(posLabel).width + 12;
-            ctx.fillStyle = 'rgba(0,0,0,0.8)';
+            const posW = ctx.measureText(fullLabel).width + 16;
+            ctx.fillStyle = 'rgba(0,0,0,0.85)';
             ctx.fillRect(box.x, box.y + box.height + 6, posW, 22);
             ctx.fillStyle = '#00D9FF';
             ctx.textBaseline = 'middle';
-            ctx.fillText(posLabel, box.x + 6, box.y + box.height + 17);
+            ctx.fillText(fullLabel, box.x + 8, box.y + box.height + 17);
             ctx.textBaseline = 'alphabetic';
         }
     }

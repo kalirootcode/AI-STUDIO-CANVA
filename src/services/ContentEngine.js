@@ -1017,6 +1017,33 @@ NOTA: NO incluir el swipe en la última página. La flecha aparece a la derecha 
 ### 11. image (Imagen)
 { "type": "image", "src": "./assets/kr-clidn-logo.png", "x": 100, "y": 100, "width": 200, "height": 200, "radius": 16 }
 
+### 12. nodeGraph (Diagramas de red, mapas de topología)
+{ "type": "nodegraph", "x": 60, "y": 400, "width": 960, "height": 500, "nodes": [{ "id": "A", "label": "Client", "icon": "💻", "x": 0.2, "y": 0.5 }, { "id": "B", "label": "Server", "icon": "🖥️", "x": 0.8, "y": 0.5 }], "connections": [{ "from": "A", "to": "B", "label": "TCP 443", "color": "${colors.primary}" }] }
+
+### 13. barchart (Gráficos de barras para estadísticas)
+{ "type": "barchart", "x": 60, "y": 500, "width": 960, "height": 400, "title": "Tiempos (ms)", "color": "${colors.accent}", "data": [{ "label": "Nmap", "value": 120 }, { "label": "RustScan", "value": 45 }] }
+
+### 14. checklist (Listas estructuradas e interactivas)
+{ "type": "checklist", "x": 60, "y": 600, "width": 960, "items": [{ "text": "Paso 1 completo", "status": "done" }, { "text": "Paso 2 activo", "status": "active" }, { "text": "Paso 3", "status": "pending" }] }
+
+### 15. gridbox (Matrices, Pros vs Contras, features)
+{ "type": "gridbox", "x": 60, "y": 400, "width": 960, "columns": 2, "cells": [{ "title": "👍 PROS", "text": "Velocidad alta", "color": "${colors.success}" }, { "title": "👎 CONTRAS", "text": "Complejo", "color": "${colors.danger}" }] }
+
+### 16. warningbox (Alertas, tips y errores resaltados)
+{ "type": "warningbox", "x": 60, "y": 800, "width": 960, "style": "danger", "icon": "⚠️", "title": "ADVERTENCIA", "message": "Nunca uses contraseñas por defecto." }
+
+### 17. directoryTree (Estructuras de archivos y carpetas)
+{ "type": "directorytree", "x": 60, "y": 400, "width": 960, "root": "/var/www/html/", "items": [{ "path": "wp-config.php", "desc": "Credenciales DB", "isDir": false, "depth": 1 }, { "path": "wp-content/", "desc": "Plugins y themes", "isDir": true, "depth": 1 }, { "path": "uploads/", "desc": "Vulnerable a RCE", "isDir": true, "depth": 2 }] }
+
+### 18. toolGrid (Arsenal y grids de herramientas 2x2 o 3x2)
+{ "type": "toolgrid", "x": 60, "y": 400, "width": 960, "tools": [{ "name": "Nmap", "category": "Escaneo", "icon": "search" }, { "name": "Metasploit", "category": "Explotación", "icon": "pest_control" }] }
+
+### 19. attackFlow (Flujos secuenciales y Cyber Kill Chain)
+{ "type": "attackflow", "x": 60, "y": 400, "width": 960, "stages": [{ "title": "1. Reconocimiento", "desc": "OSINT y escaneo activo" }, { "title": "2. Explotación", "desc": "Ejecución del payload" }] }
+
+### 20. architectureDiag (Arquitecturas de programas o redes)
+{ "type": "architecturediag", "x": 60, "y": 400, "width": 960, "layers": [{ "name": "Capa Frontend", "tech": "React, Vue", "icon": "smartphone" }, { "name": "Capa Backend", "tech": "Node.js, Express", "icon": "dns" }, { "name": "Capa Base de Datos", "tech": "PostgreSQL", "icon": "database" }] }
+
 ## COLORES DEL TEMA "${theme}"
 - Primary: ${colors.primary}
 - Accent: ${colors.accent}
@@ -1054,6 +1081,16 @@ NOTA: NO incluir el swipe en la última página. La flecha aparece a la derecha 
      | BulletList (4 items)                | 320px          |
      | BulletList (3 items)                | 250px          |
      | Icon (120px size)                   | 150px          |
+     | NodeGraph (según height dictado)    | height px      |
+     | BarChart (según height dictado)     | height px      |
+     | Checklist (3 items)                 | 300px          |
+     | GridBox (2 filas)                   | 500px          |
+     | WarningBox (1 línea de texto)       | 200px          |
+     | DirectoryTree (4 items)             | 350px          |
+     | ToolGrid (1 fila)                   | 200px          |
+     | ToolGrid (2 filas)                  | 380px          |
+     | AttackFlow (3 pasos)                | 550px          |
+     | ArchitectureDiag (3 capas)          | 600px          |
    - ENTRE cada bloque: +40px de gap.
    - MÁXIMO 4-5 bloques de contenido por página. Si necesitas más, DIVIDE en más páginas.
    - PROHIBIDO: Colocar un bloque si su Y + altura estimada > 1710.
@@ -1062,21 +1099,32 @@ NOTA: NO incluir el swipe en la última página. La flecha aparece a la derecha 
 4. **JERARQUÍA:** Cada página debe tener una jerarquía visual clara: título dominante → contenido secundario → detalles.
 5. **VARIEDAD:** NO repitas el mismo layout en páginas consecutivas. Alterna entre heavy-text, terminal, stats, lists, etc.
 6. **FORMATO DE TEXTO (CRÍTICO):**
-   - **Terminal:** NUNCA escribas un comando gigante en una sola línea. Divide comandos largos usando la barra invertida \`\\\` para que hagan salto de línea.
+   - **Terminal:** NUNCA escribas un comando gigante en una sola línea. Divide comandos largos usando la barra invertida \\\` para que hagan salto de línea.
    - **Tarjetas/Cards:** Usa frases cortas, contundentes y directas (punchlines). NUNCA escribas párrafos completos dentro de una tarjeta pequena. Añade siempre el campo \"accentColor\" y opcionalmente \"title\" para el header de la tarjeta.
 7. **HIGHLIGHTS (OBLIGATORIO):** En TODOS los títulos principales (BlackOpsOne) y en los párrafos, DEBES resaltar de 1 a 3 palabras clave usando el array "highlights" con el color del tema (ej. "${colors.primary}").
-8. **BRANDING:** CADA página DEBE incluir el layer "brand" al inicio y "swipe" al final (EXCEPTO la última página que NO lleva swipe).
-9. **FONDO:** Usa un fondo NEGRO SÓLIDO de forma obligatoria ("fill": "#000000"). Opcionalmente puedes añadir "ambientColor" y "accentColor" (hex) para los orbes atmosféricos de color. NUNCA uses el pattern de circuit.
-10. **CONTENIDO:** 100% en Español. Técnico, profundo y educativo sobre ciberseguridad/hacking ético.
-11. **JSON ESCAPE (CRÍTICO):** Las propiedades "content", "output" y "text" a menudo contienen texto. DEBES escapar las comillas dobles (usa \\") y los saltos de línea (usa \\n). NUNCA uses comillas dobles sin escapar dentro de un string JSON. NUNCA uses saltos de línea literales en el JSON.
-12. **DENSIDAD (CRÍTICO):** El total acumulado de alturas de todos los elementos en una página NO puede superar 1530px. Si el contenido que necesitas comunicar no cabe, DIVIDE en más slides. Es mejor tener 12 slides perfectos que 10 slides apretados.
+8. **USO DE ESTRUCTURAS VISUALES AVANZADAS (NUEVO OBLIGATORIO):**
+   - Usa "nodeGraph" SIEMPRE que expliques topologías o flujos de red.
+   - Usa "barchart" SIEMPRE que compares rendimiento o estadísticas.
+   - Usa "checklist" SIEMPRE que haya pasos accionables o tareas de configuración.
+   - Usa "gridbox" SIEMPRE que compares ventajas/desventajas.
+   - Usa "warningbox" SIEMPRE que des una advertencia crítica de seguridad.
+   - Usa "directorytree" SIEMPRE que expliques estructuras de directorios de Linux, archivos de configuración o payloads.
+   - Usa "toolgrid" SIEMPRE que listes o recomiendes un arsenal de herramientas de hacking.
+   - Usa "attackflow" SIEMPRE que expliques un proceso secuencial de ataque (ej. Cyber Kill Chain).
+   - Usa "architecturediag" SIEMPRE que expliques cómo funciona un programa (Frontend/Backend/DB) o stacks de servidores.
+   - Es OBLIGATORIO que al menos el 50% de las páginas usen alguna de las estructuras avanzadas (12 a 20). No hagas un hilo solo de texto e imágenes.
+9. **BRANDING:** CADA página DEBE incluir el layer "brand" al inicio y "swipe" al final (EXCEPTO la última página que NO lleva swipe).
+10. **FONDO:** Usa un fondo NEGRO SÓLIDO de forma obligatoria ("fill": "#000000"). Opcionalmente puedes añadir "ambientColor" y "accentColor" (hex) para los orbes atmosféricos de color. NUNCA uses el pattern de circuit.
+11. **CONTENIDO:** 100% en Español. Técnico, profundo y educativo sobre ciberseguridad/hacking ético.
+12. **JSON ESCAPE (CRÍTICO):** Las propiedades "content", "output" y "text" a menudo contienen texto. DEBES escapar las comillas dobles (usa \\") y los saltos de línea (usa \\n). NUNCA uses comillas dobles sin escapar dentro de un string JSON. NUNCA uses saltos de línea literales en el JSON.
+13. **DENSIDAD (CRÍTICO):** El total acumulado de alturas de todos los elementos en una página NO puede superar 1530px. Si el contenido que necesitas comunicar no cabe, DIVIDE en más slides. Es mejor tener 12 slides perfectos que 10 slides apretados.
 
 ## ESTRUCTURA NARRATIVA POR PÁGINA
 
 - Página 1: PORTADA — Usar background con "isCover": true para fondo de libro hacking. Usar brand con "isCover": true. El logo 200px aparece centrado con el nombre debajo. Debajo del brand: título GRANDE centrado (100px) en y=450, descripción debajo del título (y=650). Distancia separada entre logo, título y descripción para un look premium.
 - Página 2: CAPÍTULO — Separador con número de capítulo
 - Páginas 3-${slideCount - 1}: CONTENIDO — Mezcla de teoría, terminales, estadísticas, listas, tips
-- Última página: CIERRE — CTA para seguir + hashtags + iconos sociales
+- Última página: CIERRE CTA — DEBE tener exactamente el mismo diseño que la PORTADA (background con "isCover": true y brand con "isCover": true, logo gigante centrado). Añade un título de despedida GRANDE (ej. "¡SÍGUENOS!"), debajo los hashtags y luego íconos sociales. NO lleva swipe.
 
 ## FORMATO DE RESPUESTA
 

@@ -737,10 +737,25 @@ class App {
         if (!this.slides || !this.slides[this.currentSlideIndex]) return;
         const currentSlide = this.slides[this.currentSlideIndex];
 
-        // Skip re-render for Canvas slides (they are pre-rendered images)
-        if (currentSlide.isCanvas) return;
+        // Canvas slides: Update the internal JSON and force a visual re-render
+        if (currentSlide.isCanvas) {
+            currentSlide.data = newData;
+            if (this.canvasEditor) {
+                this.canvasEditor.load({ layers: newData.layers });
+            }
+            // Update CodeMirror editor without re-triggering changes
+            const studio = this.viewManager.views['studio'];
+            if (studio && studio.editorInstance) {
+                const currentVal = studio.editorInstance.getValue();
+                const newVal = JSON.stringify(newData, null, 2);
+                if (currentVal !== newVal) {
+                    studio.editorInstance.setValue(newVal);
+                }
+            }
+            return;
+        }
 
-        // Update state
+        // HTML slides: Update state and re-render template
         currentSlide.data = newData;
 
         // Re-render HTML

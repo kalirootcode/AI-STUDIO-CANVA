@@ -60,20 +60,33 @@ class EffectsEngine {
     }
 
     /**
-     * Draw a rounded rectangle path.
+     * Draw a rounded rectangle path. Supports universal custom radii.
      */
     roundRect(x, y, width, height, radius = 16) {
-        const r = Math.min(radius, width / 2, height / 2);
+        let tl = 0, tr = 0, br = 0, bl = 0;
+
+        if (typeof radius === 'number') {
+            const r = Math.min(radius, width / 2, height / 2);
+            tl = tr = br = bl = r;
+        } else if (Array.isArray(radius) && radius.length === 4) {
+            [tl, tr, br, bl] = radius.map(r => Math.min(r, width / 2, height / 2));
+        } else if (typeof radius === 'object' && radius !== null) {
+            tl = Math.min(radius.tl || 0, width / 2, height / 2);
+            tr = Math.min(radius.tr || 0, width / 2, height / 2);
+            br = Math.min(radius.br || 0, width / 2, height / 2);
+            bl = Math.min(radius.bl || 0, width / 2, height / 2);
+        }
+
         this.ctx.beginPath();
-        this.ctx.moveTo(x + r, y);
-        this.ctx.lineTo(x + width - r, y);
-        this.ctx.arcTo(x + width, y, x + width, y + r, r);
-        this.ctx.lineTo(x + width, y + height - r);
-        this.ctx.arcTo(x + width, y + height, x + width - r, y + height, r);
-        this.ctx.lineTo(x + r, y + height);
-        this.ctx.arcTo(x, y + height, x, y + height - r, r);
-        this.ctx.lineTo(x, y + r);
-        this.ctx.arcTo(x, y, x + r, y, r);
+        this.ctx.moveTo(x + tl, y);
+        this.ctx.lineTo(x + width - tr, y);
+        this.ctx.arcTo(x + width, y, x + width, y + tr, tr);
+        this.ctx.lineTo(x + width, y + height - br);
+        this.ctx.arcTo(x + width, y + height, x + width - br, y + height, br);
+        this.ctx.lineTo(x + bl, y + height);
+        this.ctx.arcTo(x, y + height, x, y + height - bl, bl);
+        this.ctx.lineTo(x, y + tl);
+        this.ctx.arcTo(x, y, x + tl, y, tl);
         this.ctx.closePath();
     }
 

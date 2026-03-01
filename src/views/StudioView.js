@@ -488,27 +488,44 @@ export class StudioView extends BaseView {
 
                 try {
                     if (hasCanvasSlides && window.app.canvasRenderer) {
-                        // Canvas mode: render each slide and save directly to ~/Pictures/
+                        // ═══ ROBUST OFFSCREEN EXPORT ═══
+                        // Uses a SEPARATE renderer so the live editor/previewer is untouched
                         const folderName = title.replace(/[^a-zA-Z0-9_\- ]/g, '_').substring(0, 80);
-                        window.app.setStatus('🚀 Exportando ' + slides.length + ' slides a Pictures...', true);
+                        window.app.setStatus('🚀 Preparando exportación de ' + slides.length + ' slides...', true);
                         let exported = 0;
                         let savePath = '';
 
+                        // Create a dedicated offscreen renderer for export
+                        const exportRenderer = window.createRenderer(
+                            width || 1080,
+                            height || 1920,
+                            window.app.canvasRenderer._activeThemeName || 'cyber'
+                        );
+                        // Share image cache to avoid re-downloading assets
+                        exportRenderer._imageCache = new Map(window.app.canvasRenderer._imageCache);
+
                         for (let i = 0; i < slides.length; i++) {
                             const slide = slides[i];
-                            window.app.setStatus('🖼️ Guardando slide ' + (i + 1) + '/' + slides.length + '...', true);
+                            window.app.setStatus('🖼️ Renderizando slide ' + (i + 1) + '/' + slides.length + '...', true);
 
                             if (slide.isCanvas && slide.data) {
-                                // Deep-clone the scene graph so the render pass 
-                                // does NOT mutate the original slide data
+                                // Deep-clone to prevent any mutation of original data
                                 const exportData = JSON.parse(JSON.stringify(slide.data));
 
-                                // Render with skipLayout=true to preserve user modifications
-                                // (moved elements, resized items, edited text positions)
-                                await window.app.canvasRenderer.render(exportData, { skipLayout: true });
-                                const dataURL = window.app.canvasRenderer.exportDataURL('image/png', 1.0);
+                                // Pre-load any images referenced in layers
+                                const layers = exportData.layers || [];
+                                for (const layer of layers) {
+                                    if (layer.src) await exportRenderer.loadImage(layer.src).catch(() => null);
+                                    if (layer.imageSrc) await exportRenderer.loadImage(layer.imageSrc).catch(() => null);
+                                }
 
-                                // Save directly to disk via IPC
+                                // Render with skipLayout=true to preserve ALL user modifications
+                                await exportRenderer.render(exportData, { skipLayout: true });
+
+                                // Brief delay to ensure canvas is fully painted
+                                await new Promise(r => setTimeout(r, 80));
+
+                                const dataURL = exportRenderer.exportDataURL('image/png', 1.0);
                                 const fileName = folderName + '_slide_' + String(i + 1).padStart(2, '0') + '.png';
 
                                 const result = await window.cyberCanvas.saveCanvasPng({ dataURL, folderName, fileName });
@@ -518,6 +535,10 @@ export class StudioView extends BaseView {
                                 }
                             }
                         }
+
+                        // Clean up offscreen renderer
+                        exportRenderer.canvas.remove();
+                        exportRenderer._imageCache.clear();
 
                         window.app.setStatus('✅ ' + exported + ' slides guardadas en ~/Pictures/' + folderName);
                         alert('✅ Exportación completada!\n' + exported + ' imágenes guardadas en:\n' + savePath);
