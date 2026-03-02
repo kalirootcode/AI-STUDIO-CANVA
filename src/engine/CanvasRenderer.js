@@ -175,7 +175,7 @@ class CanvasRenderer {
         const SafeZoneManager = (typeof window !== 'undefined' && window.SafeZoneManager) ? window.SafeZoneManager : null;
         const zone = SafeZoneManager ? SafeZoneManager.getZone(this.width, this.height) : null;
 
-        const SAFE_START_Y = zone ? zone.content.top : 140;
+        const SAFE_START_Y = zone ? Math.max(zone.content.top, 300) : 300;
         const SAFE_END_Y = zone ? zone.content.bottom : (this.height - 140);
         const SAFE_MARGIN_X = 60;   // 60px side margins for professional look
         const MIN_GAP = 40;          // Gap between elements
@@ -262,7 +262,21 @@ class CanvasRenderer {
                                     childEstH = ((child.items || []).length * 66) + 20;
                                 } else if (child.type === 'gridbox') {
                                     const cols = child.columns || 2;
-                                    childEstH = Math.ceil((child.cells || []).length / cols) * 270;
+                                    const gap = 20;
+                                    const cW = (this.width - (SAFE_MARGIN_X * 2) - (gap * (cols - 1))) / cols;
+                                    let maxLines = 1;
+
+                                    // Estimate wrapper height without real ctx access
+                                    (child.cells || []).forEach(cell => {
+                                        const chars = (cell.text || '').length;
+                                        const estCharsPerLine = Math.floor((cW - 40) / 16); // ~16px per char avg for size 30
+                                        const lines = Math.max(1, Math.ceil(chars / estCharsPerLine));
+                                        if (lines > maxLines) maxLines = lines;
+                                    });
+
+                                    const estCellH = 120 + (maxLines * 40) + 30;
+                                    childEstH = Math.ceil((child.cells || []).length / cols) * (estCellH + 20); // cell height + gap
+
                                 } else if (child.type === 'toolgrid') {
                                     const cols = (child.tools || []).length > 4 ? 3 : 2;
                                     childEstH = Math.ceil((child.tools || []).length / cols) * 174;
@@ -563,7 +577,7 @@ class CanvasRenderer {
         // Cinematic noise grain
         this.effectsEngine.drawNoiseGrain(0.022);
 
-        // Subtle separator line at top safe zone boundary
+        // Subtle separator line at top safe zone boundary (adjusted for 300px top margin)
         this.ctx.save();
         const lineGrad = this.ctx.createLinearGradient(0, 0, this.width, 0);
         lineGrad.addColorStop(0, 'rgba(0,0,0,0)');
@@ -573,8 +587,8 @@ class CanvasRenderer {
         this.ctx.strokeStyle = lineGrad;
         this.ctx.lineWidth = 1;
         this.ctx.beginPath();
-        this.ctx.moveTo(0, 130);
-        this.ctx.lineTo(this.width, 130);
+        this.ctx.moveTo(0, 280);
+        this.ctx.lineTo(this.width, 280);
         this.ctx.stroke();
         this.ctx.restore();
     }
@@ -932,7 +946,8 @@ class CanvasRenderer {
             // ═══════════════════════════════════════════
             // STANDARD MODE — Logo beside brand name (matching size)
             // ═══════════════════════════════════════════
-            const y = position === 'top' ? 50 : this.height - 100;
+            // Centered vertically inside the 300px top header area
+            const y = position === 'top' ? 125 : this.height - 100;
             const textSize = 38;
             const logoH = textSize + 8;  // Logo matches text height
             const logoW = logoH;         // Square logo
@@ -1102,30 +1117,32 @@ class CanvasRenderer {
             font = { family: 'MPLUS Code Latin', size: 40, weight: 400 },
             color = '#f0f0f0',
             bulletColor = '#00D9FF',
-            bulletChar = '▸',
+            icon = 'double_arrow',
             spacing = 20
         } = layer;
 
         const fontSize = this.textEngine.setFont(font);
-        const lineH = fontSize * 1.5;
+        const iconSize = fontSize * 0.9;
+        const indent = iconSize + 15;
         let currentY = y;
 
         for (const item of items) {
-            // Bullet
-            this.ctx.fillStyle = bulletColor;
-            this.ctx.fillText(bulletChar, x, currentY);
-            const bulletWidth = this.ctx.measureText(bulletChar + ' ').width;
+            if (item) {
+                // Align icon with the vertical center of the FIRST line of the paragraph
+                const iconY = currentY + (fontSize * 1.4) / 2;
+                this._renderSmartIcon(this.ctx, layer.icon || icon, x + iconSize / 2, iconY, iconSize, bulletColor, 'center');
 
-            // Item text (with word wrap within remaining width)
-            const textLayer = {
-                content: item,
-                x: x + bulletWidth + 8,
-                y: currentY,
-                width: width - bulletWidth - 8,
-                font, color,
-                lineHeight: 1.4
-            };
-            currentY = this.textEngine.renderTextBlock(textLayer);
+                // Item text (with word wrap within remaining width)
+                const textLayer = {
+                    content: item,
+                    x: x + indent,
+                    y: currentY,
+                    width: width - indent,
+                    font, color,
+                    lineHeight: 1.4
+                };
+                currentY = this.textEngine.renderTextBlock(textLayer);
+            }
             currentY += spacing;
         }
 
@@ -1208,7 +1225,7 @@ class CanvasRenderer {
         });
 
         // Draw connections first (so they go under nodes)
-        connections.forEach(conn => {
+        connections.forEach((conn, idx) => {
             const numA = nodeMap[conn.from];
             const numB = nodeMap[conn.to];
             if (!numA || !numB) return;
@@ -1226,63 +1243,119 @@ class CanvasRenderer {
             }
 
             this.ctx.strokeStyle = connColor;
-            this.ctx.lineWidth = 4;
+            this.ctx.lineWidth = 3; // Thinner cleaner line
+
+            // Tech dashboard animated pulsing dashes
+            // Offset the dash pattern based on current time to simulate data flow
+            const timeStr = Date.now() / 20;
+            this.ctx.setLineDash([15, 10]);
+            this.ctx.lineDashOffset = -timeStr; // Flow towards destination
+
             // Glow effect
             this.ctx.shadowColor = connColor;
-            this.ctx.shadowBlur = 15;
+            this.ctx.shadowBlur = 20;
             this.ctx.stroke();
+
+            // Secondary bright inner core
+            this.ctx.lineWidth = 1;
+            this.ctx.strokeStyle = '#ffffff';
+            this.ctx.stroke();
+
             this.ctx.shadowBlur = 0;
+            this.ctx.setLineDash([]); // Reset dash for labels and nodes
 
             // Draw connection label if exists
             if (conn.label) {
                 const midX = (numA.px + numB.px) / 2;
-                const midY = (numA.py + numB.py) / 2;
+                const midY = (numA.py + numB.py) / 2 - 20; // Float slightly above the line
 
-                this.ctx.fillStyle = '#111';
+                this.ctx.font = '600 18px "MPLUS Code Latin"';
                 const metrics = this.ctx.measureText(conn.label);
-                const lw = Math.max(metrics.width + 20, 80);
-                this.ctx.fillRect(midX - lw / 2, midY - 15, lw, 30);
+                const lw = Math.max(metrics.width + 30, 80);
+                const lh = 36;
 
-                this.ctx.font = '600 20px "MPLUS Code Latin"';
-                this.ctx.fillStyle = connColor;
+                // Translucent tech pill
+                this.ctx.fillStyle = `rgba(10, 10, 12, 0.85)`;
+                this.ctx.strokeStyle = `rgba(${this._hexToRgb(connColor)}, 0.5)`;
+                this.ctx.lineWidth = 1;
+                this.effectsEngine.roundRect(midX - lw / 2, midY - lh / 2, lw, lh, 18);
+                this.ctx.fill();
+                this.ctx.stroke();
+
+                this.ctx.fillStyle = '#ffffff';
                 this.ctx.textAlign = 'center';
                 this.ctx.textBaseline = 'middle';
-                this.ctx.fillText(conn.label, midX, midY);
+                this.ctx.fillText(conn.label, midX, midY + 1);
             }
         });
 
+        // Helper function for drawing glowing hexagons
+        const drawHexagon = (cx, cy, radius) => {
+            this.ctx.beginPath();
+            for (let i = 0; i < 6; i++) {
+                const angle = (Math.PI / 3) * i - Math.PI / 2;
+                const x = cx + radius * Math.cos(angle);
+                const y = cy + radius * Math.sin(angle);
+                if (i === 0) this.ctx.moveTo(x, y);
+                else this.ctx.lineTo(x, y);
+            }
+            this.ctx.closePath();
+        };
+
         // Draw nodes
-        const nodeRadius = 40;
+        const nodeRadius = 45;
         nodes.forEach(n => {
             const px = nodeMap[n.id].px;
             const py = nodeMap[n.id].py;
 
-            // Outer glow
+            // 1) Glowing faint outer ring
             this.ctx.beginPath();
-            this.ctx.arc(px, py, nodeRadius + 5, 0, Math.PI * 2);
-            this.ctx.fillStyle = `rgba(${this._hexToRgb(themeColor)}, 0.2)`;
+            this.ctx.arc(px, py, nodeRadius + 14, 0, Math.PI * 2);
+            this.ctx.fillStyle = `rgba(${this._hexToRgb(themeColor)}, 0.08)`;
             this.ctx.fill();
 
-            // Inner circle
+            // 2) Tech dashed ring
             this.ctx.beginPath();
-            this.ctx.arc(px, py, nodeRadius, 0, Math.PI * 2);
+            this.ctx.arc(px, py, nodeRadius + 8, 0, Math.PI * 2);
+            this.ctx.strokeStyle = `rgba(${this._hexToRgb(themeColor)}, 0.4)`;
+            this.ctx.lineWidth = 2;
+            this.ctx.setLineDash([4, 8]);
+            this.ctx.stroke();
+            this.ctx.setLineDash([]);
+
+            // 3) Hexagonal Solid Core
+            drawHexagon(px, py, nodeRadius);
+            // Solid dark center
             this.ctx.fillStyle = '#0a0a0c';
+            this.ctx.fill();
+
+            // Glowing bright border
+            this.ctx.shadowColor = themeColor;
+            this.ctx.shadowBlur = 20;
             this.ctx.strokeStyle = themeColor;
             this.ctx.lineWidth = 3;
-            this.ctx.fill();
+            this.ctx.stroke();
+            this.ctx.shadowBlur = 0;
+
+            // 4) Inside Highlight Ring
+            drawHexagon(px, py, nodeRadius - 6);
+            this.ctx.strokeStyle = `rgba(${this._hexToRgb(themeColor)}, 0.2)`;
+            this.ctx.lineWidth = 1;
             this.ctx.stroke();
 
-            // Icon
+            // 5) Icon perfectly centered
             if (n.icon) {
-                this._renderSmartIcon(this.ctx, n.icon, px, py + 2, 40, themeColor, 'center');
+                // Adjust Y +4 because of the hexagon visual balance, font baseline compensation
+                this._renderSmartIcon(this.ctx, n.icon, px, py + 4, 38, '#ffffff', 'center');
             }
 
-            // Label
+            // 6) Align text baseline perfectly to MATCH CanvasEditor extracting text
             if (n.label) {
                 this.ctx.font = '700 24px "MPLUS Code Latin"';
                 this.ctx.fillStyle = '#ffffff';
                 this.ctx.textAlign = 'center';
-                this.ctx.fillText(n.label, px, py + nodeRadius + 25);
+                this.ctx.textBaseline = 'top'; // KEY FIX
+                this.ctx.fillText(n.label, px, py + nodeRadius + 20); // Matched to Editor offset
             }
         });
 
@@ -1468,7 +1541,30 @@ class CanvasRenderer {
 
         const gap = 20;
         const colWidth = (w - (gap * (cols - 1))) / cols;
-        const baseHeight = 250;
+        const numRows = Math.ceil(cells.length / cols);
+
+        // Dynamic Height Calculation: find max height required across all cells
+        let maxReqHeight = 150; // Base space for title + paddings
+        this.ctx.font = '600 30px "MPLUS Code Latin"';
+        cells.forEach(cell => {
+            const words = (cell.text || '').split(' ');
+            let tLine = '';
+            let lines = 1;
+            for (let w = 0; w < words.length; w++) {
+                const testLine = tLine + words[w] + ' ';
+                const metrics = this.ctx.measureText(testLine);
+                if (metrics.width > colWidth - 40 && w > 0) {
+                    lines++;
+                    tLine = words[w] + ' ';
+                } else {
+                    tLine = testLine;
+                }
+            }
+            const reqH = 120 + (lines * 40) + 30; // 120 start Y + line heights + bottom padding
+            if (reqH > maxReqHeight) maxReqHeight = reqH;
+        });
+
+        const baseHeight = (layer._userResized && layer.height) ? Math.max(100, (layer.height - gap * (numRows - 1)) / numRows) : maxReqHeight;
 
         let curX = 0;
         let curY = 0;
@@ -1508,7 +1604,7 @@ class CanvasRenderer {
             this.ctx.fillStyle = '#ffffff';
             this.ctx.textAlign = 'center';
             this.ctx.textBaseline = 'top';
-            this.ctx.fillText(cell.title || '', curX + colWidth / 2, curY + 30);
+            this.ctx.fillText(cell.title || '', curX + colWidth / 2, curY + 40, colWidth - 40);
 
             // Divider
             this.ctx.strokeStyle = '#222';
@@ -1520,7 +1616,7 @@ class CanvasRenderer {
             // Cell Text (wrapped)
             const words = (cell.text || '').split(' ');
             let tLine = '';
-            let tY = curY + 110;
+            let tY = curY + 120;
             this.ctx.font = '600 30px "MPLUS Code Latin"';
             this.ctx.fillStyle = '#cccccc';
 

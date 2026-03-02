@@ -148,13 +148,18 @@ class CanvasEditor {
      * Helper to flatten complex components into base primitives for independent editing.
      * Normalizes type names and extracts nested text from ALL widget types.
      */
-    _flattenSceneGraph(graph) {
+    _flattenSceneGraph(graph, bounds = []) {
         if (!graph || !graph.layers) return false;
         const newLayers = [];
         let flattened = false;
 
         for (let i = 0; i < graph.layers.length; i++) {
             const layer = graph.layers[i];
+
+            if (!layer.id) layer.id = 'layer_' + Math.random().toString(36).substr(2, 9);
+            const parentId = layer.id;
+            const startLen = newLayers.length;
+
             newLayers.push(layer);
 
             // Ignore background
@@ -163,9 +168,11 @@ class CanvasEditor {
             // Normalize the type to lowercase for consistent matching
             const t = (layer.type || '').toLowerCase();
 
-            const x = layer.x || 0;
-            const y = layer.y || 0;
-            const w = layer.width || 200;
+            const bound = bounds.find(b => b.layerIndex === i);
+            const x = bound ? bound.x : (layer.x || 0);
+            const y = bound ? bound.y : (layer.y || 0);
+            const w = bound ? bound.width : (layer.width || 200);
+            const h = bound ? bound.height : (layer.height || 60);
 
             // ─── RECT (Cards) ───
             if (t === 'rect' && layer.title) {
@@ -247,7 +254,31 @@ class CanvasEditor {
                 const cols = layer.columns || 2;
                 const gap = 20;
                 const colWidth = (w - (gap * (cols - 1))) / cols;
-                const baseHeight = 250;
+                const numRows = Math.ceil((layer.cells || []).length / cols);
+
+                // Dynamic Height Calculation: find max height required across all cells
+                let maxReqHeight = 150;
+                const tempCtx = this.renderer ? this.renderer.ctx : document.createElement('canvas').getContext('2d');
+                tempCtx.font = '600 30px "MPLUS Code Latin"';
+                (layer.cells || []).forEach(cell => {
+                    const words = (cell.text || '').split(' ');
+                    let tLine = '';
+                    let lines = 1;
+                    for (let w = 0; w < words.length; w++) {
+                        const testLine = tLine + words[w] + ' ';
+                        const metrics = tempCtx.measureText(testLine);
+                        if (metrics.width > colWidth - 40 && w > 0) {
+                            lines++;
+                            tLine = words[w] + ' ';
+                        } else {
+                            tLine = testLine;
+                        }
+                    }
+                    const reqH = 120 + (lines * 40) + 30;
+                    if (reqH > maxReqHeight) maxReqHeight = reqH;
+                });
+
+                const baseHeight = (layer._userResized && layer.height) ? Math.max(100, (layer.height - gap * (numRows - 1)) / numRows) : maxReqHeight;
                 let curX = 0;
                 let curY = 0;
 
@@ -258,8 +289,9 @@ class CanvasEditor {
                     if (cell.title) {
                         newLayers.push({
                             type: 'text', content: cell.title,
-                            x: x + curX + colWidth / 2, y: y + curY + 30,
+                            x: x + curX + colWidth / 2, y: y + curY + 40,
                             align: 'center',
+                            width: colWidth - 40,
                             font: { size: 36, weight: 900, family: 'BlackOpsOne' },
                             color: '#ffffff'
                         });
@@ -268,8 +300,9 @@ class CanvasEditor {
                     if (cell.text) {
                         newLayers.push({
                             type: 'text', content: cell.text,
-                            x: x + curX + 20, y: y + curY + 110,
+                            x: x + curX + colWidth / 2, y: y + curY + 120,
                             width: colWidth - 40,
+                            align: 'center',
                             font: { size: 30, weight: 600, family: 'MPLUS Code Latin' },
                             color: '#cccccc'
                         });
@@ -421,22 +454,33 @@ class CanvasEditor {
 
             // ─── BULLETLIST (Bullet Items) ───
             if (t === 'bulletlist' && layer.items) {
-                const fontSize = layer.font?.size || 40;
-                const lineH = fontSize * 1.5;
+                const font = layer.font || { size: 40, weight: 400, family: 'MPLUS Code Latin' };
+                const fontSize = font.size || 40;
+                const iconSize = fontSize * 0.9;
+                const indent = Math.round(iconSize + 15);
                 const spacing = layer.spacing || 20;
                 let curY = 0;
+
                 for (let j = 0; j < layer.items.length; j++) {
                     const item = layer.items[j];
                     if (item) {
-                        newLayers.push({
+                        const itemW = w - indent;
+                        const textDef = {
                             type: 'text', content: item,
-                            x: x + 60, y: y + curY,
-                            width: w - 68,
-                            font: layer.font || { size: 40, weight: 400, family: 'MPLUS Code Latin' },
+                            x: x + indent, y: y + curY,
+                            width: itemW,
+                            lineHeight: 1.4,
+                            font: font,
                             color: layer.color || '#f0f0f0'
-                        });
+                        };
+                        newLayers.push(textDef);
+
+                        let itemH = fontSize * 1.5; // fallback
+                        if (this.renderer && this.renderer.textEngine) {
+                            itemH = this.renderer.textEngine.measureTextBlockHeight(textDef);
+                        }
+                        curY += itemH + spacing;
                     }
-                    curY += lineH + spacing;
                 }
                 // Keep bullets but remove items text (renderer will skip text if items are empty strings)
                 layer.items = layer.items.map(() => '');
@@ -448,11 +492,11 @@ class CanvasEditor {
                 for (let j = 0; j < layer.nodes.length; j++) {
                     const n = layer.nodes[j];
                     if (n.label) {
-                        const nodeRadius = 40;
+                        const nodeRadius = 45; // Match new renderer hexagon size
                         newLayers.push({
                             type: 'text', content: n.label,
                             x: x + (n.x || 0.5) * w,
-                            y: y + (n.y || 0.5) * h + nodeRadius + 25,
+                            y: y + (n.y || 0.5) * h + nodeRadius + 36, // Compensate for TextEngine baseline differences
                             align: 'center',
                             font: { size: 24, weight: 700, family: 'MPLUS Code Latin' },
                             color: '#ffffff'
@@ -460,6 +504,10 @@ class CanvasEditor {
                         delete layer.nodes[j].label;
                     }
                 }
+            }
+
+            for (let k = startLen + 1; k < newLayers.length; k++) {
+                if (newLayers[k].type === 'text') newLayers[k]._parentId = parentId;
             }
         }
         for (let j = 0; j < newLayers.length; j++) {
@@ -478,6 +526,12 @@ class CanvasEditor {
      * Load a scene graph and render it.
      */
     async load(sceneGraph) {
+        try {
+            const fs = require('fs');
+            // Write incoming graph purely for terminal debugging
+            fs.writeFileSync('/home/rk13/RK13CODE/POWERPOST/CYBER-CANVAS-ELECTRON/last_scenegraph.json', JSON.stringify(sceneGraph, null, 2));
+        } catch (e) { console.log("FS error", e); }
+
         this.sceneGraph = JSON.parse(JSON.stringify(sceneGraph)); // Deep clone
         this.selectedIdx = -1;
         this.hoveredIdx = -1;
@@ -491,7 +545,7 @@ class CanvasEditor {
             await this.renderer.render(this.sceneGraph, { skipLayout: false });
 
             // Pass 2: Flatten using precise bounds from Pass 1
-            const flattened = this._flattenSceneGraph(this.sceneGraph);
+            const flattened = this._flattenSceneGraph(this.sceneGraph, this.renderer.lastBounds || []);
 
             // Pass 3: Re-render to correctly draw the newly independent text layers
             if (flattened) {
@@ -499,7 +553,7 @@ class CanvasEditor {
             }
         } else {
             // Already flattened / user-modified
-            this._flattenSceneGraph(this.sceneGraph);
+            this._flattenSceneGraph(this.sceneGraph, this.renderer.lastBounds || []);
             await this.renderer.render(this.sceneGraph, { skipLayout: true });
         }
 
@@ -692,8 +746,20 @@ class CanvasEditor {
             this.dragStartY = y;
             this.dragStartLayerX = box.layer.x || box.x;
             this.dragStartLayerY = box.layer.y || box.y;
+            this.dragStartLayerW = box.width;
+            this.dragStartLayerH = box.height;
             this.overlayCanvas.style.cursor = 'grabbing';
             this._drawOverlay();
+
+            if (box.layer.id) {
+                this.editableLayers.forEach(childBox => {
+                    const l = childBox.layer;
+                    if (l._parentId === box.layer.id) {
+                        l._dragStartX = l.x;
+                        l._dragStartY = l.y;
+                    }
+                });
+            }
         } else {
             // Deselect
             this.selectedIdx = -1;
@@ -713,6 +779,7 @@ class CanvasEditor {
             const layer = this.editableLayers[this.selectedIdx].layer;
             layer.x = Math.round(this.dragStartLayerX + dx);
             layer.y = Math.round(this.dragStartLayerY + dy);
+            layer._freeMove = true; // Flag immediately so layout pass knows it's manual
 
             // Center-snap: if element center is near canvas center, snap to it
             const elCX = layer.x + (this.editableLayers[this.selectedIdx].width || 0) / 2;
@@ -731,8 +798,18 @@ class CanvasEditor {
                 this._snappedY = true;
             }
 
-            this._reRender();
+            if (layer.id) {
+                this.editableLayers.forEach(childBox => {
+                    const l = childBox.layer;
+                    if (l._parentId === layer.id && l._dragStartX !== undefined) {
+                        l.x = Math.round(l._dragStartX + (layer.x - this.dragStartLayerX));
+                        l.y = Math.round(l._dragStartY + (layer.y - this.dragStartLayerY));
+                        l._freeMove = true; // Prevent layout engine from resetting child text
+                    }
+                });
+            }
 
+            this._reRender();
         } else if (this.isResizing && this.selectedIdx >= 0) {
             // Resize element
             const dx = x - this.dragStartX;
@@ -996,10 +1073,7 @@ class CanvasEditor {
         this._isClosingEditor = true;
 
         if (this.textEditor) {
-            // Remove blur listener BEFORE detaching to avoid recursive calls
             this.textEditor.onblur = null;
-            this.textEditor.replaceWith(this.textEditor.cloneNode(false)); // strips all listeners
-
             try {
                 if (this.textEditor.parentNode) {
                     this.textEditor.parentNode.removeChild(this.textEditor);
@@ -1008,6 +1082,13 @@ class CanvasEditor {
                 // Already removed — safe to ignore
             }
         }
+
+        // Safety sweep: remove any ghost editors that got orphaned
+        if (this.wrapper) {
+            const orphans = this.wrapper.querySelectorAll('.canvas-text-editor');
+            orphans.forEach(el => el.remove());
+        }
+
         this.textEditor = null;
         this.editingIdx = -1;
         this._isClosingEditor = false;
@@ -1061,6 +1142,21 @@ class CanvasEditor {
         ctx.moveTo(centerX, centerY - crossSize);
         ctx.lineTo(centerX, centerY + crossSize);
         ctx.stroke();
+
+        // ── 300px TOP HEADER REFERENCE LINE ──
+        ctx.setLineDash([10, 5]);
+        ctx.strokeStyle = 'rgba(0, 255, 150, 0.7)'; // Neon green for visibility
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(0, 300);
+        ctx.lineTo(W, 300);
+        ctx.stroke();
+
+        // Reference line label
+        ctx.font = '14px Arial';
+        ctx.fillStyle = 'rgba(0, 255, 150, 0.9)';
+        ctx.fillText('▼ 300px LÍMITE DE CONTENIDO', 20, 290);
+
         ctx.restore();
 
         // ── EDGE RULERS (tick marks every 100px) ──

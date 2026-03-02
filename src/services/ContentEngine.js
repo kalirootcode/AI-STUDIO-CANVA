@@ -1017,8 +1017,9 @@ NOTA: NO incluir el swipe en la última página. La flecha aparece a la derecha 
 ### 11. image (Imagen)
 { "type": "image", "src": "./assets/kr-clidn-logo.png", "x": 100, "y": 100, "width": 200, "height": 200, "radius": 16 }
 
-### 12. nodeGraph (Diagramas de red, mapas de topología)
-{ "type": "nodegraph", "x": 60, "y": 400, "width": 960, "height": 500, "nodes": [{ "id": "A", "label": "Client", "icon": "💻", "x": 0.2, "y": 0.5 }, { "id": "B", "label": "Server", "icon": "🖥️", "x": 0.8, "y": 0.5 }], "connections": [{ "from": "A", "to": "B", "label": "TCP 443", "color": "${colors.primary}" }] }
+### 12. nodeGraph (Diagramas de red, topologías complejas, arquitecturas)
+{ "type": "nodegraph", "x": 60, "y": 400, "width": 960, "height": 500, "nodes": [{ "id": "ATT", "label": "Attacker", "icon": "💀", "x": 0.1, "y": 0.2 }, { "id": "FW", "label": "Firewall", "icon": "🛡️", "x": 0.4, "y": 0.5 }, { "id": "WEB", "label": "Web Server", "icon": "🖥️", "x": 0.7, "y": 0.3 }, { "id": "DB", "label": "Database", "icon": "🗄️", "x": 0.9, "y": 0.8 }], "connections": [{ "from": "ATT", "to": "FW", "label": "Port Scan", "color": "${colors.danger}" }, { "from": "FW", "to": "WEB", "label": "Allow 443", "color": "${colors.primary}" }, { "from": "WEB", "to": "DB", "label": "SQLi", "color": "${colors.warning}" }] }
+NOTA: ¡Inyecta MÍNIMO 4 nodos y 3 conexiones SIEMPRE que uses nodeGraph! ¡NUNCA hagas gráficos de solo 2 nodos! Espárcelos usando "x" (0.1 a 0.9) e "y" (0.1 a 0.9) de forma inteligente.
 
 ### 13. barchart (Gráficos de barras para estadísticas)
 { "type": "barchart", "x": 60, "y": 500, "width": 960, "height": 400, "title": "Tiempos (ms)", "color": "${colors.accent}", "data": [{ "label": "Nmap", "value": 120 }, { "label": "RustScan", "value": 45 }] }
@@ -1103,7 +1104,7 @@ NOTA: NO incluir el swipe en la última página. La flecha aparece a la derecha 
    - **Tarjetas/Cards:** Usa frases cortas, contundentes y directas (punchlines). NUNCA escribas párrafos completos dentro de una tarjeta pequena. Añade siempre el campo \"accentColor\" y opcionalmente \"title\" para el header de la tarjeta.
 7. **HIGHLIGHTS (OBLIGATORIO):** En TODOS los títulos principales (BlackOpsOne) y en los párrafos, DEBES resaltar de 1 a 3 palabras clave usando el array "highlights" con el color del tema (ej. "${colors.primary}").
 8. **USO DE ESTRUCTURAS VISUALES AVANZADAS (NUEVO OBLIGATORIO):**
-   - Usa "nodeGraph" SIEMPRE que expliques topologías o flujos de red.
+   - Usa "nodeGraph" SIEMPRE que expliques topologías, flujos de red, arquitecturas o movimientos laterales. MÍNIMO 4 nodos.
    - Usa "barchart" SIEMPRE que compares rendimiento o estadísticas.
    - Usa "checklist" SIEMPRE que haya pasos accionables o tareas de configuración.
    - Usa "gridbox" SIEMPRE que compares ventajas/desventajas.
