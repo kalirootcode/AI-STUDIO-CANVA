@@ -24,9 +24,13 @@ export class CanvasToPDF {
             creator: 'Cyber-Canvas Studio v2'
         });
 
-        // Use a dedicated offscreen renderer for exporting clean PNGs
-        const exportRenderer = window.createRenderer(width, height, 'cyber');
-        if (window.app && window.app.canvasRenderer) {
+        // Use a dedicated offscreen renderer for exporting clean PNGs.
+        // If an isolated renderer is passed (e.g. from EbookView), use its image cache
+        // but always create a fresh offscreen renderer to avoid corrupting the live preview.
+        const exportRenderer = window.createRenderer(width, height, options.theme || 'cyber');
+        if (options._ebRenderer?._imageCache) {
+            exportRenderer._imageCache = new Map(options._ebRenderer._imageCache);
+        } else if (window.app?.canvasRenderer?._imageCache) {
             exportRenderer._imageCache = new Map(window.app.canvasRenderer._imageCache);
         }
 

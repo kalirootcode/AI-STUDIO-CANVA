@@ -257,9 +257,9 @@ class CanvasRenderer {
                                 } else if (child.type === 'divider' || child.type === 'accent_bar') {
                                     childEstH = 30;
                                 } else if (child.type === 'warningbox') {
-                                    childEstH = child.height || 180;
+                                    childEstH = child.height || 220;
                                 } else if (child.type === 'checklist') {
-                                    childEstH = ((child.items || []).length * 66) + 20;
+                                    childEstH = ((child.items || []).length * 86) + 50;
                                 } else if (child.type === 'gridbox') {
                                     const cols = child.columns || 2;
                                     const gap = 20;
@@ -274,42 +274,42 @@ class CanvasRenderer {
                                         if (lines > maxLines) maxLines = lines;
                                     });
 
-                                    const estCellH = 120 + (maxLines * 40) + 30;
-                                    childEstH = Math.ceil((child.cells || []).length / cols) * (estCellH + 20); // cell height + gap
+                                    const estCellH = 140 + (maxLines * 50) + 40;  // More generous per-cell height
+                                    childEstH = Math.ceil((child.cells || []).length / cols) * (estCellH + 40); // Larger gap between rows
 
                                 } else if (child.type === 'toolgrid') {
                                     const cols = (child.tools || []).length > 4 ? 3 : 2;
-                                    childEstH = Math.ceil((child.tools || []).length / cols) * 174;
+                                    childEstH = Math.ceil((child.tools || []).length / cols) * 200;
                                 } else if (child.type === 'attackflow') {
-                                    childEstH = ((child.stages || []).length * 180);
+                                    childEstH = ((child.stages || []).length * 200) + 80; // 200px per stage + base padding
                                 } else if (child.type === 'architecturediag') {
-                                    childEstH = ((child.layers || []).length * 190);
+                                    childEstH = ((child.layers || []).length * 210) + 60;
                                 } else if (child.type === 'nodegraph') {
-                                    childEstH = child.height || 500;
+                                    childEstH = (child.height || 500) + 80;
                                 } else if (child.type === 'directorytree') {
-                                    childEstH = 60 + ((child.items || []).length * 50);
+                                    childEstH = 80 + ((child.items || []).length * 65);
                                 } else if (child.type === 'barchart') {
-                                    childEstH = child.height || 400;
+                                    childEstH = (child.height || 400) + 80;
                                 } else if (child.type === 'codeblock') {
-                                    childEstH = child.height || Math.max(250, 60 + (Math.max(10, Math.min(30, (child.code || '').split('\n').length)) * 30));
+                                    childEstH = child.height || Math.max(300, 80 + (Math.max(10, Math.min(30, (child.code || '').split('\n').length)) * 38));
                                 } else if (child.type === 'hexdump') {
-                                    childEstH = (child.lines || 10) * 35;
+                                    childEstH = ((child.lines || 10) * 42) + 40;
                                 } else if (child.type === 'timeline') {
-                                    childEstH = (child.events || []).length * 120 + 80;
+                                    childEstH = ((child.events || []).length * 150) + 120; // More space per event
                                 } else if (child.type === 'vs_table') {
-                                    childEstH = 160 + (child.rows || []).length * 90;
+                                    childEstH = 220 + ((child.rows || []).length * 120); // Rows can have multiline text
                                 } else if (child.type === 'radarchart') {
-                                    childEstH = child.height || 500;
+                                    childEstH = (child.height || 500) + 80;
                                 }
 
                                 // Simulate cascade: if this child would overlap previous, push it down
-                                const CONTENT_GAP = 24;
+                                const CONTENT_GAP = 30;
                                 let simY = child.y;
                                 if (simY < simulatedLastBottom + CONTENT_GAP) {
                                     simY = simulatedLastBottom + CONTENT_GAP;
                                 }
                                 simulatedLastBottom = simY + childEstH;
-                                maxChildBottom = Math.max(maxChildBottom, simulatedLastBottom + 70); // 70px bottom padding
+                                maxChildBottom = Math.max(maxChildBottom, simulatedLastBottom + 140); // 140px bottom padding (was 70)
                             }
                         }
 
@@ -353,22 +353,22 @@ class CanvasRenderer {
 
                         let estH = layer.height || 60;
                         if (layer.type === 'text') estH = this.textEngine.measureTextBlockHeight(layer);
-                        else if (layer.type === 'terminal') { const oL = (layer.output || layer.content || '').split('\n').length; const cL = (layer.command || '').split('\n').length; estH = 80 + (oL + cL) * 55; }
-                        else if (layer.type === 'warningbox') estH = layer.height || 180;
-                        else if (layer.type === 'checklist') estH = ((layer.items || []).length * 66) + 20;
-                        else if (layer.type === 'gridbox') { const cols = layer.columns || 2; estH = Math.ceil((layer.cells || []).length / cols) * 270; }
-                        else if (layer.type === 'toolgrid') { const cols = (layer.tools || []).length > 4 ? 3 : 2; estH = Math.ceil((layer.tools || []).length / cols) * 174; }
-                        else if (layer.type === 'attackflow') estH = ((layer.stages || []).length * 180);
-                        else if (layer.type === 'architecturediag') estH = ((layer.layers || []).length * 190);
-                        else if (layer.type === 'nodegraph') estH = layer.height || 500;
-                        else if (layer.type === 'directorytree') estH = 60 + ((layer.items || []).length * 50);
-                        else if (layer.type === 'barchart') estH = layer.height || 400;
-                        else if (layer.type === 'codeblock') estH = layer.height || Math.max(250, 60 + (Math.max(10, Math.min(30, (layer.code || '').split('\n').length)) * 30));
-                        else if (layer.type === 'hexdump') estH = (layer.lines || 10) * 35;
-                        else if (layer.type === 'timeline') estH = (layer.events || []).length * 120 + 80;
-                        else if (layer.type === 'vs_table') estH = 160 + (layer.rows || []).length * 90;
-                        else if (layer.type === 'radarchart') estH = layer.height || 500;
-                        else if (layer.type === 'bulletlist') estH = ((layer.items || []).length * 68) + 20;
+                        else if (layer.type === 'terminal') { const oL = (layer.output || layer.content || '').split('\n').length; const cL = (layer.command || '').split('\n').length; estH = 100 + (oL + cL) * 58; }
+                        else if (layer.type === 'warningbox') estH = layer.height || 220;
+                        else if (layer.type === 'checklist') estH = ((layer.items || []).length * 86) + 50;
+                        else if (layer.type === 'gridbox') { const cols = layer.columns || 2; estH = Math.ceil((layer.cells || []).length / cols) * 320; }
+                        else if (layer.type === 'toolgrid') { const cols = (layer.tools || []).length > 4 ? 3 : 2; estH = Math.ceil((layer.tools || []).length / cols) * 200; }
+                        else if (layer.type === 'attackflow') estH = ((layer.stages || []).length * 200) + 80;
+                        else if (layer.type === 'architecturediag') estH = ((layer.layers || []).length * 210) + 60;
+                        else if (layer.type === 'nodegraph') estH = (layer.height || 500) + 80;
+                        else if (layer.type === 'directorytree') estH = 80 + ((layer.items || []).length * 65);
+                        else if (layer.type === 'barchart') estH = (layer.height || 400) + 80;
+                        else if (layer.type === 'codeblock') estH = layer.height || Math.max(300, 80 + (Math.max(10, Math.min(30, (layer.code || '').split('\n').length)) * 38));
+                        else if (layer.type === 'hexdump') estH = ((layer.lines || 10) * 42) + 40;
+                        else if (layer.type === 'timeline') estH = ((layer.events || []).length * 150) + 120;
+                        else if (layer.type === 'vs_table') estH = 220 + ((layer.rows || []).length * 120);
+                        else if (layer.type === 'radarchart') estH = (layer.height || 500) + 80;
+                        else if (layer.type === 'bulletlist') estH = ((layer.items || []).length * 80) + 30;
                         lastContentRealBottom = Math.max(lastContentRealBottom, realY + estH);
                     }
 
@@ -895,11 +895,11 @@ class CanvasRenderer {
 
         if (isCover) {
             // ═══════════════════════════════════════════
-            // COVER MODE — Large centered logo + brand name below
+            // COVER MODE — Compact logo + brand name INSIDE the 300px top margin
             // ═══════════════════════════════════════════
-            const logoSize = 200;
+            const logoSize = 120;                       // Compact so everything fits in 300px
             const logoX = (this.width - logoSize) / 2;
-            const logoY = 360; // Moved down from 60 to 360 to respect 300px margin
+            const logoY = 22;                            // Start 22px from top edge
 
             // Logo with glow effect
             if (logo) {
@@ -908,7 +908,7 @@ class CanvasRenderer {
                     this.ctx.save();
                     // Glow behind logo
                     this.ctx.shadowColor = `rgba(${primaryRgb}, 0.6)`;
-                    this.ctx.shadowBlur = 40;
+                    this.ctx.shadowBlur = 30;
                     this.ctx.shadowOffsetX = 0;
                     this.ctx.shadowOffsetY = 0;
                     this.ctx.drawImage(img, logoX, logoY, logoSize, logoSize);
@@ -919,30 +919,30 @@ class CanvasRenderer {
                 }
             }
 
-            // Brand name centered below logo
-            const nameY = logoY + logoSize + 30;
+            // Brand name centered below logo — inside 300px zone
+            const nameY = logoY + logoSize + 16;        // 22 + 120 + 16 = 158px
             this.ctx.save();
-            this.ctx.font = '700 52px "CODE Bold"';
+            this.ctx.font = '700 46px "CODE Bold"';
             this.ctx.fillStyle = '#ffffff';
             this.ctx.textAlign = 'center';
             this.ctx.letterSpacing = '6px';
             // Subtle text glow
             this.ctx.shadowColor = `rgba(${primaryRgb}, 0.4)`;
-            this.ctx.shadowBlur = 20;
+            this.ctx.shadowBlur = 18;
             this.ctx.fillText(text, this.width / 2, nameY);
             this.ctx.restore();
 
-            // Badge below brand name
+            // Badge below brand name — still inside 300px zone
             this.ctx.save();
-            this.ctx.font = '400 28px "JetBrains Mono"';
+            this.ctx.font = '400 24px "JetBrains Mono"';
             this.ctx.fillStyle = primaryColor;
             this.ctx.textAlign = 'center';
-            this.ctx.fillText(badge, this.width / 2, nameY + 40);
+            this.ctx.fillText(badge, this.width / 2, nameY + 36);  // 158 + 36 = 194px
             this.ctx.restore();
 
-            // Accent divider line
-            const lineY = nameY + 65;
-            const lineW = 300;
+            // Accent divider line — bottom boundary of the 300px zone
+            const lineY = nameY + 60;                   // 158 + 60 = 218px — within 300px
+            const lineW = 280;
             const lineGrad = this.ctx.createLinearGradient(
                 (this.width - lineW) / 2, lineY,
                 (this.width + lineW) / 2, lineY

@@ -1,0 +1,449 @@
+/* ═══════════════════════════════════════════════════════════════════════════ */
+/* EBOOK STUDIO — Layout & Components                                         */
+/* ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── LAYOUT PRINCIPAL ── */
+.eb-layout {
+    display: flex;
+    height: 100%;
+    overflow: hidden;
+    background: var(--bg-core, #050505);
+}
+
+/* ── PANELS ── */
+.eb-panel-left {
+    width: 290px;
+    min-width: 290px;
+    background: linear-gradient(180deg, #0b0b0b 0%, #080808 100%);
+    border-right: 1px solid #111;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow: hidden;
+}
+
+.eb-panel-right {
+    width: 290px;
+    min-width: 290px;
+    background: linear-gradient(180deg, #0b0b0b 0%, #080808 100%);
+    border-left: 1px solid #111;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow: hidden;
+}
+
+.eb-panel-center {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background: #070707;
+    background-image: radial-gradient(#111 1px, transparent 1px);
+    background-size: 24px 24px;
+    overflow: hidden;
+    position: relative;
+}
+
+/* ── PANEL HEADER ── */
+.eb-header {
+    height: 48px;
+    background: #070707;
+    border-bottom: 1px solid #111;
+    display: flex;
+    align-items: center;
+    padding: 0 16px;
+    gap: 8px;
+    font-size: 11px;
+    font-weight: 800;
+    color: #3a3a3a;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    flex-shrink: 0;
+}
+
+/* ── BADGE ── */
+.eb-badge {
+    margin-left: auto;
+    background: rgba(168, 85, 247, 0.1);
+    border: 1px solid rgba(168, 85, 247, 0.3);
+    color: #A855F7;
+    font-size: 8px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    padding: 2px 7px;
+    border-radius: 3px;
+    text-transform: uppercase;
+}
+
+/* ── SCROLL AREAS ── */
+.eb-scroll {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    min-height: 0;
+}
+
+.eb-scroll::-webkit-scrollbar {
+    width: 4px;
+}
+
+.eb-scroll::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.eb-scroll::-webkit-scrollbar-thumb {
+    background: #1a1a1a;
+    border-radius: 2px;
+}
+
+/* ── TOP BAR (center) ── */
+.eb-topbar {
+    height: 46px;
+    background: rgba(5, 5, 5, 0.97);
+    border-bottom: 1px solid #111;
+    display: flex;
+    align-items: center;
+    padding: 0 16px;
+    gap: 6px;
+    flex-shrink: 0;
+    backdrop-filter: blur(8px);
+}
+
+/* ── CANVAS AREA ── */
+
+.preview-container {
+    flex: 1;
+    position: relative;
+    overflow-y: auto;
+    overflow-x: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: #000;
+}
+
+.preview-frame {
+    width: 794px;
+    /* A4 exact width */
+    height: 1123px;
+    /* A4 exact height */
+    min-width: 794px;
+    min-height: 1123px;
+    background: #000;
+    box-shadow: 0 0 50px rgba(0, 0, 0, 0.8), 0 0 2px rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    /* Escalar transform con base al container si es mas chico */
+    transform-origin: top center;
+    zoom: 0.70;
+    /* Zoom por defecto para encajar la mayoría de pantallas (1080p) */
+}
+
+/* Responsive Zoom - adaptative sizes based on screen height */
+@media (max-height: 900px) {
+    .preview-frame {
+        zoom: 0.55;
+    }
+}
+
+@media (max-height: 768px) {
+    .preview-frame {
+        zoom: 0.45;
+    }
+}
+
+.eb-placeholder {
+    text-align: center;
+    padding: 40px;
+    user-select: none;
+}
+
+/* ── PROGRESS BAR ── */
+.eb-progress-wrap {
+    height: 3px;
+    background: #0a0a0a;
+    flex-shrink: 0;
+}
+
+.eb-progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #A855F7, #6366F1, #A855F7);
+    background-size: 200% 100%;
+    box-shadow: 0 0 8px rgba(168, 85, 247, 0.5);
+    transition: width 0.3s ease-out;
+    animation: ebProgressMove 2s linear infinite;
+}
+
+@keyframes ebProgressMove {
+    0% {
+        background-position: 100% 0;
+    }
+
+    100% {
+        background-position: -100% 0;
+    }
+}
+
+/* ── EXPORT BUTTONS ── */
+.eb-export-btn {
+    background: linear-gradient(135deg, #A855F722, #6366F122);
+    border: 1px solid rgba(168, 85, 247, 0.3);
+    color: #A855F7;
+    padding: 5px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    transition: all 0.2s;
+    font-family: 'Inter', sans-serif;
+}
+
+.eb-export-btn:hover {
+    background: rgba(168, 85, 247, 0.15);
+    border-color: #A855F7;
+    box-shadow: 0 0 12px rgba(168, 85, 247, 0.2);
+}
+
+.eb-export-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.eb-export-secondary {
+    background: rgba(0, 217, 255, 0.05);
+    border-color: rgba(0, 217, 255, 0.2);
+    color: #00D9FF;
+}
+
+.eb-export-secondary:hover {
+    background: rgba(0, 217, 255, 0.1);
+    border-color: #00D9FF;
+    box-shadow: 0 0 10px rgba(0, 217, 255, 0.15);
+}
+
+.eb-export-secondary {
+    background: rgba(0, 217, 255, 0.05);
+    border-color: rgba(0, 217, 255, 0.2);
+    color: #00D9FF;
+}
+
+/* ── PAGE LIST ── */
+.eb-page-list {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 4px 8px 20px;
+}
+
+.eb-empty-msg {
+    text-align: center;
+    padding: 30px 20px;
+    color: #1e1e1e;
+    font-size: 11px;
+    line-height: 1.6;
+}
+
+.eb-page-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px;
+    border-radius: 7px;
+    cursor: pointer;
+    transition: background 0.15s;
+    border: 1px solid transparent;
+}
+
+.eb-page-item:hover {
+    background: rgba(255, 255, 255, 0.03);
+    border-color: #1a1a1a;
+}
+
+.eb-page-item.active {
+    background: rgba(0, 217, 255, 0.05);
+    border-color: rgba(0, 217, 255, 0.2);
+}
+
+/* ── THUMBNAIL ── */
+.eb-page-thumb-wrap {
+    flex-shrink: 0;
+    width: 70px;
+    height: 99px;
+    border-radius: 4px;
+    overflow: hidden;
+    background: #0a0a0a;
+    border: 1px solid #1a1a1a;
+}
+
+.eb-page-thumb {
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+
+/* ── PAGE ITEM INFO ── */
+.eb-page-item-info {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+}
+
+.eb-page-item-num {
+    font-size: 9px;
+    color: #333;
+    font-weight: 800;
+    letter-spacing: 1px;
+    margin-bottom: 2px;
+    font-family: monospace;
+}
+
+.eb-page-item-label {
+    font-size: 11px;
+    color: #888;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-bottom: 2px;
+}
+
+.eb-page-item-type {
+    font-size: 9px;
+    color: #333;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+}
+
+.eb-page-item.active .eb-page-item-label {
+    color: #00D9FF;
+}
+
+.eb-page-item.active .eb-page-item-num {
+    color: #00D9FF88;
+}
+
+/* ── ITEM ACTION BUTTONS ── */
+.eb-page-item-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    opacity: 0;
+    transition: opacity 0.15s;
+}
+
+.eb-page-item:hover .eb-page-item-actions {
+    opacity: 1;
+}
+
+.eb-icon-btn {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid #1e1e1e;
+    color: #444;
+    cursor: pointer;
+    font-size: 10px;
+    padding: 2px 5px;
+    border-radius: 4px;
+    transition: all 0.15s;
+    line-height: 1.4;
+    font-weight: 700;
+}
+
+.eb-icon-btn:hover {
+    color: #ccc;
+    border-color: #444;
+    background: rgba(255, 255, 255, 0.07);
+}
+
+.eb-icon-btn.eb-danger:hover {
+    color: #FF3366;
+    border-color: rgba(255, 51, 102, 0.4);
+}
+
+/* ── TEXT EDITOR ── */
+.eb-text-editor {
+    background: #0a0a0a;
+    border: 1px solid #141414;
+    border-radius: 8px;
+    padding: 10px;
+    margin-bottom: 8px;
+}
+
+.eb-text-editor-tag {
+    font-size: 8px;
+    font-weight: 800;
+    color: #333;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+}
+
+/* ── COLOR INPUT ── */
+.eb-color-input {
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    border: 1px solid #2a2a2a;
+    cursor: pointer;
+    padding: 0;
+    background: transparent;
+    flex-shrink: 0;
+}
+
+/* ── COVER DROP ZONE ── */
+.eb-cover-drop {
+    background: #0a0a0a;
+    border: 1px dashed #222;
+    border-radius: 8px;
+    padding: 16px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.eb-cover-drop:hover,
+.eb-cover-drop.drag-over {
+    border-color: #A855F7;
+    background: rgba(168, 85, 247, 0.04);
+}
+
+/* ── SPINNER + GEN STATUS ── */
+.eb-gen-status {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px;
+    background: rgba(168, 85, 247, 0.05);
+    border: 1px solid rgba(168, 85, 247, 0.2);
+    border-radius: 8px;
+    font-size: 11px;
+    color: #A855F7;
+    margin-top: 6px;
+}
+
+.eb-spinner {
+    width: 16px;
+    height: 16px;
+    border: 2px solid rgba(168, 85, 247, 0.2);
+    border-top-color: #A855F7;
+    border-radius: 50%;
+    animation: ebSpin 0.7s linear infinite;
+    flex-shrink: 0;
+}
+
+@keyframes ebSpin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* ── RESPONSIVE: hide right panel if too narrow ── */
+@media (max-width: 1100px) {
+    .eb-panel-right {
+        display: none;
+    }
+}

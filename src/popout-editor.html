@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <title>JSON Editor Pop-out</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.css">
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/theme/material-darker.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        body,
+        html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            overflow: hidden;
+            background: #0b0b0b;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .CodeMirror {
+            height: 100vh;
+            font-size: 14px;
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #0b0b0b;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #333;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #444;
+        }
+    </style>
+</head>
+
+<body>
+    <textarea id="popout-editor"></textarea>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/javascript/javascript.min.js"></script>
+
+    <script>
+        let editor;
+        let isInternalChange = false;
+
+        window.addEventListener('load', () => {
+            const textarea = document.getElementById('popout-editor');
+            editor = CodeMirror.fromTextArea(textarea, {
+                mode: 'application/json',
+                theme: 'material-darker',
+                lineNumbers: true,
+                lineWrapping: true,
+                tabSize: 2,
+                matchBrackets: true,
+                autoCloseBrackets: true
+            });
+
+            editor.on('change', () => {
+                if (!isInternalChange) {
+                    const value = editor.getValue();
+                    try {
+                        // Check if valid JSON before sending
+                        JSON.parse(value);
+                        if (window.cyberCanvas && window.cyberCanvas.sendJSONUpdate) {
+                            window.cyberCanvas.sendJSONUpdate(value);
+                        }
+                    } catch (e) {
+                        // Invalid JSON, don't sync yet
+                    }
+                }
+            });
+
+            // Listen for sync from main window
+            if (window.cyberCanvas && window.cyberCanvas.onSyncJSON) {
+                window.cyberCanvas.onSyncJSON((data) => {
+                    if (editor.getValue() !== data) {
+                        isInternalChange = true;
+                        editor.setValue(data);
+                        isInternalChange = false;
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+
+</html>

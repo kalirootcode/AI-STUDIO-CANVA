@@ -117,14 +117,20 @@ export class StudioView extends BaseView {
 
                         <div class="ts-divider"></div>
 
-                        <!-- EDITOR -->
-                        <div class="ts-section" style="padding-bottom:0;">
-                            <div class="ts-section-label">
+                        <!-- EDITOR JSON -->
+                        <div class="ts-section" style="padding-bottom:0; flex:1; display:flex; flex-direction:column; min-height:200px;">
+                            <div class="ts-section-label" style="display:flex; align-items:center;">
                                 <span class="ts-label-bar" style="background:#444;"></span>
-                                HTML SCRIPT
-                                <button id="clearBtn" class="ts-btn-icon" style="margin-left:auto;">✕</button>
+                                HTML SCRIPT / JSON
+                                
+                                <div style="margin-left:auto; display:flex; gap:6px;">
+                                    <button id="popoutJsonBtn" class="ts-btn-icon" title="Abrir en ventana flotante" style="color:#00D9FF;">
+                                        <span class="material-icons" style="font-size:14px;">open_in_new</span>
+                                    </button>
+                                    <button id="clearBtn" class="ts-btn-icon" title="Limpiar Data">✕</button>
+                                </div>
                             </div>
-                            <div class="ts-editor-wrap">
+                            <div class="ts-editor-wrap" style="flex:1; border:1px solid #1a1a1a; border-radius:6px; overflow:hidden; position:relative;">
                                 <textarea id="editor"></textarea>
                             </div>
                         </div>
@@ -294,23 +300,86 @@ export class StudioView extends BaseView {
         const textarea = this.element.querySelector('#editor');
         if (textarea && window.CodeMirror) {
             this.editorInstance = window.CodeMirror.fromTextArea(textarea, {
-                mode: 'htmlmixed',
+                mode: 'application/json',
                 theme: 'material-darker',
                 lineNumbers: true,
-                lineWrapping: true
+                lineWrapping: true,
+                tabSize: 2,
+                matchBrackets: true,
+                autoCloseBrackets: true
             });
 
+            // Ajustar altura al contenedor parent
+            this.editorInstance.setSize("100%", "100%");
+
+            let isUpdatingFromCode = false;
+
             this.editorInstance.on('change', () => {
+                const val = this.editorInstance.getValue();
+
+                // Dispara el evento global para sincronización (solo si fue modificado manualmente)
                 document.dispatchEvent(new CustomEvent('editor-change', {
-                    detail: { value: this.editorInstance.getValue() }
+                    detail: { value: val }
                 }));
+
+                // Auto-refresh Canvas interactivo si detectamos cambios válidos de JSON manual
+                if (window.app && window.app.slides && window.app.slides.length > 0) {
+                    try {
+                        const parsed = JSON.parse(val);
+                        // Solo actualizamos si pudimos parsearlo sin crashear
+                        isUpdatingFromCode = true;
+
+                        // Guardarlo sigilosamente en los datos de la diapositiva en app principal
+                        if (window.app.slides[window.app.currentSlideIndex]) {
+                            // Copiar sin destruir _raw u otras vainas internas
+                            window.app.slides[window.app.currentSlideIndex].data = {
+                                ...window.app.slides[window.app.currentSlideIndex].data,
+                                ...parsed
+                            };
+                        }
+
+                        // Refrescar al vuelo el CanvasEditor sin causar infinite loop
+                        if (window.app.canvasEditor && typeof window.app.canvasEditor.load === 'function' && !window.app.isExporting) {
+                            // Esperar ticks para no estrangular UI
+                            clearTimeout(this._refreshTimeout);
+                            this._refreshTimeout = setTimeout(() => {
+                                window.app.canvasEditor.load(window.app.slides[window.app.currentSlideIndex].data);
+                            }, 200);
+                        }
+                    } catch (e) {
+                        // User is still typing invalid JSON, ignore until valid
+                    } finally {
+                        isUpdatingFromCode = false;
+                    }
+                }
             });
+
+            // Actualizar la caja desde afuera (cuando el canvas se mueva)
+            this._externalDataSync = (newDataStr) => {
+                if (!isUpdatingFromCode && this.editorInstance.getValue() !== newDataStr) {
+                    this.editorInstance.setValue(newDataStr);
+                }
+            };
         }
     }
 
     attachListeners() {
         const genBtn = this.element.querySelector('#generateBtn');
         if (genBtn) genBtn.onclick = () => window.app.handleGenerate();
+
+        // Popout JSON Editor
+        const popoutBtn = this.element.querySelector('#popoutJsonBtn');
+        if (popoutBtn) {
+            popoutBtn.onclick = () => {
+                if (window.cyberCanvas && window.cyberCanvas.openPopout) {
+                    const currentData = this.editorInstance ? this.editorInstance.getValue() : {};
+                    // Lanzar ventana y mandar dataset actual
+                    window.cyberCanvas.openPopout('json-editor', currentData);
+                } else {
+                    console.warn("IPC openPopout no disponible. Estás en web mode?");
+                }
+            };
+        }
 
         // Copy SEO Button
         const copySeoBtn = this.element.querySelector('#copySeoBtn');
@@ -367,13 +436,23 @@ export class StudioView extends BaseView {
                         toggleSafeBtn.classList.toggle('active');
                     }
                 }
-            };
+            }
         }
 
         // Bridge Listener
         if (!this._messageHandler) {
             this._messageHandler = (e) => this.handlePreviewMessage(e.data);
             window.addEventListener('message', this._messageHandler);
+        }
+
+        // Sync from Popout Editor
+        if (window.cyberCanvas && window.cyberCanvas.onSyncJSON) {
+            window.cyberCanvas.onSyncJSON((data) => {
+                if (this.editorInstance && this.editorInstance.getValue() !== data) {
+                    // Sincronizar editor local con lo que viene de la ventana externa
+                    this.editorInstance.setValue(data);
+                }
+            });
         }
 
         // Theme Buttons
@@ -616,6 +695,12 @@ export class StudioView extends BaseView {
         const currentSlide = window.app.slides[window.app.currentSlideIndex];
         if (!currentSlide || !currentSlide.data) return;
 
+        // Sync al CodeMirror nuevo si existe (Formateado en JSON pretty-print)
+        if (this._externalDataSync && !currentSlide.data._raw) {
+            const prettyJson = JSON.stringify(currentSlide.data, null, 2);
+            this._externalDataSync(prettyJson);
+        }
+
         const canvas = this.element.querySelector('#mainCanvas');
         if (!canvas) return;
 
@@ -624,6 +709,11 @@ export class StudioView extends BaseView {
             window.app.canvasEditor.onChange = (modifiedGraph) => {
                 if (window.app && window.app.slides && window.app.slides[window.app.currentSlideIndex]) {
                     window.app.slides[window.app.currentSlideIndex].data = modifiedGraph;
+
+                    // Cuando edito texto directamente en la imagen (Canvas), actualizar la caja SCRIPT interactivamente
+                    if (this._externalDataSync) {
+                        this._externalDataSync(JSON.stringify(modifiedGraph, null, 2));
+                    }
                 }
             };
         } else {

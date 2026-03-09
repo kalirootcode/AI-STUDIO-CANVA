@@ -396,7 +396,27 @@ export class ThumbnailStudio {
       <div class="ts-stat-item"><span>Res.</span><span id="ts-stat-res">1280×720</span></div>
       <div class="ts-stat-item"><span>Efectos</span><span id="ts-stat-fx">3</span></div>
     </div>
-  </aside>
+    <!-- Mismo footer portado de StudioView -->
+    <div class="studio-footer" style="grid-column: 1 / -1; position: relative;">
+        <div class="status-left">
+            <span class="status-dot active"></span>
+            <span id="ts-statusText">SISTEMA LISTO</span>
+        </div>
+
+        <div class="footer-controls">
+            <button id="ts-foot-export-png" class="footer-btn accent" title="Exportar PNGs">
+                <span class="material-icons">collections</span> MULTI PNG
+            </button>
+        </div>
+
+        <div class="progress-container">
+            <div id="ts-progressBar" class="progress-bar"></div>
+        </div>
+
+        <div class="status-right">
+            <span>v2.0.1</span>
+        </div>
+    </div>
 
 </div>`;
   }
@@ -1705,6 +1725,7 @@ export class ThumbnailStudio {
     document.getElementById('ts-btn-copy')?.addEventListener('click', () => this._copyToClipboard());
     document.getElementById('ts-btn-randomize')?.addEventListener('click', () => this._randomize());
     document.getElementById('ts-export-all-formats')?.addEventListener('click', () => this._exportAllFormats());
+    document.getElementById('ts-foot-export-png')?.addEventListener('click', () => this._exportAllFormats());
     document.getElementById('ts-export-yt-pack')?.addEventListener('click', () => this._exportYTPack());
     document.getElementById('ts-export-social-pack')?.addEventListener('click', () => this._exportSocialPack());
   }

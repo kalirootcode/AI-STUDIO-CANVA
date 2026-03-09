@@ -36,6 +36,12 @@ contextBridge.exposeInMainWorld('cyberCanvas', {
     onTiktokTrend: (cb) => ipcRenderer.on('tiktok-trend-data', (_, data) => cb(data)),
     onTiktokViral: (cb) => ipcRenderer.on('tiktok-viral-video', (_, data) => cb(data)),
     onTiktokGenerate: (cb) => ipcRenderer.on('tiktok-generate-request', (_, data) => cb(data)),
-    onTiktokStatus: (cb) => ipcRenderer.on('tiktok-extension-status', (_, data) => cb(data))
+    onTiktokStatus: (cb) => ipcRenderer.on('tiktok-extension-status', (_, data) => cb(data)),
+
+    // ── JSON Popout Editor ──────────────────────────────────────────
+    openPopout: (type, data) => ipcRenderer.send('open-popout', { type, data }),
+    onSyncJSON: (cb) => ipcRenderer.on('sync-json', (_, data) => cb(data)),
+    sendJSONUpdate: (data) => ipcRenderer.send('sync-json-update', data),
+    onPopoutReady: (cb) => ipcRenderer.on('popout-ready', () => cb())
 });
 

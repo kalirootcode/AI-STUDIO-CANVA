@@ -3,6 +3,7 @@ import { Sidebar } from './components/Sidebar.js';
 import { StudioView } from './views/StudioView.js';
 import { ThumbnailView } from './views/ThumbnailStudio.js';
 import { SettingsView } from './views/SettingsView.js';
+import { EbookView } from './views/EbookView.js';
 
 class App {
     constructor() {
@@ -48,6 +49,7 @@ class App {
 
         // 2. Register Views
         this.viewManager.register('studio', new StudioView());
+        this.viewManager.register('ebook', new EbookView());
         this.viewManager.register('thumbnails', new ThumbnailView());
         this.viewManager.register('settings', new SettingsView());
 

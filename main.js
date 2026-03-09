@@ -4,6 +4,7 @@ const fs = require('fs');
 const axios = require('axios'); // Added to fix fetch network issues
 
 let mainWindow;
+let popoutWindow;
 
 function createWindow() {
     mainWindow = new BrowserWindow({
@@ -46,6 +47,48 @@ function createWindow() {
 ipcMain.on('log-message', (event, { level, message, args }) => {
     const timestamp = new Date().toISOString().split('T')[1].slice(0, -1);
     console.log(`[R-${level.toUpperCase()} ${timestamp}]`, message, ...args);
+});
+
+// ── JSON Popout Editor ──────────────────────────────────────────
+ipcMain.on('open-popout', (event, { type, data }) => {
+    if (popoutWindow) {
+        popoutWindow.focus();
+        popoutWindow.webContents.send('sync-json', data);
+        return;
+    }
+
+    popoutWindow = new BrowserWindow({
+        width: 800,
+        height: 800,
+        backgroundColor: '#0b0b0b',
+        title: 'JSON Editor Pop-out',
+        webPreferences: {
+            preload: path.join(__dirname, 'preload.js'),
+            contextIsolation: true,
+            nodeIntegration: false
+        }
+    });
+
+    popoutWindow.loadFile('src/popout-editor.html');
+
+    // Wait for the window to be ready before sending data
+    popoutWindow.webContents.on('did-finish-load', () => {
+        popoutWindow.webContents.send('sync-json', data);
+    });
+
+    popoutWindow.on('closed', () => {
+        popoutWindow = null;
+    });
+
+    // Remove menu for popout
+    popoutWindow.setMenu(null);
+});
+
+ipcMain.on('sync-json-update', (event, data) => {
+    // Send update to the main window
+    if (mainWindow) {
+        mainWindow.webContents.send('sync-json', data);
+    }
 });
 
 app.whenReady().then(() => {

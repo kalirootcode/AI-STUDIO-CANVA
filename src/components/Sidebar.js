@@ -5,6 +5,7 @@ export class Sidebar {
         this.element.className = 'app-sidebar';
         this.items = [
             { id: 'studio', icon: 'palette', label: 'Studio' },
+            { id: 'ebook', icon: 'menu_book', label: 'Ebook' },
             { id: 'thumbnails', icon: 'image', label: 'Thumbnails' },
             { id: 'settings', icon: 'settings', label: 'Settings' }
         ];
