@@ -848,3 +848,257 @@ select:focus {
     width: 100%;
     height: 100%;
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════ */
+/* THUMBNAIL STUDIO DESIGN LANGUAGE — Panel refinements                      */
+/* ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── DOT INDICATOR ── */
+.ts-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    display: inline-block;
+    flex-shrink: 0;
+}
+
+/* ── SECTION BLOCKS ── */
+.ts-section {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 16px 20px;
+    border-bottom: 1px solid #111;
+}
+
+.ts-section:last-child {
+    border-bottom: none;
+}
+
+/* ── SECTION LABEL ── */
+.ts-section-label {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: 1.8px;
+    text-transform: uppercase;
+    color: #3a3a3a;
+    margin-bottom: 2px;
+}
+
+.ts-label-bar {
+    display: inline-block;
+    width: 3px;
+    height: 11px;
+    border-radius: 2px;
+    flex-shrink: 0;
+    opacity: 0.75;
+}
+
+/* ── FIELD INSIDE SECTION ── */
+.ts-field {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.ts-field-label {
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    color: #333;
+}
+
+/* ── 2-COLUMN GRID ── */
+.ts-grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1.6fr;
+    gap: 10px;
+}
+
+/* ── INPUTS OVERRIDE ── */
+.ts-input {
+    background: #0a0a0a !important;
+    border: 1px solid #1c1c1c !important;
+    color: #ddd !important;
+    padding: 9px 11px;
+    border-radius: 7px;
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    width: 100%;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    -webkit-appearance: none;
+}
+
+.ts-input:focus {
+    border-color: #00D9FF !important;
+    box-shadow: 0 0 0 2px rgba(0, 217, 255, 0.07) !important;
+    background: #0d0d0d !important;
+}
+
+.ts-textarea {
+    height: 90px;
+    resize: none;
+    line-height: 1.55;
+}
+
+.ts-select {
+    cursor: pointer;
+    padding-right: 8px;
+}
+
+.ts-readonly {
+    color: #666 !important;
+    cursor: default;
+}
+
+.ts-readonly:focus {
+    border-color: #1c1c1c !important;
+    box-shadow: none !important;
+}
+
+/* ── PRIMARY BUTTON ── */
+.ts-btn-primary {
+    background: linear-gradient(135deg, #00D9FF 0%, #0055EE 100%);
+    color: #000;
+    font-weight: 800;
+    border: none;
+    padding: 13px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-size: 11px;
+    letter-spacing: 1.2px;
+    width: 100%;
+    transition: filter 0.2s, transform 0.15s, box-shadow 0.2s;
+    box-shadow: 0 4px 20px rgba(0, 217, 255, 0.2);
+    text-transform: uppercase;
+    font-family: 'Inter', sans-serif;
+}
+
+.ts-btn-primary:hover {
+    filter: brightness(1.12);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 24px rgba(0, 217, 255, 0.35);
+}
+
+.ts-btn-primary:active {
+    transform: translateY(0);
+    filter: brightness(0.95);
+}
+
+.ts-btn-primary:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+    filter: none;
+}
+
+.ts-btn-primary .material-icons {
+    font-size: 17px;
+    color: #000;
+}
+
+/* ── GHOST BUTTON (SEO copy) ── */
+.ts-btn-ghost {
+    background: rgba(0, 217, 255, 0.04);
+    border: 1px solid rgba(0, 217, 255, 0.18);
+    color: #00D9FF;
+    padding: 8px 12px;
+    border-radius: 7px;
+    cursor: pointer;
+    font-size: 10px;
+    font-weight: 700;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    letter-spacing: 0.6px;
+    transition: all 0.2s;
+    font-family: 'Inter', sans-serif;
+    text-transform: uppercase;
+}
+
+.ts-btn-ghost:hover {
+    background: rgba(0, 217, 255, 0.09);
+    border-color: rgba(0, 217, 255, 0.35);
+    box-shadow: 0 0 12px rgba(0, 217, 255, 0.1);
+}
+
+/* ── ICON BUTTON ── */
+.ts-btn-icon {
+    background: none;
+    border: none;
+    color: #333;
+    cursor: pointer;
+    font-size: 12px;
+    padding: 2px 4px;
+    border-radius: 4px;
+    transition: color 0.2s;
+    line-height: 1;
+}
+
+.ts-btn-icon:hover {
+    color: #888;
+}
+
+/* ── DIVIDER ── */
+.ts-divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, #181818, transparent);
+    margin: 0 20px;
+}
+
+/* ── EDITOR WRAPPER ── */
+.ts-editor-wrap {
+    border: 1px solid #161616;
+    border-radius: 7px;
+    overflow: hidden;
+    background: #090909;
+}
+
+/* ── EMPTY STATE ── */
+.ts-empty-state {
+    padding: 40px 20px;
+    text-align: center;
+    color: #2a2a2a;
+    font-size: 12px;
+    line-height: 1.6;
+    letter-spacing: 0.3px;
+}
+
+/* ── PANEL OVERRIDES ── */
+.panel-left,
+.panel-right {
+    width: 290px !important;
+    background: linear-gradient(180deg, #0b0b0b 0%, #080808 100%) !important;
+}
+
+.panel-header {
+    background: #070707 !important;
+    border-bottom: 1px solid #111 !important;
+}
+
+/* Remove default padding/gap from panel-content so ts-sections control spacing */
+.panel-content {
+    padding: 0 !important;
+    gap: 0 !important;
+}
+
+/* ── SPIN ANIMATION ── */
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to   { transform: rotate(360deg); }
+}
+.spin {
+    animation: spin 0.8s linear infinite;
+    display: inline-block;
+}

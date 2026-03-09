@@ -137,7 +137,7 @@ export class DataEditor {
                     <div class="ai-icon">
                         <span class="material-icons" style="line-height: 1;">auto_fix_high</span>
                     </div>
-                    <span style="display: inline-block; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">AI DESIGN ASSISTANT</span>
+                    <span style="display: inline-block; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">NEXUS INTELLIGENCE</span>
                 </div>
                 <div class="ai-input-row">
                     <input type="text" id="aiRefineInput" placeholder="Ej: 'Resumir texto', 'Corregir ortografía'...">

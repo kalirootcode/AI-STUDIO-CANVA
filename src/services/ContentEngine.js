@@ -13,8 +13,20 @@ class ContentEngine {
      * Generate a prompt for the Canvas Scene Graph rendering mode.
      * The AI returns a Scene Graph JSON that the CanvasRenderer interprets directly.
      */
-    generatePrompt(topic, slideCount = 10, mode = 'TUTORIAL', trendSignal = null) {
+    generatePrompt(topic, slideCount = 10, mode = 'TUTORIAL', trendSignal = null, chunkIndex = 0, totalChunks = 1) {
         const count = Math.max(5, Math.min(50, parseInt(slideCount)));
+
+        // Chunking context instruction
+        let chunkContext = '';
+        if (totalChunks > 1) {
+            if (chunkIndex === 0) {
+                chunkContext = `\n\n[ATENCIÓN: ESTE ES EL REQUERIMIENTO PARTE ${chunkIndex + 1} DE ${totalChunks}. Genera la PORTADA y los primeros ${count} slides introductorios. NO pongas conclusión aún.]`;
+            } else if (chunkIndex === totalChunks - 1) {
+                chunkContext = `\n\n[ATENCIÓN: ESTE ES EL REQUERIMIENTO PARTE ${chunkIndex + 1} DE ${totalChunks}. Genera los últimos ${count} slides, incluyendo el contenido profundo final y la CONTRAPORTADA/CTA.]`;
+            } else {
+                chunkContext = `\n\n[ATENCIÓN: ESTE ES EL REQUERIMIENTO PARTE ${chunkIndex + 1} DE ${totalChunks}. Genera ${count} slides de desarrollo profundo intermedio. NI portada NI contraportada.]`;
+            }
+        }
 
         // Theme mapping based on content type
         const themeMap = {
@@ -58,6 +70,7 @@ PÁGINAS: ${count}
 TEMA VISUAL: "${theme}"
 
 OBJETIVO: Generar ${count} páginas de contenido formato Scene Graph JSON para Canvas Engine. No hay HTML ni plantillas. Todo se dibuja en coordenadas absolutas del Canvas 1080x1920.
+${chunkContext}
 
 ${tiktokContext}
 ${rule}

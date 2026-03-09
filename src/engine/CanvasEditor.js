@@ -1350,9 +1350,9 @@ class CanvasEditor {
         const centerX = W / 2;
         const centerY = H / 2;
         ctx.save();
-        ctx.strokeStyle = 'rgba(255, 200, 0, 0.35)';
-        ctx.lineWidth = 1;
-        ctx.setLineDash([8, 8]);
+        ctx.strokeStyle = 'rgba(0, 217, 255, 0.6)'; // Brighter cyan, more visible
+        ctx.lineWidth = 2; // Thicker lines
+        ctx.setLineDash([8, 6]);
 
         // Vertical center line
         ctx.beginPath();
@@ -1368,9 +1368,9 @@ class CanvasEditor {
 
         // Center crosshair marker
         ctx.setLineDash([]);
-        ctx.strokeStyle = 'rgba(255, 200, 0, 0.5)';
-        ctx.lineWidth = 2;
-        const crossSize = 16;
+        ctx.strokeStyle = 'rgba(0, 217, 255, 0.9)'; // Solid cyan center
+        ctx.lineWidth = 3;
+        const crossSize = 25;
         ctx.beginPath();
         ctx.moveTo(centerX - crossSize, centerY);
         ctx.lineTo(centerX + crossSize, centerY);

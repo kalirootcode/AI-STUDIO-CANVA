@@ -192,7 +192,6 @@ class App {
             // 1. Mode Selection (Direct)
             const mode = intentSelect;
 
-            // 2. Build Prompt
             this.setStatus(`🎨 Diseñando estructura (${mode})...`, true);
 
             // Inject trend signal if available
@@ -201,285 +200,189 @@ class App {
                 this.setStatus(`🔥 Inyectando Trend: ${this.tiktokSignal.type}`, true);
             }
 
-            // Generate Canvas JSON
-            const systemPrompt = this.contentEngine.generatePrompt(topic, count, mode, this.tiktokSignal);
-            this.setProgress(40);
+            // --- CHUNKING LOGIC ---
+            const CHUNK_SIZE = 12; // Safest size to avoid token limit cutoffs
+            const chunkCount = Math.ceil(count / CHUNK_SIZE);
+            let mergedSlides = [];
+            let mergedSeo = {};
 
-            // 3. Call AI
-            this.setStatus(`📡 Conectando con ${provider.toUpperCase()}...`, true);
+            for (let i = 0; i < chunkCount; i++) {
+                const slidesInChunk = (i === chunkCount - 1) ? (count % CHUNK_SIZE || CHUNK_SIZE) : CHUNK_SIZE;
+                this.setStatus(`📡 Conectando con ${provider.toUpperCase()}... (Parte ${i + 1}/${chunkCount})`, true);
 
-            // Artificial progress for long waits
-            let progressInterval;
-            if (count > 20) {
-                let p = 40;
-                progressInterval = setInterval(() => {
-                    p += 1;
-                    if (p > 65) p = 65; // Cap before completion
-                    this.setProgress(p);
-                    this.setStatus(`🧠 Generando ${count} slides (esto tomará un momento)... ${p}%`, true);
-                }, 1000);
-            }
+                const currentProgress = 5 + (i / chunkCount) * 60;
+                this.setProgress(currentProgress);
 
-            const result = await window.cyberCanvas.callAI({
-                provider: provider,
-                apiKey: apiKey,
-                prompt: systemPrompt
-            });
+                // Generate Canvas JSON
+                const systemPrompt = this.contentEngine.generatePrompt(topic, slidesInChunk, mode, this.tiktokSignal, i, chunkCount);
 
-            if (progressInterval) clearInterval(progressInterval);
-
-            if (!result.success) {
-                throw new Error(result.error || "Error desconocido en la API.");
-            }
-
-            this.setProgress(70);
-            this.setStatus('⚙️ Procesando respuesta...', true);
-
-            // 4. Parse JSON
-            let slidesData;
-            let seoData = {};
-            let cleanCode = result.code || "";
-            try {
-                // Step 1: Strip markdown code fences
-                const jsonMatch = cleanCode.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
-                if (jsonMatch) {
-                    cleanCode = jsonMatch[1];
+                let progressInterval;
+                if (slidesInChunk > 5) {
+                    let p = currentProgress;
+                    const maxP = currentProgress + (60 / chunkCount) * 0.9;
+                    progressInterval = setInterval(() => {
+                        p += 1;
+                        if (p > maxP) p = maxP;
+                        this.setProgress(p);
+                        this.setStatus(`🧠 Generando parte ${i + 1} (${slidesInChunk} slides)... ${Math.round(p)}%`, true);
+                    }, 1000);
                 }
 
-                // Step 2: Find the outermost JSON structure
-                const firstCurly = cleanCode.indexOf('{');
-                const firstBracket = cleanCode.indexOf('[');
+                const result = await window.cyberCanvas.callAI({
+                    provider: provider,
+                    apiKey: apiKey,
+                    prompt: systemPrompt
+                });
 
-                if (firstCurly !== -1 && (firstBracket === -1 || firstCurly < firstBracket)) {
-                    const lastCurly = cleanCode.lastIndexOf('}');
-                    if (lastCurly !== -1) {
-                        cleanCode = cleanCode.substring(firstCurly, lastCurly + 1);
-                    }
-                } else if (firstBracket !== -1) {
-                    const lastBracket = cleanCode.lastIndexOf(']');
-                    if (lastBracket !== -1) {
-                        cleanCode = cleanCode.substring(firstBracket, lastBracket + 1);
-                    }
+                if (progressInterval) clearInterval(progressInterval);
+
+                if (!result.success) {
+                    throw new Error(`Error en la parte ${i + 1}: ` + (result.error || "Error desconocido en la API."));
                 }
 
-                // Step 3: Fix common AI JSON mistakes
-                // Remove trailing commas before } or ]
-                cleanCode = cleanCode.replace(/,\s*([\]}])/g, '$1');
-                // Remove control characters except \n \r \t
-                cleanCode = cleanCode.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g, '');
-                // Fix unescaped newlines inside JSON strings safely
-                let fixedCode = '';
-                let inString = false;
-                let escapedChar = false;
-                for (let i = 0; i < cleanCode.length; i++) {
-                    const ch = cleanCode[i];
-                    if (escapedChar) {
-                        fixedCode += ch;
-                        escapedChar = false;
-                    } else if (ch === '\\') {
-                        // Lookahead to see if it's a valid JSON escape sequence
-                        const next = cleanCode[i + 1];
-                        if (['"', '\\', '/', 'b', 'f', 'n', 'r', 't', 'u'].includes(next)) {
-                            fixedCode += ch; // Valid escape, keep as is
-                            escapedChar = true;
-                        } else {
-                            // Invalid escape (e.g., C:\Windows), double it to escape the backslash itself
-                            fixedCode += '\\\\';
-                        }
-                    } else if (ch === '"') {
-                        inString = !inString;
-                        fixedCode += ch;
-                    } else if (inString && (ch === '\n' || ch === '\r')) {
-                        // Escape literal newlines inside strings
-                        fixedCode += (ch === '\n') ? '\\n' : '\\r';
-                    } else if (inString && ch === '\t') {
-                        fixedCode += '\\t';
-                    } else {
-                        fixedCode += ch;
-                    }
-                }
-                cleanCode = fixedCode;
+                this.setStatus(`⚙️ Procesando parte ${i + 1}...`, true);
 
-                console.log("[DEBUG] Cleaned JSON (first 500 chars):", cleanCode.substring(0, 500));
+                // Parse JSON
+                let slidesData;
+                let seoData = {};
+                let cleanCode = result.code || "";
 
-                let responseData;
                 try {
-                    responseData = JSON.parse(cleanCode);
-                } catch (firstErr) {
-                    // === AGGRESSIVE CLEANUP ===
-                    console.warn("[JSON-FIX] First parse failed:", firstErr.message, "Trying aggressive cleanup...");
+                    // Step 1: Strip markdown code fences
+                    const jsonMatch = cleanCode.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
+                    if (jsonMatch) cleanCode = jsonMatch[1];
 
-                    // 1. Collapse all real newlines to spaces
-                    cleanCode = cleanCode.replace(/\r?\n/g, ' ');
-
-                    // 2. Fix single-quoted strings → double-quoted
-                    cleanCode = cleanCode.replace(/(?<=[\{,]\s*)'([^']+)'\s*:/g, '"$1":');
-                    cleanCode = cleanCode.replace(/:\s*'([^']*)'/g, ': "$1"');
-
-                    // 3. Fix unquoted property names: { key: → { "key":
-                    cleanCode = cleanCode.replace(/(?<=[\{,]\s*)([a-zA-Z_]\w*)\s*:/g, '"$1":');
-
-                    // 4. Fix unescaped inner double quotes inside string values
-                    // This advanced regex looks for values between `: "` and the closing `",` or `"}`
-                    cleanCode = cleanCode.replace(/(?<=:\s*")(.*?)(?="\s*(?:,|}|$))/gm, (match) => {
-                        // Escape quotes that are not already escaped
-                        return match.replace(/(?<!\\)"/g, '\\"');
-                    });
-
-                    // 5. Remove trailing commas
-                    cleanCode = cleanCode.replace(/,\s*([\]}])/g, '$1');
-
-                    // 5. Escape any remaining problematic chars inside strings
-                    let cleaned2 = '';
-                    let inStr = false, esc = false;
-                    for (let i = 0; i < cleanCode.length; i++) {
-                        const ch = cleanCode[i];
-                        if (esc) { cleaned2 += ch; esc = false; continue; }
-                        if (ch === '\\') { cleaned2 += ch; esc = true; continue; }
-                        if (ch === '"') { inStr = !inStr; cleaned2 += ch; continue; }
-                        if (inStr && ch === '\t') { cleaned2 += '\\t'; continue; }
-                        if (inStr && ch === '\b') { cleaned2 += '\\b'; continue; }
-                        cleaned2 += ch;
-                    }
-                    cleanCode = cleaned2;
-
-                    // 6. Remove text after last valid closer
-                    const lastBrace = cleanCode.lastIndexOf('}');
-                    const lastBrack = cleanCode.lastIndexOf(']');
-                    const lastValid = Math.max(lastBrace, lastBrack);
-                    if (lastValid > 0) {
-                        cleanCode = cleanCode.substring(0, lastValid + 1);
+                    // Step 2: Find the outermost JSON structure
+                    const firstCurly = cleanCode.indexOf('{');
+                    const firstBracket = cleanCode.indexOf('[');
+                    if (firstCurly !== -1 && (firstBracket === -1 || firstCurly < firstBracket)) {
+                        const lastCurly = cleanCode.lastIndexOf('}');
+                        if (lastCurly !== -1) cleanCode = cleanCode.substring(firstCurly, lastCurly + 1);
+                    } else if (firstBracket !== -1) {
+                        const lastBracket = cleanCode.lastIndexOf(']');
+                        if (lastBracket !== -1) cleanCode = cleanCode.substring(firstBracket, lastBracket + 1);
                     }
 
+                    // Step 3: Fix common AI JSON mistakes
+                    cleanCode = cleanCode.replace(/,\s*([\]}])/g, '$1'); // Remove trailing commas
+                    cleanCode = cleanCode.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g, '');
+
+                    // Fix unescaped newlines safely
+                    let fixedCode = '', inString = false, escapedChar = false;
+                    for (let j = 0; j < cleanCode.length; j++) {
+                        const ch = cleanCode[j];
+                        if (escapedChar) { fixedCode += ch; escapedChar = false; }
+                        else if (ch === '\\') {
+                            const next = cleanCode[j + 1];
+                            if (['"', '\\', '/', 'b', 'f', 'n', 'r', 't', 'u'].includes(next)) {
+                                fixedCode += ch; escapedChar = true;
+                            } else fixedCode += '\\\\';
+                        }
+                        else if (ch === '"') { inString = !inString; fixedCode += ch; }
+                        else if (inString && (ch === '\n' || ch === '\r')) fixedCode += (ch === '\n') ? '\\n' : '\\r';
+                        else if (inString && ch === '\t') fixedCode += '\\t';
+                        else fixedCode += ch;
+                    }
+                    cleanCode = fixedCode;
+
+                    let responseData;
                     try {
                         responseData = JSON.parse(cleanCode);
-                    } catch (secondErr) {
-                        // === LAST RESORT: Fix truncated JSON ===
-                        console.warn("[JSON-FIX] Second parse failed:", secondErr.message, "Trying truncation fix...");
+                    } catch (firstErr) {
+                        // === AGGRESSIVE CLEANUP ===
+                        console.warn(`[JSON-FIX PARTE ${i + 1}] First parse failed:`, firstErr.message, "Trying aggressive cleanup...");
+                        cleanCode = cleanCode.replace(/\r?\n/g, ' ');
+                        cleanCode = cleanCode.replace(/(?<=[\{,]\s*)'([^']+)'\s*:/g, '"$1":');
+                        cleanCode = cleanCode.replace(/:\s*'([^']*)'/g, ': "$1"');
+                        cleanCode = cleanCode.replace(/(?<=[\{,]\s*)([a-zA-Z_]\w*)\s*:/g, '"$1":');
+                        cleanCode = cleanCode.replace(/(?<=:\s*")(.*?)(?="\s*(?:,|}|$))/gm, match => match.replace(/(?<!\\)"/g, '\\"'));
+                        cleanCode = cleanCode.replace(/,\s*([\]}])/g, '$1');
 
-                        // Check if we're inside an unclosed string (truncated mid-value)
-                        let inString2 = false, escaped2 = false;
-                        let lastQuotePos = -1;
-                        for (let i = 0; i < cleanCode.length; i++) {
-                            const c = cleanCode[i];
-                            if (escaped2) { escaped2 = false; continue; }
-                            if (c === '\\') { escaped2 = true; continue; }
-                            if (c === '"') { inString2 = !inString2; lastQuotePos = i; }
+                        let cleaned2 = '', inStr = false, esc = false;
+                        for (let k = 0; k < cleanCode.length; k++) {
+                            const ch = cleanCode[k];
+                            if (esc) { cleaned2 += ch; esc = false; continue; }
+                            if (ch === '\\') { cleaned2 += ch; esc = true; continue; }
+                            if (ch === '"') { inStr = !inStr; cleaned2 += ch; continue; }
+                            if (inStr && ch === '\t') { cleaned2 += '\\t'; continue; }
+                            if (inStr && ch === '\b') { cleaned2 += '\\b'; continue; }
+                            cleaned2 += ch;
                         }
+                        cleanCode = cleaned2;
+                        const lastValid = Math.max(cleanCode.lastIndexOf('}'), cleanCode.lastIndexOf(']'));
+                        if (lastValid > 0) cleanCode = cleanCode.substring(0, lastValid + 1);
 
-                        // If string is unclosed, close it at a safe point
-                        if (inString2 && lastQuotePos > 0) {
-                            // Find the last complete-looking content before truncation
-                            // Truncate string at a reasonable point and close it
-                            let truncPoint = cleanCode.length - 1;
-                            // Look backward for end of useful content
-                            const searchBack = cleanCode.substring(lastQuotePos + 1);
-                            const lastSafe = Math.max(
-                                cleanCode.lastIndexOf('\\n'),
-                                cleanCode.lastIndexOf('. '),
-                                cleanCode.lastIndexOf(', ')
-                            );
-                            if (lastSafe > lastQuotePos) {
-                                truncPoint = lastSafe;
+                        try { responseData = JSON.parse(cleanCode); }
+                        catch (secondErr) {
+                            // === LAST RESORT: Fix truncated JSON ===
+                            let inString2 = false, escaped2 = false, lastQuotePos = -1;
+                            for (let k = 0; k < cleanCode.length; k++) {
+                                const c = cleanCode[k];
+                                if (escaped2) { escaped2 = false; continue; }
+                                if (c === '\\') { escaped2 = true; continue; }
+                                if (c === '"') { inString2 = !inString2; lastQuotePos = k; }
                             }
-                            cleanCode = cleanCode.substring(0, truncPoint) + '..."';
-                        }
+                            if (inString2 && lastQuotePos > 0) {
+                                let truncPoint = cleanCode.length - 1;
+                                const lastSafe = Math.max(cleanCode.lastIndexOf('\\n'), cleanCode.lastIndexOf('. '), cleanCode.lastIndexOf(', '));
+                                if (lastSafe > lastQuotePos) truncPoint = lastSafe;
+                                cleanCode = cleanCode.substring(0, truncPoint) + '..."';
+                            }
+                            cleanCode = cleanCode.replace(/,\s*"[^"]*"?\s*$/, '');
+                            cleanCode = cleanCode.replace(/,\s*\{[^}]*$/, '');
+                            cleanCode = cleanCode.replace(/,\s*$/, '');
 
-                        // Remove trailing incomplete entries
-                        cleanCode = cleanCode.replace(/,\s*"[^"]*"?\s*$/, '');       // trailing incomplete key
-                        cleanCode = cleanCode.replace(/,\s*\{[^}]*$/, '');             // trailing incomplete object
-                        cleanCode = cleanCode.replace(/,\s*$/, '');                    // trailing comma
+                            let openBraces = 0, openBrackets = 0;
+                            let inStr3 = false, esc3 = false;
+                            for (const ch of cleanCode) {
+                                if (esc3) { esc3 = false; continue; }
+                                if (ch === '\\') { esc3 = true; continue; }
+                                if (ch === '"') { inStr3 = !inStr3; continue; }
+                                if (inStr3) continue;
+                                if (ch === '{') openBraces++; if (ch === '}') openBraces--;
+                                if (ch === '[') openBrackets++; if (ch === ']') openBrackets--;
+                            }
+                            for (let k = 0; k < openBrackets; k++) cleanCode += ']';
+                            for (let k = 0; k < openBraces; k++) cleanCode += '}';
 
-                        // Recount open brackets/braces
-                        let openBraces = 0, openBrackets = 0;
-                        let inStr3 = false, esc3 = false;
-                        for (const ch of cleanCode) {
-                            if (esc3) { esc3 = false; continue; }
-                            if (ch === '\\') { esc3 = true; continue; }
-                            if (ch === '"') { inStr3 = !inStr3; continue; }
-                            if (inStr3) continue;
-                            if (ch === '{') openBraces++;
-                            if (ch === '}') openBraces--;
-                            if (ch === '[') openBrackets++;
-                            if (ch === ']') openBrackets--;
-                        }
-
-                        // Add missing closers
-                        let suffix = '';
-                        for (let i = 0; i < openBrackets; i++) suffix += ']';
-                        for (let i = 0; i < openBraces; i++) suffix += '}';
-                        cleanCode += suffix;
-
-                        console.log("[JSON-FIX] Truncation repair — added closers:", suffix, "(len:", cleanCode.length, ")");
-
-                        try {
-                            responseData = JSON.parse(cleanCode);
-                            console.log("[JSON-FIX] ✅ Truncation repair succeeded!");
-                        } catch (thirdErr) {
-                            // === NUCLEAR: extract what we can ===
-                            console.error("[JSON-FIX] All repairs failed. Extracting partial content...");
-                            console.error("[JSON-ERROR] Context around position", thirdErr.message);
-
-                            // Try to find and parse just the layers array
-                            const layersMatch = cleanCode.match(/"layers"\s*:\s*\[/);
-                            if (layersMatch) {
-                                const start = layersMatch.index;
-                                // Find the outermost structure
-                                const wrapper = cleanCode.substring(0, start) + '"layers": []}';
-                                try {
-                                    responseData = JSON.parse(wrapper);
-                                    responseData.layers = []; // Empty but valid
-                                    console.warn("[JSON-FIX] ⚠️ Recovered structure with empty layers");
-                                } catch (e) {
-                                    throw new Error('La IA no devolvió un JSON válido. Error: ' + thirdErr.message + '. Intenta de nuevo.');
-                                }
-                            } else {
-                                throw new Error('La IA no devolvió un JSON válido. Error: ' + thirdErr.message + '. Intenta de nuevo.');
+                            try { responseData = JSON.parse(cleanCode); }
+                            catch (thirdErr) {
+                                const layersMatch = cleanCode.match(/"layers"\s*:\s*\[/);
+                                if (layersMatch) {
+                                    const wrapper = cleanCode.substring(0, layersMatch.index) + '"layers": []}';
+                                    try {
+                                        responseData = JSON.parse(wrapper); responseData.layers = [];
+                                    } catch (e) { throw new Error('Parcial ' + (i + 1) + ': JSON inválido.'); }
+                                } else throw new Error('Parcial ' + (i + 1) + ': JSON inválido.');
                             }
                         }
                     }
+
+                    if (responseData.pages && Array.isArray(responseData.pages)) {
+                        slidesData = responseData.pages;
+                    } else if (Array.isArray(responseData)) {
+                        slidesData = responseData;
+                    } else if (responseData.slides && Array.isArray(responseData.slides)) {
+                        slidesData = responseData.slides;
+                    } else throw new Error(`La parte ${i + 1} no contiene array de pages.`);
+
+                    // Merge Results
+                    mergedSlides = mergedSlides.concat(slidesData);
+                    if (responseData.seo) mergedSeo = Object.assign(mergedSeo, responseData.seo);
+
+                } catch (jsonErr) {
+                    console.error(`[JSON-ERROR PARTE ${i + 1}]`, jsonErr.message);
+                    throw new Error(`Error en parseo JSON de parte ${i + 1}: ${jsonErr.message}. La IA sobrepasó los límites, intenta generar menos slides a la vez.`);
                 }
+            } // END CHUNK LOOP
 
-                // All responses must be the new Object structure { seo, pages }
-                slidesData = [];
+            this.setProgress(70);
 
-                if (responseData.pages && Array.isArray(responseData.pages)) {
-                    slidesData = responseData.pages;
-                } else if (Array.isArray(responseData)) {
-                    slidesData = responseData;
-                } else if (responseData.slides && Array.isArray(responseData.slides)) {
-                    // Fallback to legacy 'slides' key if the AI hallucinated it
-                    slidesData = responseData.slides;
-                } else {
-                    throw new Error("La respuesta Canvas no contiene un array de 'pages'.");
-                }
-
-                seoData = responseData.seo || {};
-
-            } catch (jsonErr) {
-                let contextStr = "Snippet not available";
-                if (cleanCode && typeof cleanCode === 'string') {
-                    // Try to extract position from error message, e.g. "at position 14394"
-                    const match = jsonErr.message.match(/position\s+(\d+)/);
-                    if (match && match[1]) {
-                        const pos = parseInt(match[1]);
-                        const start = Math.max(0, pos - 100);
-                        const end = Math.min(cleanCode.length, pos + 100);
-                        contextStr = `...${cleanCode.substring(start, pos)}[ERROR HERE]${cleanCode.substring(pos, end)}...`;
-                        console.error(`[JSON-ERROR] Context around position ${pos}:\n${contextStr}`);
-                    } else {
-                        console.error("[JSON-ERROR] Raw output:", cleanCode.substring(0, 500) + "...\n(Total length: " + cleanCode.length + ")");
-                    }
-                }
-
-                throw new Error(`La IA no devolvió un JSON válido. Error: ${jsonErr.message}. Intenta de nuevo.`);
-            }
-
-            // Update SEO UI (outside try so it always runs after successful parse)
-            console.log("📝 SEO Data:", JSON.stringify(seoData));
+            // Update SEO UI
+            console.log("📝 Merged SEO Data:", JSON.stringify(mergedSeo));
             const studio = this.viewManager.views['studio'];
             if (studio && studio.updateSEO) {
-                studio.updateSEO(seoData);
+                studio.updateSEO(mergedSeo);
             }
 
             // 5. Render Canvas Slides
@@ -493,9 +396,9 @@ class App {
                 this.canvasRenderer = window.createRenderer(1080, 1920, 'cyber');
             }
 
-            for (let i = 0; i < slidesData.length; i++) {
-                const sceneGraph = slidesData[i];
-                this.setStatus(`🎨 Procesando página ${i + 1}/${slidesData.length}...`, true);
+            for (let i = 0; i < mergedSlides.length; i++) {
+                const sceneGraph = mergedSlides[i];
+                this.setStatus(`🎨 Procesando página ${i + 1}/${mergedSlides.length}...`, true);
 
                 try {
                     // Apply branding theme tokens
