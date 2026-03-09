@@ -835,3 +835,16 @@ select:focus {
     color: #00D9FF !important;
     border-color: #00D9FF !important;
 }
+
+/* ── THUMBNAIL STUDIO VIEW ── */
+#thumbnail-view {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    flex: 1;
+}
+
+#ts-studio-container {
+    width: 100%;
+    height: 100%;
+}
