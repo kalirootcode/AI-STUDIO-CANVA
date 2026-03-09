@@ -1,15 +1,11 @@
 import { ViewManager } from './services/ViewManager.js';
 import { Sidebar } from './components/Sidebar.js';
 import { StudioView } from './views/StudioView.js';
-import { TemplatesView } from './views/TemplatesView.js';
 import { SettingsView } from './views/SettingsView.js';
-import './services/TemplateUtils.js'; // Register Global Utils
 
 class App {
     constructor() {
         this.overrideConsole();
-        this.viewManager = new ViewManager();
-        this.sidebar = new Sidebar();
         this.tiktokSignal = null; // Store active trend
         this.init();
     }
@@ -42,13 +38,15 @@ class App {
     }
 
     async init() {
+        if (this._initialized) return;
+        this._initialized = true;
+
         console.log("🚀 Initializing Cyber-Canvas v2...");
         // 1. Init View Manager
-        // this.viewManager = new ViewManager(); // Moved to constructor
+        this.viewManager = new ViewManager();
 
         // 2. Register Views
         this.viewManager.register('studio', new StudioView());
-        this.viewManager.register('templates', new TemplatesView());
         this.viewManager.register('settings', new SettingsView());
 
         // 3. Init Sidebar
@@ -100,21 +98,8 @@ class App {
             if (!this.slides || !this.slides[this.currentSlideIndex]) return;
             const currentSlide = this.slides[this.currentSlideIndex];
 
-            // Skip re-render for Canvas slides (they are pre-rendered images)
+            // Ignore manual HTML editor inputs now that we use visual CanvasEditor
             if (currentSlide.isCanvas) return;
-
-            // Re-render
-            const html = this.templateEngine.renderTemplate(currentSlide.templateId, data);
-
-            // Update Preview
-            const studio = this.viewManager.views['studio'];
-            if (studio) {
-                studio.updatePreview(html);
-            }
-
-            // Update internal state
-            currentSlide.data = data;
-            currentSlide.html = html;
 
         } catch (err) {
             console.warn("Invalid JSON in editor:", err);
@@ -124,16 +109,7 @@ class App {
 
     initEngines() {
         // Instantiate engines that were global in legacy renderer.js
-        this.templateEngine = new TemplateEngine();
         this.contentEngine = new ContentEngine(); // Assumes it's loaded via script tag
-
-        // Load shared CSS first, then load template packs
-        this.templateEngine.loadSharedAssets().then(() => {
-            return this.templateEngine.loadFromPacks();
-        }).then(packs => {
-            console.log("📦 Packs loaded:", packs.length);
-            // TODO: Pass to TemplatesView
-        });
     }
 
     setupTikTokListener() {
@@ -155,46 +131,7 @@ class App {
 
     // --- STUDIO ACTIONS ---
 
-    loadPackIntoStudio(packId) {
-        // 1. Get templates for this pack
-        const templates = this.templateEngine.getTemplatesByPack(packId);
-
-        if (!templates || templates.length === 0) {
-            alert("Este pack no tiene templates.");
-            return;
-        }
-
-        // 2. Initialize Slides with DEFAULT content from first template
-        // This ensures 'this.slides' is not empty, so manual editing works.
-        const firstTemplate = templates[0];
-
-        // Use default fields from manifest if available, or empty object
-        const defaultContent = {};
-        if (firstTemplate.fields) {
-            for (const [key, field] of Object.entries(firstTemplate.fields)) {
-                defaultContent[key] = field.default || `Placeholder ${key}`;
-            }
-        }
-        // Force Theme
-        defaultContent.THEME = 'CYBER';
-
-        const initialHtml = this.templateEngine.renderTemplate(firstTemplate.id, defaultContent);
-
-        this.slides = [{
-            templateId: firstTemplate.id,
-            data: defaultContent,
-            html: initialHtml
-        }];
-
-        this.currentSlideIndex = 0;
-        this.selectedPackId = packId; // Store for valid context
-
-        // 3. Navigate and Update
-        this.viewManager.navigate('studio').then(() => {
-            this.updateStudioState();
-            this.setStatus(`Pack cargado: ${packId}`);
-        });
-    }
+    // loadPackIntoStudio obsolete
 
 
 
@@ -262,11 +199,8 @@ class App {
                 this.setStatus(`🔥 Inyectando Trend: ${this.tiktokSignal.type}`, true);
             }
 
-            // Detect Canvas mode vs Template mode
-            const isCanvasMode = (mode === 'CANVAS_MODE');
-            const systemPrompt = isCanvasMode
-                ? this.contentEngine.generateCanvasPrompt(topic, count, 'cyber')
-                : this.contentEngine.generatePrompt(topic, count, mode, this.tiktokSignal);
+            // Generate Canvas JSON
+            const systemPrompt = this.contentEngine.generatePrompt(topic, count, mode, this.tiktokSignal);
             this.setProgress(40);
 
             // 3. Call AI
@@ -341,14 +275,23 @@ class App {
                         fixedCode += ch;
                         escapedChar = false;
                     } else if (ch === '\\') {
-                        fixedCode += ch;
-                        escapedChar = true;
+                        // Lookahead to see if it's a valid JSON escape sequence
+                        const next = cleanCode[i + 1];
+                        if (['"', '\\', '/', 'b', 'f', 'n', 'r', 't', 'u'].includes(next)) {
+                            fixedCode += ch; // Valid escape, keep as is
+                            escapedChar = true;
+                        } else {
+                            // Invalid escape (e.g., C:\Windows), double it to escape the backslash itself
+                            fixedCode += '\\\\';
+                        }
                     } else if (ch === '"') {
                         inString = !inString;
                         fixedCode += ch;
                     } else if (inString && (ch === '\n' || ch === '\r')) {
                         // Escape literal newlines inside strings
                         fixedCode += (ch === '\n') ? '\\n' : '\\r';
+                    } else if (inString && ch === '\t') {
+                        fixedCode += '\\t';
                     } else {
                         fixedCode += ch;
                     }
@@ -374,7 +317,14 @@ class App {
                     // 3. Fix unquoted property names: { key: → { "key":
                     cleanCode = cleanCode.replace(/(?<=[\{,]\s*)([a-zA-Z_]\w*)\s*:/g, '"$1":');
 
-                    // 4. Remove trailing commas
+                    // 4. Fix unescaped inner double quotes inside string values
+                    // This advanced regex looks for values between `: "` and the closing `",` or `"}`
+                    cleanCode = cleanCode.replace(/(?<=:\s*")(.*?)(?="\s*(?:,|}|$))/gm, (match) => {
+                        // Escape quotes that are not already escaped
+                        return match.replace(/(?<!\\)"/g, '\\"');
+                    });
+
+                    // 5. Remove trailing commas
                     cleanCode = cleanCode.replace(/,\s*([\]}])/g, '$1');
 
                     // 5. Escape any remaining problematic chars inside strings
@@ -488,27 +438,21 @@ class App {
                     }
                 }
 
-                // Handle new Object structure { seo, slides/pages } vs legacy Array
+                // All responses must be the new Object structure { seo, pages }
                 slidesData = [];
 
-                if (isCanvasMode) {
-                    // Canvas mode: AI returns { seo, pages: [ sceneGraph, ... ] }
-                    if (responseData.pages && Array.isArray(responseData.pages)) {
-                        slidesData = responseData.pages;
-                    } else if (Array.isArray(responseData)) {
-                        slidesData = responseData;
-                    } else {
-                        throw new Error("La respuesta Canvas no contiene un array de 'pages'.");
-                    }
-                    seoData = responseData.seo || {};
+                if (responseData.pages && Array.isArray(responseData.pages)) {
+                    slidesData = responseData.pages;
                 } else if (Array.isArray(responseData)) {
                     slidesData = responseData;
                 } else if (responseData.slides && Array.isArray(responseData.slides)) {
+                    // Fallback to legacy 'slides' key if the AI hallucinated it
                     slidesData = responseData.slides;
-                    seoData = responseData.seo || {};
                 } else {
-                    throw new Error("La respuesta no es válida (Falta array de slides).");
+                    throw new Error("La respuesta Canvas no contiene un array de 'pages'.");
                 }
+
+                seoData = responseData.seo || {};
 
             } catch (jsonErr) {
                 let contextStr = "Snippet not available";
@@ -536,63 +480,39 @@ class App {
                 studio.updateSEO(seoData);
             }
 
-            // 5. Render Slides
+            // 5. Render Canvas Slides
             this.slides = []; // Store generated slides { id, content, html }
 
-            if (isCanvasMode) {
-                // ─── CANVAS MODE: Store scene graphs for CanvasEditor ───
-                this.setStatus('🎨 Preparando Motor Canvas...', true);
+            // ─── CANVAS MODE: Store scene graphs for CanvasEditor ───
+            this.setStatus('🎨 Preparando Motor Canvas...', true);
 
-                // Create shared renderer
-                if (!this.canvasRenderer) {
-                    this.canvasRenderer = window.createRenderer(1080, 1920, 'cyber');
-                }
+            // Create shared renderer
+            if (!this.canvasRenderer) {
+                this.canvasRenderer = window.createRenderer(1080, 1920, 'cyber');
+            }
 
-                for (let i = 0; i < slidesData.length; i++) {
-                    const sceneGraph = slidesData[i];
-                    this.setStatus(`🎨 Procesando página ${i + 1}/${slidesData.length}...`, true);
+            for (let i = 0; i < slidesData.length; i++) {
+                const sceneGraph = slidesData[i];
+                this.setStatus(`🎨 Procesando página ${i + 1}/${slidesData.length}...`, true);
 
-                    try {
-                        // Apply branding theme tokens
-                        const themed = this.canvasRenderer.brandingSystem.applyTheme(sceneGraph, sceneGraph.theme || 'cyber');
-
-                        this.slides.push({
-                            templateId: `canvas-page-${i + 1}`,
-                            data: themed,
-                            html: '',  // Will be rendered live via CanvasEditor
-                            isCanvas: true
-                        });
-                    } catch (renderErr) {
-                        console.error(`[Canvas] Error processing page ${i + 1}:`, renderErr);
-                        this.slides.push({
-                            templateId: `canvas-error-${i + 1}`,
-                            data: sceneGraph,
-                            html: '',
-                            isCanvas: true,
-                            error: renderErr.message
-                        });
-                    }
-                }
-            } else {
-                // ─── TEMPLATE MODE: Render via TemplateEngine (original flow) ───
-                this.setStatus('🖼️ Renderizando slides...', true);
-
-                for (const slideData of slidesData) {
-                    const templateId = slideData.templateId;
-                    const content = slideData.content || {};
-
-                    // Inject Global Theme Meta if missing
-                    if (!content.THEME) {
-                        content.THEME = slideData.THEME || 'CYBER';
-                    }
-
-                    // Render HTML
-                    const html = this.templateEngine.renderTemplate(templateId, content);
+                try {
+                    // Apply branding theme tokens
+                    const themed = this.canvasRenderer.brandingSystem.applyTheme(sceneGraph, sceneGraph.theme || 'cyber');
 
                     this.slides.push({
-                        templateId,
-                        data: content,
-                        html: html
+                        templateId: `canvas-page-${i + 1}`,
+                        data: themed,
+                        html: '',  // Will be rendered live via CanvasEditor
+                        isCanvas: true
+                    });
+                } catch (renderErr) {
+                    console.error(`[Canvas] Error processing page ${i + 1}:`, renderErr);
+                    this.slides.push({
+                        templateId: `canvas-error-${i + 1}`,
+                        data: sceneGraph,
+                        html: '',
+                        isCanvas: true,
+                        error: renderErr.message
                     });
                 }
             }
@@ -622,14 +542,7 @@ class App {
         const studio = this.viewManager.views['studio'];
 
         if (studio) {
-            if (currentSlide.isCanvas) {
-                // ─── CANVAS MODE: Use CanvasEditor ───
-                this._showCanvasEditor(currentSlide);
-            } else {
-                // ─── TEMPLATE MODE: Use iframe preview ───
-                this._hideCanvasEditor();
-                studio.updatePreview(currentSlide.html);
-            }
+            studio.updatePreview(); // Trigger native CanvasEditor render
 
             // Update Counter
             studio.updateSlideCounter(this.currentSlideIndex + 1, this.slides.length);
@@ -646,76 +559,7 @@ class App {
         }
     }
 
-    /**
-     * Show the CanvasEditor for a canvas slide.
-     */
-    async _showCanvasEditor(slide) {
-        try {
-            const studio = this.viewManager.views['studio'];
-            if (!studio) return;
-
-            // Get or create the editor container
-            let editorContainer = document.getElementById('canvasEditorContainer');
-            const previewFrame = document.getElementById('previewFrame');
-            const previewContainer = document.getElementById('previewContainer');
-
-            if (!editorContainer) {
-                editorContainer = document.createElement('div');
-                editorContainer.id = 'canvasEditorContainer';
-                if (previewContainer) {
-                    previewContainer.appendChild(editorContainer);
-                } else if (previewFrame && previewFrame.parentNode) {
-                    previewFrame.parentNode.appendChild(editorContainer);
-                }
-            }
-
-            // Show editor, hide iframe — match container dimensions
-            if (previewFrame) previewFrame.style.display = 'none';
-            editorContainer.style.display = 'flex';
-
-            // Ensure container has dimensions (match previewContainer)
-            if (previewContainer) {
-                const rect = previewContainer.getBoundingClientRect();
-                editorContainer.style.width = rect.width + 'px';
-                editorContainer.style.height = rect.height + 'px';
-            }
-
-            // Create or reuse the canvas editor
-            if (!this.canvasRenderer) {
-                this.canvasRenderer = window.createRenderer(1080, 1920, 'cyber');
-            }
-
-            if (!this.canvasEditor) {
-                this.canvasEditor = new CanvasEditor(editorContainer, this.canvasRenderer);
-                this.canvasEditor.onChange = (sceneGraph) => {
-                    const currentSlide = this.slides[this.currentSlideIndex];
-                    if (currentSlide) {
-                        currentSlide.data = sceneGraph;
-                        if (studio.editorInstance) {
-                            studio.editorInstance.setValue(JSON.stringify(sceneGraph, null, 2));
-                        }
-                    }
-                };
-            }
-
-            // Load the scene graph into the editor
-            console.log('[CanvasEditor] Loading scene graph...');
-            await this.canvasEditor.load(slide.data);
-            console.log('[CanvasEditor] Scene graph loaded OK');
-        } catch (err) {
-            console.error('[CanvasEditor] Error showing editor:', err);
-        }
-    }
-
-    /**
-     * Hide the CanvasEditor and show the iframe.
-     */
-    _hideCanvasEditor() {
-        const editorContainer = document.getElementById('canvasEditorContainer');
-        const previewFrame = document.getElementById('previewFrame');
-        if (editorContainer) editorContainer.style.display = 'none';
-        if (previewFrame) previewFrame.style.display = '';
-    }
+    // Obsolete `_showCanvasEditor` and `_hideCanvasEditor` removed.
 
     handlePrevSlide() {
         if (!this.slides || this.slides.length === 0) return;
@@ -738,32 +582,20 @@ class App {
         const currentSlide = this.slides[this.currentSlideIndex];
 
         // Canvas slides: Update the internal JSON and force a visual re-render
-        if (currentSlide.isCanvas) {
-            currentSlide.data = newData;
-            if (this.canvasEditor) {
-                this.canvasEditor.load({ layers: newData.layers });
-            }
-            // Update CodeMirror editor without re-triggering changes
-            const studio = this.viewManager.views['studio'];
-            if (studio && studio.editorInstance) {
-                const currentVal = studio.editorInstance.getValue();
-                const newVal = JSON.stringify(newData, null, 2);
-                if (currentVal !== newVal) {
-                    studio.editorInstance.setValue(newVal);
-                }
-            }
-            return;
+        currentSlide.data = newData;
+        if (this.canvasEditor) {
+            this.canvasEditor.load(newData);
         }
 
-        // HTML slides: Update state and re-render template
-        currentSlide.data = newData;
-
-        // Re-render HTML
-        const html = this.templateEngine.renderTemplate(currentSlide.templateId, newData);
-        currentSlide.html = html;
-
-        // Update UI
-        this.updateStudioState();
+        // Update CodeMirror editor without re-triggering changes
+        const studio = this.viewManager.views['studio'];
+        if (studio && studio.editorInstance) {
+            const currentVal = studio.editorInstance.getValue();
+            const newVal = JSON.stringify(newData, null, 2);
+            if (currentVal !== newVal) {
+                studio.editorInstance.setValue(newVal);
+            }
+        }
     }
 
     async handleAIRefine(instruction) {
@@ -774,10 +606,20 @@ class App {
         this.setStatus('✨ AI Refinando diseño...', true);
 
         try {
-            // 1. Generate Prompt
-            const prompt = this.contentEngine.refineContent(currentSlide.data, instruction, currentSlide.templateId);
+            // 1. Extract Spatial Awareness (Bounding Boxes) from Renderer
+            let boundsInfo = "Contexto Espacial no disponible.";
+            if (this.canvasRenderer && this.canvasRenderer.lastBounds && this.canvasRenderer.lastBounds.length > 0) {
+                const bounds = this.canvasRenderer.lastBounds.map(b => {
+                    return `- Layer [${b.layerIndex}] (${b.type}): Y=${Math.round(b.y)}, Height=${Math.round(b.height)}, BottomY=${Math.round(b.y + b.height)}`;
+                });
+                boundsInfo = bounds.join('\\n');
+            }
+            console.log("[Spatial AI] Inyectando datos:\\n" + boundsInfo);
 
-            // 2. Call AI
+            // 2. Generate Advanced Refinement Prompt
+            const prompt = this.contentEngine.generateLayoutRefinementPrompt(currentSlide.data, boundsInfo, instruction);
+
+            // 3. Call AI
             // Use same provider/key as generation? Or ask user settings?
             // For now, let's grab the first available key or default to current provider in UI if possible.
             // We'll try to get key from settings for default provider 'gemini' first.
@@ -907,51 +749,10 @@ class App {
 
             // Re-render HTML so named editable overrides persist when switching slides
             // (renderEditable reads _overrides and applies transform inline)
-            if (action.id && !action.id.startsWith('auto_') && !currentSlide.isCanvas) {
-                currentSlide.html = this.templateEngine.renderTemplate(currentSlide.templateId, currentSlide.data);
-            }
-            // auto_ drag positions are handled at export time via getExportHTML
-        }
-    }
-
-    /**
-     * Get export-ready HTML for a slide:
-     * - Bakes auto-drag position overrides as inline styles
-     * - Strips interactivity styles/scripts (hover outlines, drag cursor)
-     */
-    getExportHTML(slide) {
-        // Canvas slides: re-render with modified scene graph and export as PNG
-        if (slide.isCanvas && this.canvasRenderer) {
-            // The slide.data contains the modified scene graph
-            // Export will be handled by the export system using canvasRenderer
-            return slide.html || '';
-        }
-
-        let html = slide.html || '';
-        const overrides = slide.data._overrides || {};
-
-        // Inject position overrides for auto-drag elements
-        const autoDragStyles = Object.entries(overrides)
-            .filter(([id]) => id.startsWith('auto_'))
-            .map(([id, pos]) => `[data-drag-id="${id}"] { transform: translate(${pos.x}px, ${pos.y}px) !important; }`)
-            .join('\n');
-
-        if (autoDragStyles) {
-            const styleBlock = `<style>/* Export Position Overrides */\n${autoDragStyles}\n</style>`;
-            if (html.includes('</head>')) {
-                html = html.replace('</head>', `${styleBlock}</head>`);
-            } else {
-                html = styleBlock + html;
+            if (action.id && !action.id.startsWith('auto_')) {
+                // Legacy inline template update logic removed
             }
         }
-
-        // Strip interactivity styles (drag outlines, cursors)
-        html = html.replace(/<style>[\s\S]*?\.drag-ready[\s\S]*?<\/style>/g, '');
-
-        // Strip interactivity script
-        html = html.replace(/<script>[\s\S]*?initDragTargets[\s\S]*?<\/script>/g, '');
-
-        return html;
     }
 }
 

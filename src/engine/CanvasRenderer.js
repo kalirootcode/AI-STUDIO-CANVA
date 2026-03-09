@@ -290,6 +290,16 @@ class CanvasRenderer {
                                     childEstH = 60 + ((child.items || []).length * 50);
                                 } else if (child.type === 'barchart') {
                                     childEstH = child.height || 400;
+                                } else if (child.type === 'codeblock') {
+                                    childEstH = child.height || Math.max(250, 60 + (Math.max(10, Math.min(30, (child.code || '').split('\n').length)) * 30));
+                                } else if (child.type === 'hexdump') {
+                                    childEstH = (child.lines || 10) * 35;
+                                } else if (child.type === 'timeline') {
+                                    childEstH = (child.events || []).length * 120 + 80;
+                                } else if (child.type === 'vs_table') {
+                                    childEstH = 160 + (child.rows || []).length * 90;
+                                } else if (child.type === 'radarchart') {
+                                    childEstH = child.height || 500;
                                 }
 
                                 // Simulate cascade: if this child would overlap previous, push it down
@@ -353,6 +363,11 @@ class CanvasRenderer {
                         else if (layer.type === 'nodegraph') estH = layer.height || 500;
                         else if (layer.type === 'directorytree') estH = 60 + ((layer.items || []).length * 50);
                         else if (layer.type === 'barchart') estH = layer.height || 400;
+                        else if (layer.type === 'codeblock') estH = layer.height || Math.max(250, 60 + (Math.max(10, Math.min(30, (layer.code || '').split('\n').length)) * 30));
+                        else if (layer.type === 'hexdump') estH = (layer.lines || 10) * 35;
+                        else if (layer.type === 'timeline') estH = (layer.events || []).length * 120 + 80;
+                        else if (layer.type === 'vs_table') estH = 160 + (layer.rows || []).length * 90;
+                        else if (layer.type === 'radarchart') estH = layer.height || 500;
                         else if (layer.type === 'bulletlist') estH = ((layer.items || []).length * 68) + 20;
                         lastContentRealBottom = Math.max(lastContentRealBottom, realY + estH);
                     }
@@ -431,6 +446,8 @@ class CanvasRenderer {
             case 'icon': return this.drawIcon(layer);
             case 'swipe': return this.drawSwipeArrow(layer);
             case 'nodegraph': return this.drawNodeGraph(layer);
+            case 'hexagon_node': return this.drawHexagonNode(layer);
+            case 'connection_line': return this.drawConnectionLine(layer);
             case 'barchart': return this.drawBarChart(layer);
             case 'checklist': return this.drawChecklist(layer);
             case 'gridbox': return this.drawGridBox(layer);
@@ -439,6 +456,11 @@ class CanvasRenderer {
             case 'toolgrid': return this.drawToolGrid(layer);
             case 'attackflow': return this.drawAttackFlow(layer);
             case 'architecturediag': return this.drawArchitectureDiag(layer);
+            case 'codeblock': return this.drawCodeBlock(layer);
+            case 'hexdump': return this.drawHexdump(layer);
+            case 'timeline': return this.drawTimeline(layer);
+            case 'vs_table': return this.drawVsTable(layer);
+            case 'radarchart': return this.drawRadarChart(layer);
             default:
                 console.warn(`[CanvasRenderer] Unknown layer type: ${layer.type}`);
         }
@@ -503,20 +525,16 @@ class CanvasRenderer {
         this.ctx.imageSmoothingQuality = 'high';
 
         // Solid or gradient fill
-        if (typeof fill === 'object' && fill !== null && fill.type) {
-            this.ctx.fillStyle = this.effectsEngine.createGradient(fill);
-        } else {
-            this.ctx.fillStyle = fill || '#000000';
-        }
+        this.ctx.fillStyle = '#000000'; // Fondo estrictamente negro en todas las escenas
         this.ctx.fillRect(0, 0, this.width, this.height);
 
-        // ── PROFESSIONAL GEOMETRIC COVER BACKGROUND ──
+        const primary = ambientColor || this._getThemeColor('primary');
+        const primaryRgb = this._hexToRgb(primary);
+        const accent = accentColor || this._getThemeColor('accent');
+
+        // Solo aplicamos efectos a la portada y al final (isCover maneja ambos en ContentEngine)
         if (isCover) {
-            const primary = this._getThemeColor('primary');
-            const primaryRgb = this._hexToRgb(primary);
-
-            // Removed radial gradient as requested, keeping the solid base fill from above
-
+            // ── PROFESSIONAL GEOMETRIC COVER BACKGROUND ──
             // Draw professional geometric net (denser and enhanced)
             this.effectsEngine.drawGeometricNetPattern(0.35, primary, 42);
 
@@ -566,12 +584,10 @@ class CanvasRenderer {
         }
 
         if (pattern === 'net') {
-            this.effectsEngine.drawGeometricNetPattern(opacity || 0.15, this._getThemeColor('primary'));
+            this.effectsEngine.drawGeometricNetPattern(opacity || 0.15, primary);
         }
 
-        // Premium ambient orbs — uses active theme colors
-        const primary = ambientColor || this._getThemeColor('primary');
-        const accent = accentColor || this._getThemeColor('accent');
+        // Premium ambient orbs
         this.effectsEngine.drawAmbientOrbs(primary, accent);
 
         // Cinematic noise grain
@@ -883,7 +899,7 @@ class CanvasRenderer {
             // ═══════════════════════════════════════════
             const logoSize = 200;
             const logoX = (this.width - logoSize) / 2;
-            const logoY = 60;
+            const logoY = 360; // Moved down from 60 to 360 to respect 300px margin
 
             // Logo with glow effect
             if (logo) {
@@ -946,8 +962,8 @@ class CanvasRenderer {
             // ═══════════════════════════════════════════
             // STANDARD MODE — Logo beside brand name (matching size)
             // ═══════════════════════════════════════════
-            // Centered vertically inside the 300px top header area
-            const y = position === 'top' ? 125 : this.height - 100;
+            // Centered vertically inside the header area. For 'top', start at 60px to stick to the top edge.
+            const y = position === 'top' ? 60 : this.height - 100;
             const textSize = 38;
             const logoH = textSize + 8;  // Logo matches text height
             const logoW = logoH;         // Square logo
@@ -1215,10 +1231,39 @@ class CanvasRenderer {
 
         // Map node IDs to their computed pixel coordinates
         const nodeMap = {};
+        const unpositionedNodes = nodes.filter(n => typeof n.x === 'undefined' || typeof n.y === 'undefined');
+        const totalUnpositioned = unpositionedNodes.length;
+        let autoIdx = 0;
+        let maxPy = 0;
+        let maxPx = 0;
+
         nodes.forEach(n => {
+            let px, py;
+            if (typeof n.x === 'undefined' || typeof n.y === 'undefined') {
+                // Auto-distribute unpositioned nodes in a perfect circle
+                if (totalUnpositioned === 1) {
+                    px = w / 2;
+                    py = h / 2;
+                } else {
+                    const angle = (Math.PI * 2 * autoIdx) / totalUnpositioned - Math.PI / 2;
+                    const r = Math.min(w, h) * 0.35; // radius of layout circle
+                    px = (w / 2) + r * Math.cos(angle);
+                    py = (h / 2) + r * Math.sin(angle);
+                }
+                autoIdx++;
+            } else {
+                px = n.x * w;
+                py = n.y * h;
+            }
+
+            // Track maximum extremities to fix Bounding Box (Cyan Box) wrapping
+            // Add 100px padding for the radius + text label
+            if (py + 100 > maxPy) maxPy = py + 100;
+            if (px + 100 > maxPx) maxPx = px + 100;
+
             nodeMap[n.id] = {
-                px: (n.x || 0.5) * w,
-                py: (n.y || 0.5) * h,
+                px: px,
+                py: py,
                 label: n.label || '',
                 icon: n.icon || ''
             };
@@ -1343,24 +1388,295 @@ class CanvasRenderer {
             this.ctx.lineWidth = 1;
             this.ctx.stroke();
 
-            // 5) Icon perfectly centered
+            // 5) Icon perfectly centered — with emoji fallback
             if (n.icon) {
-                // Adjust Y +4 because of the hexagon visual balance, font baseline compensation
-                this._renderSmartIcon(this.ctx, n.icon, px, py + 4, 38, '#ffffff', 'center');
+                const iconMap = {
+                    'dns': '🌐', 'storage': '💾', 'cloud': '☁️', 'router': '📡',
+                    'server': '🖥️', 'database': '🗄️', 'desktop_mac': '🖥️', 'computer': '💻',
+                    'laptop': '💻', 'wifi': '📶', 'lan': '🔌', 'hub': '🔀',
+                    'security': '🛡️', 'shield': '🛡️', 'lock': '🔒', 'key': '🔑',
+                    'visibility': '👁️', 'search': '🔍', 'bug_report': '🐛', 'warning': '⚠️',
+                    'terminal': '⌨️', 'code': '⟨⟩', 'settings': '⚙️', 'build': '🔧',
+                    'firewall': '🧱', 'workstation': '🖥️', 'api': '🔗', 'web': '🌐',
+                    'scan': '🔍', 'person': '👤', 'group': '👥', 'folder': '📂',
+                    'email': '📧', 'power': '⚡', 'target': '🎯', 'exploit': '💀',
+                };
+                const emoji = iconMap[n.icon] || iconMap[n.icon.toLowerCase()] || '🔷';
+                this.ctx.font = '30px serif';
+                this.ctx.textAlign = 'center';
+                this.ctx.textBaseline = 'middle';
+                this.ctx.fillText(emoji, px, py + 2);
             }
 
             // 6) Align text baseline perfectly to MATCH CanvasEditor extracting text
             if (n.label) {
-                this.ctx.font = '700 24px "MPLUS Code Latin"';
+                this.ctx.font = '700 20px "MPLUS Code Latin"';
                 this.ctx.fillStyle = '#ffffff';
                 this.ctx.textAlign = 'center';
                 this.ctx.textBaseline = 'top'; // KEY FIX
-                this.ctx.fillText(n.label, px, py + nodeRadius + 20); // Matched to Editor offset
+                this.ctx.fillText(n.label, px, py + nodeRadius + 8); // Matched to Editor offset
             }
         });
 
         this.ctx.restore();
-        return y + (layer.height || 500);
+
+        // Ensure the layout engine stores the true encapsulating height and width for CanvasEditor
+        // so the cyan bounding box wraps perfectly around the deepest and widest nodes.
+        layer.width = Math.max(w, maxPx - x + 20);
+        layer.height = Math.max(h, maxPy + 20);
+        return y + layer.height;
+    }
+
+    /**
+     * Draw individual Hexagon Node (for Exploded NodeGraph)
+     * Premium cyber-dashboard style with built-in icon fallback
+     */
+    drawHexagonNode(layer) {
+        const x = layer.x || 60;
+        const y = layer.y || 400;
+        const radius = layer.size || 45;
+        const themeColor = layer.color || this._getThemeColor();
+        const iconName = layer.icon || 'dns';
+
+        const cx = x + radius;
+        const cy = y + radius;
+
+        // ═══ BUILT-IN ICON FALLBACK MAP ═══
+        // Material Icons font is not guaranteed. Use Unicode/Emoji as reliable fallback.
+        const iconMap = {
+            // Network & Infrastructure
+            'dns': '🌐', 'storage': '💾', 'cloud': '☁️', 'router': '📡',
+            'server': '🖥️', 'database': '🗄️', 'desktop_mac': '🖥️', 'computer': '💻',
+            'laptop': '💻', 'phone_android': '📱', 'tablet': '📱', 'devices': '📱',
+            'wifi': '📶', 'network_check': '🔗', 'lan': '🔌', 'hub': '🔀',
+            'vpn_lock': '🔐', 'public': '🌍', 'language': '🌍',
+            // Security
+            'security': '🛡️', 'shield': '🛡️', 'lock': '🔒', 'lock_open': '🔓',
+            'key': '🔑', 'fingerprint': '👆', 'verified_user': '✅', 'gpp_good': '✅',
+            'admin_panel_settings': '⚙️', 'policy': '📋',
+            // Monitoring & Analysis
+            'visibility': '👁️', 'search': '🔍', 'bug_report': '🐛', 'warning': '⚠️',
+            'error': '❌', 'report': '📊', 'analytics': '📈', 'monitoring': '📡',
+            'terminal': '⌨️', 'code': '⟨⟩', 'memory': '🧠', 'settings': '⚙️',
+            // Communication
+            'email': '📧', 'mail': '📧', 'chat': '💬', 'forum': '💬',
+            'person': '👤', 'group': '👥', 'people': '👥', 'account_circle': '👤',
+            // Files
+            'folder': '📂', 'file': '📄', 'description': '📄', 'attachment': '📎',
+            // Actions
+            'build': '🔧', 'extension': '🧩', 'power': '⚡', 'bolt': '⚡',
+            'sync': '🔄', 'autorenew': '🔄', 'download': '⬇️', 'upload': '⬆️',
+            // Misc
+            'firewall': '🧱', 'workstation': '🖥️', 'api': '🔗', 'web': '🌐',
+            'scan': '🔍', 'nmap': '🔍', 'exploit': '💀', 'malware': '🦠',
+            'target': '🎯', 'attack': '⚔️', 'hacker': '💀', 'payload': '💣',
+        };
+
+        // Resolve icon: try Material Icons first, fallback to emoji map
+        const fallbackEmoji = iconMap[iconName] || iconMap[iconName.toLowerCase()] || '🔷';
+
+        this.ctx.save();
+
+        // Helper function for drawing glowing hexagons
+        const drawHexagon = (hcx, hcy, hr) => {
+            this.ctx.beginPath();
+            for (let i = 0; i < 6; i++) {
+                const angle = (Math.PI / 3) * i - Math.PI / 2;
+                const px = hcx + hr * Math.cos(angle);
+                const py = hcy + hr * Math.sin(angle);
+                if (i === 0) this.ctx.moveTo(px, py);
+                else this.ctx.lineTo(px, py);
+            }
+            this.ctx.closePath();
+        };
+
+        // 1) Pulsing outer glow aura
+        const pulseTime = (Math.sin(Date.now() / 800) + 1) / 2; // 0..1 pulse
+        this.ctx.beginPath();
+        this.ctx.arc(cx, cy, radius + 18 + pulseTime * 6, 0, Math.PI * 2);
+        this.ctx.fillStyle = `rgba(${this._hexToRgb(themeColor)}, ${0.03 + pulseTime * 0.04})`;
+        this.ctx.fill();
+
+        // 2) Tech dashed orbital ring (animated rotation)
+        const rotAngle = Date.now() / 3000;
+        this.ctx.save();
+        this.ctx.translate(cx, cy);
+        this.ctx.rotate(rotAngle);
+        this.ctx.beginPath();
+        this.ctx.arc(0, 0, radius + 10, 0, Math.PI * 2);
+        this.ctx.strokeStyle = `rgba(${this._hexToRgb(themeColor)}, 0.35)`;
+        this.ctx.lineWidth = 1.5;
+        this.ctx.setLineDash([6, 12]);
+        this.ctx.stroke();
+        this.ctx.setLineDash([]);
+        this.ctx.restore();
+
+        // 3) Hexagonal Solid Core with gradient fill
+        drawHexagon(cx, cy, radius);
+        const grad = this.ctx.createRadialGradient(cx, cy - radius * 0.3, 0, cx, cy, radius);
+        grad.addColorStop(0, '#1a1a2e');
+        grad.addColorStop(1, '#0a0a0c');
+        this.ctx.fillStyle = grad;
+        this.ctx.fill();
+
+        // Glowing bright border with double-stroke
+        this.ctx.shadowColor = themeColor;
+        this.ctx.shadowBlur = 25;
+        this.ctx.strokeStyle = themeColor;
+        this.ctx.lineWidth = 2.5;
+        this.ctx.stroke();
+        this.ctx.shadowBlur = 0;
+
+        // 4) Inner hexagonal highlight ring
+        drawHexagon(cx, cy, radius - 6);
+        this.ctx.strokeStyle = `rgba(${this._hexToRgb(themeColor)}, 0.15)`;
+        this.ctx.lineWidth = 1;
+        this.ctx.stroke();
+
+        // 5) Corner accent dots (4 cardinal points)
+        const dotPositions = [0, Math.PI / 2, Math.PI, Math.PI * 1.5];
+        dotPositions.forEach(a => {
+            const dx = cx + (radius + 10) * Math.cos(a);
+            const dy = cy + (radius + 10) * Math.sin(a);
+            this.ctx.beginPath();
+            this.ctx.arc(dx, dy, 2, 0, Math.PI * 2);
+            this.ctx.fillStyle = themeColor;
+            this.ctx.fill();
+        });
+
+        // 6) Icon — Try Material Icons font, then fallback to emoji
+        const iconSize = Math.max(24, radius * 0.75);
+        this.ctx.textAlign = 'center';
+        this.ctx.textBaseline = 'middle';
+
+        // Attempt Material Icons first
+        this.ctx.font = `${iconSize}px "Material Icons"`;
+        const metrics = this.ctx.measureText(iconName);
+        const materialWorks = metrics.width > 0 && metrics.width < iconSize * 2;
+
+        if (materialWorks && iconName.length > 1) {
+            this.ctx.fillStyle = '#ffffff';
+            this.ctx.fillText(iconName, cx, cy + 2);
+        } else {
+            // Emoji fallback — always works
+            this.ctx.font = `${iconSize}px serif`;
+            this.ctx.fillText(fallbackEmoji, cx, cy + 2);
+        }
+
+        this.ctx.restore();
+
+        layer.width = radius * 2;
+        layer.height = radius * 2;
+        return y + layer.height;
+    }
+
+    /**
+     * Draw targeted Connection Line (for Exploded NodeGraph)
+     * Premium animated cyber-dashboard style
+     */
+    drawConnectionLine(layer) {
+        const sx = layer.startX || 0;
+        const sy = layer.startY || 0;
+        const ex = layer.endX || 200;
+        const ey = layer.endY || 200;
+        const connColor = layer.color || this._getThemeColor();
+
+        this.ctx.save();
+
+        // Create gradient along the line direction
+        const lineGrad = this.ctx.createLinearGradient(sx, sy, ex, ey);
+        lineGrad.addColorStop(0, `rgba(${this._hexToRgb(connColor)}, 0.3)`);
+        lineGrad.addColorStop(0.5, connColor);
+        lineGrad.addColorStop(1, `rgba(${this._hexToRgb(connColor)}, 0.3)`);
+
+        // Background glow trail (wider, softer)
+        this.ctx.beginPath();
+        this.ctx.moveTo(sx, sy);
+        if (Math.abs(sy - ey) < 100) {
+            const midX = (sx + ex) / 2;
+            this.ctx.bezierCurveTo(midX, sy - 50, midX, ey - 50, ex, ey);
+        } else {
+            this.ctx.lineTo(ex, ey);
+        }
+        this.ctx.strokeStyle = `rgba(${this._hexToRgb(connColor)}, 0.08)`;
+        this.ctx.lineWidth = 12;
+        this.ctx.stroke();
+
+        // Main animated dashed line
+        this.ctx.beginPath();
+        this.ctx.moveTo(sx, sy);
+        if (Math.abs(sy - ey) < 100) {
+            const midX = (sx + ex) / 2;
+            this.ctx.bezierCurveTo(midX, sy - 50, midX, ey - 50, ex, ey);
+        } else {
+            this.ctx.lineTo(ex, ey);
+        }
+
+        this.ctx.strokeStyle = lineGrad;
+        this.ctx.lineWidth = 2.5;
+
+        // Tech dashboard animated pulsing dashes
+        const timeStr = Date.now() / 20;
+        this.ctx.setLineDash([15, 10]);
+        this.ctx.lineDashOffset = -timeStr; // Flow towards destination
+
+        // Glow effect
+        this.ctx.shadowColor = connColor;
+        this.ctx.shadowBlur = 15;
+        this.ctx.stroke();
+
+        // Secondary bright inner core
+        this.ctx.lineWidth = 0.8;
+        this.ctx.strokeStyle = `rgba(255,255,255,0.6)`;
+        this.ctx.shadowBlur = 0;
+        this.ctx.stroke();
+
+        this.ctx.setLineDash([]); // Reset dash
+
+        // Endpoint dots (small circles at connection points)
+        [{ px: sx, py: sy }, { px: ex, py: ey }].forEach(pt => {
+            this.ctx.beginPath();
+            this.ctx.arc(pt.px, pt.py, 4, 0, Math.PI * 2);
+            this.ctx.fillStyle = connColor;
+            this.ctx.shadowColor = connColor;
+            this.ctx.shadowBlur = 10;
+            this.ctx.fill();
+            this.ctx.shadowBlur = 0;
+        });
+
+        // Draw connection label if exists
+        if (layer.label) {
+            const midX = (sx + ex) / 2;
+            const midY = (sy + ey) / 2 - 20; // Float slightly above the line
+
+            this.ctx.font = '600 16px "MPLUS Code Latin"';
+            const metrics = this.ctx.measureText(layer.label);
+            const lw = Math.max(metrics.width + 24, 60);
+            const lh = 30;
+
+            // Translucent tech pill with gradient border
+            this.ctx.fillStyle = `rgba(6, 6, 10, 0.9)`;
+            this.ctx.strokeStyle = `rgba(${this._hexToRgb(connColor)}, 0.6)`;
+            this.ctx.lineWidth = 1;
+            this.effectsEngine.roundRect(midX - lw / 2, midY - lh / 2, lw, lh, 15);
+            this.ctx.fill();
+            this.ctx.stroke();
+
+            this.ctx.fillStyle = connColor;
+            this.ctx.textAlign = 'center';
+            this.ctx.textBaseline = 'middle';
+            this.ctx.fillText(layer.label, midX, midY + 1);
+        }
+
+        this.ctx.restore();
+
+        // Compute loose bounding box
+        layer.x = Math.min(sx, ex) - 20;
+        layer.y = Math.min(sy, ey) - 20;
+        layer.width = Math.abs(ex - sx) + 40;
+        layer.height = Math.abs(ey - sy) + 80;
+
+        return layer.y + layer.height;
     }
 
     /**
@@ -1638,6 +1954,390 @@ class CanvasRenderer {
 
         this.ctx.restore();
         return y + curY + baseHeight;
+    }
+
+    /**
+     * Draw CodeBlock (Syntax Highlighted Code Editor)
+     */
+    drawCodeBlock(layer) {
+        let { x = 60, y = 800, width = 960, height, code = '', language = 'python', title = '' } = layer;
+
+        const maxLines = Math.max(10, Math.min(30, code.split('\n').length));
+        height = height || Math.max(250, 60 + (maxLines * 30));
+
+        // Draw MacOS style window background
+        this.ctx.fillStyle = '#1e1e1e'; // VS Code Dark
+        this.effectsEngine.roundRect(x, y, width, height, 12, { blur: 20, color: 'rgba(0,0,0,0.5)', offsetY: 10 });
+
+        // Header Bar
+        this.ctx.fillStyle = '#2d2d2d';
+        this.effectsEngine.roundRect(x, y, width, 45, [12, 12, 0, 0]);
+        this.ctx.fill();
+
+        // Mac Buttons
+        const btnColors = ['#ff5f56', '#ffbd2e', '#27c93f'];
+        for (let i = 0; i < 3; i++) {
+            this.ctx.fillStyle = btnColors[i];
+            this.ctx.beginPath();
+            this.ctx.arc(x + 25 + (i * 25), y + 22, 6, 0, Math.PI * 2);
+            this.ctx.fill();
+        }
+
+        // Title/Filename
+        if (title || language) {
+            this.ctx.font = '500 20px "Inter"';
+            this.ctx.fillStyle = '#888888';
+            this.ctx.textAlign = 'center';
+            this.ctx.fillText((title || language).toLowerCase(), x + width / 2, y + 28);
+            this.ctx.textAlign = 'left';
+        }
+
+        // Simple Regex Syntax Highlighter
+        const lines = code.split('\n');
+        this.ctx.font = '500 24px "JetBrains Mono", monospace';
+        let currentY = y + 80;
+
+        lines.forEach((line, i) => {
+            if (i >= maxLines) return; // Prevent overflow
+
+            // Line Number
+            this.ctx.fillStyle = '#555555';
+            this.ctx.fillText(String(i + 1).padStart(2, ' '), x + 20, currentY);
+
+            // Very basic syntax highlighting simulation
+            let curX = x + 70;
+            const words = line.split(/(\s+|[().,{}="'])/g);
+
+            words.forEach(word => {
+                if (!word) return;
+                let color = '#d4d4d4'; // default text
+
+                if (word.match(/^(def|class|if|else|elif|return|import|from|const|let|var|function|export)$/)) color = '#c586c0'; // keyword
+                else if (word.match(/^(True|False|None|null|undefined)$/)) color = '#569cd6'; // boolean
+                else if (word.match(/^[0-9]+$/)) color = '#b5cea8'; // number
+                else if (word.match(/^['"].*['"]$/)) color = '#ce9178'; // string block (rough)
+                else if (word.startsWith('#') || word.startsWith('//')) color = '#6a9955'; // comment (rough)
+
+                this.ctx.fillStyle = color;
+                this.ctx.fillText(word, curX, currentY);
+                curX += this.ctx.measureText(word).width;
+            });
+
+            currentY += 30;
+        });
+
+        return y + height;
+    }
+
+    /**
+     * Draw Hexdump (Matrix/Mr Robot style machine code visualization)
+     */
+    drawHexdump(layer) {
+        const { x = 60, y = 600, width = 960, height = 400, color = this._getThemeColor('primary'), lines = 10 } = layer;
+
+        this.ctx.save();
+        this.ctx.font = '600 22px "JetBrains Mono"';
+        this.ctx.fillStyle = color;
+        this.ctx.globalAlpha = 0.6; // Keep it as a semi-transparent background widget
+
+        let startAddr = 0x00401000;
+        const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+.,/;[]";
+
+        for (let i = 0; i < lines; i++) {
+            const cy = y + (i * 35);
+
+            // Draw Address
+            const addr = '0x' + startAddr.toString(16).toUpperCase().padStart(8, '0');
+            this.ctx.globalAlpha = 0.8;
+            this.ctx.fillText(addr, x, cy);
+
+            // Draw Hex Pairs
+            this.ctx.globalAlpha = 0.5;
+            let hexStr = '';
+            let asciiStr = '';
+            for (let j = 0; j < 16; j++) {
+                const val = Math.floor(Math.random() * 255);
+                hexStr += val.toString(16).padStart(2, '0').toUpperCase() + ' ';
+                asciiStr += chars.charAt(Math.floor(Math.random() * chars.length));
+                if (j === 7) hexStr += ' '; // middle gap
+            }
+
+            this.ctx.fillText(hexStr, x + 150, cy);
+
+            // Draw ASCII dump
+            this.ctx.globalAlpha = 0.3;
+            this.ctx.fillText(asciiStr, x + 650, cy);
+
+            startAddr += 16;
+        }
+
+        this.ctx.restore();
+        return y + (lines * 35);
+    }
+
+    /**
+     * Draw Timeline (Roadmap/Chronological states)
+     */
+    drawTimeline(layer) {
+        const { x = 60, y = 500, width = 960, events = [], color = this._getThemeColor('primary') } = layer;
+
+        this.ctx.save();
+        const startY = y;
+        let currentY = startY;
+        const nodeX = x + 150; // X position of the timeline line
+
+        this.ctx.strokeStyle = color;
+        this.ctx.lineWidth = 4;
+
+        events.forEach((ev, i) => {
+            // Draw Node Circle
+            this.ctx.fillStyle = '#0a0a0c';
+            this.ctx.beginPath();
+            this.ctx.arc(nodeX, currentY + 30, 16, 0, Math.PI * 2);
+            this.ctx.fill();
+            this.ctx.stroke();
+
+            // Draw Node Inner
+            this.ctx.fillStyle = color;
+            this.ctx.beginPath();
+            this.ctx.arc(nodeX, currentY + 30, 6, 0, Math.PI * 2);
+            this.ctx.fill();
+
+            // Line to next node
+            if (i < events.length - 1) {
+                this.ctx.beginPath();
+                this.ctx.moveTo(nodeX, currentY + 46);
+                this.ctx.lineTo(nodeX, currentY + 140); // Base step height
+                this.ctx.stroke();
+            }
+
+            // Date / Label (Left side)
+            if (ev.date) {
+                this.ctx.font = '700 24px "MPLUS Code Latin"';
+                this.ctx.fillStyle = color;
+                this.ctx.textAlign = 'right';
+                this.ctx.fillText(ev.date, nodeX - 40, currentY + 38);
+            }
+
+            // Title (Right side)
+            if (ev.title) {
+                this.ctx.font = '800 32px "BlackOpsOne"';
+                this.ctx.fillStyle = '#ffffff';
+                this.ctx.textAlign = 'left';
+                this.ctx.fillText(ev.title, nodeX + 40, currentY + 38);
+            }
+
+            // Description (Right side)
+            if (ev.desc) {
+                this.ctx.font = '500 24px "MPLUS Code Latin"';
+                this.ctx.fillStyle = '#999999';
+                const lines = this._wrapLine(this.ctx, ev.desc, width - Math.max((nodeX - x) - 40, 0) - 100);
+                lines.forEach((l, li) => {
+                    this.ctx.fillText(l, nodeX + 40, currentY + 75 + (li * 32));
+                });
+                currentY += (lines.length * 32) + 20; // add line height
+            } else {
+                currentY += 40;
+            }
+
+            currentY += 80; // step gap
+        });
+
+        this.ctx.restore();
+        return currentY;
+    }
+
+    /**
+     * Draw VS Table (Comparisons)
+     */
+    drawVsTable(layer) {
+        let { x = 60, y = 500, width = 960, leftTitle = 'A', rightTitle = 'B', rows = [],
+            leftColor = '#00D9FF', rightColor = '#FF3366' } = layer;
+
+        this.ctx.save();
+        let curY = y;
+        const halfW = width / 2;
+
+        // Draw Headers
+        this.ctx.font = '900 42px "BlackOpsOne"';
+        this.ctx.textAlign = 'center';
+        this.ctx.textBaseline = 'middle';
+
+        // Left Header
+        this.ctx.fillStyle = leftColor;
+        this.ctx.fillText(leftTitle, x + (halfW / 2), curY + 40);
+
+        // Right Header
+        this.ctx.fillStyle = rightColor;
+        this.ctx.fillText(rightTitle, x + halfW + (halfW / 2), curY + 40);
+
+        // VS Badge
+        this.ctx.fillStyle = '#ffffff';
+        this.ctx.font = '900 28px "BlackOpsOne"';
+        this.effectsEngine.roundRect(x + halfW - 35, curY + 5, 70, 70, 35);
+        this.ctx.fill();
+        this.ctx.fillStyle = '#000000';
+        this.ctx.fillText('VS', x + halfW, curY + 44);
+
+        curY += 120;
+
+        // Configure text rendering
+        const fontSize = 28;
+        const lineHeight = fontSize + 8;
+        this.ctx.font = `600 ${fontSize}px "MPLUS Code Latin"`;
+
+        rows.forEach(row => {
+            // Process lines
+            const padX = 70; // padding inside column
+            const maxTextW = halfW - padX;
+
+            const leftLines = this._wrapLine(this.ctx, row.left || '', maxTextW);
+            const rightLines = this._wrapLine(this.ctx, row.right || '', maxTextW);
+
+            const maxLines = Math.max(leftLines.length, rightLines.length);
+            const h = Math.max(90, (maxLines * lineHeight) + 60); // Dynamic height + padding
+
+            // Alternating Row Backgrounds
+            this.ctx.fillStyle = 'rgba(255,255,255,0.03)';
+            this.ctx.fillRect(x, curY, width, h);
+
+            // Center Divider
+            this.ctx.strokeStyle = 'rgba(255,255,255,0.1)';
+            this.ctx.lineWidth = 2;
+            this.ctx.beginPath();
+            this.ctx.moveTo(x + halfW, curY + 15);
+            this.ctx.lineTo(x + halfW, curY + h - 15);
+            this.ctx.stroke();
+
+            // Right Accent Divider (Vulnerable vs Patched feel)
+            this.ctx.fillStyle = rightColor;
+            this.ctx.globalAlpha = 0.5;
+            this.ctx.fillRect(x + halfW, curY, 3, h);
+            this.ctx.globalAlpha = 1.0;
+
+            this.ctx.textAlign = 'center';
+            this.ctx.textBaseline = 'middle';
+
+            // Function to render text block vertically centered
+            const renderTextBlock = (lines, positive, baseX, baseY, boxH, iconPrefix) => {
+                const totalTextH = lines.length * lineHeight;
+                let startY = baseY + (boxH - totalTextH) / 2 + (lineHeight / 2);
+
+                lines.forEach((line, i) => {
+                    // Only add icon to the first line
+                    const textToDraw = (i === 0 && positive) ? (iconPrefix + line) : line;
+                    this.ctx.fillStyle = positive ? '#00FF88' : '#e0e0e0';
+                    this.ctx.fillText(textToDraw, baseX, startY);
+                    startY += lineHeight;
+                });
+            };
+
+            // Left Column
+            const leftIcon = row.leftPositive ? '✅ ' : '❌ ';
+            renderTextBlock(leftLines, row.leftPositive, x + (halfW / 2), curY, h, leftIcon);
+
+            // Right Column
+            const rightIcon = row.rightPositive ? '✅ ' : '❌ ';
+            renderTextBlock(rightLines, row.rightPositive, x + halfW + (halfW / 2), curY, h, rightIcon);
+
+            curY += h + 10; // Gap between rows
+        });
+
+        this.ctx.restore();
+        return curY;
+    }
+
+    /**
+     * Draw Radar Chart (Stats/Skills Polygon)
+     */
+    drawRadarChart(layer) {
+        const { x = 60, y = 500, width = 960, height = 500, color = this._getThemeColor('primary'), stats = [] } = layer;
+
+        if (!stats || stats.length < 3) return y + 100; // Need at least 3 points for a radar
+
+        this.ctx.save();
+        const cx = x + width / 2;
+        const cy = y + height / 2;
+        const radius = Math.min(width, height) / 2 - 80;
+
+        // Draw web rings
+        this.ctx.strokeStyle = '#333333';
+        this.ctx.lineWidth = 1;
+        const levels = 5;
+
+        for (let l = 1; l <= levels; l++) {
+            const r = (radius / levels) * l;
+            this.ctx.beginPath();
+            for (let i = 0; i < stats.length; i++) {
+                const angle = (Math.PI * 2 * i) / stats.length - Math.PI / 2;
+                const px = cx + Math.cos(angle) * r;
+                const py = cy + Math.sin(angle) * r;
+                if (i === 0) this.ctx.moveTo(px, py);
+                else this.ctx.lineTo(px, py);
+            }
+            this.ctx.closePath();
+            this.ctx.stroke();
+        }
+
+        // Draw spokes
+        this.ctx.beginPath();
+        for (let i = 0; i < stats.length; i++) {
+            const angle = (Math.PI * 2 * i) / stats.length - Math.PI / 2;
+            this.ctx.moveTo(cx, cy);
+            this.ctx.lineTo(cx + Math.cos(angle) * radius, cy + Math.sin(angle) * radius);
+        }
+        this.ctx.stroke();
+
+        // Draw Data Polygon
+        this.ctx.beginPath();
+        for (let i = 0; i < stats.length; i++) {
+            const val = Math.max(0, Math.min(10, stats[i].value || 5)); // normalized to 0-10
+            const norm = val / 10;
+            const angle = (Math.PI * 2 * i) / stats.length - Math.PI / 2;
+            const px = cx + Math.cos(angle) * (radius * norm);
+            const py = cy + Math.sin(angle) * (radius * norm);
+            if (i === 0) this.ctx.moveTo(px, py);
+            else this.ctx.lineTo(px, py);
+        }
+        this.ctx.closePath();
+
+        // Fill Data
+        const cRgb = this._hexToRgb(color);
+        this.ctx.fillStyle = `rgba(${cRgb}, 0.3)`;
+        this.ctx.fill();
+        this.ctx.strokeStyle = color;
+        this.ctx.lineWidth = 3;
+        this.ctx.lineJoin = 'round';
+        this.ctx.stroke();
+
+        // Draw Labels
+        this.ctx.font = '700 24px "BlackOpsOne"';
+        this.ctx.fillStyle = '#ffffff';
+        this.ctx.textAlign = 'center';
+        this.ctx.textBaseline = 'middle';
+
+        for (let i = 0; i < stats.length; i++) {
+            const angle = (Math.PI * 2 * i) / stats.length - Math.PI / 2;
+            const px = cx + Math.cos(angle) * (radius + 40); // Offset for text
+            const py = cy + Math.sin(angle) * (radius + 40);
+
+            // Adjust alignment based on position to prevent overlap
+            if (px < cx - 20) this.ctx.textAlign = 'right';
+            else if (px > cx + 20) this.ctx.textAlign = 'left';
+            else this.ctx.textAlign = 'center';
+
+            this.ctx.fillText((stats[i].label || '').toUpperCase(), px, py);
+
+            // Draw Value
+            this.ctx.font = '600 20px "MPLUS Code Latin"';
+            this.ctx.fillStyle = color;
+            this.ctx.fillText(`${stats[i].value}/10`, px, py + 25);
+            this.ctx.font = '700 24px "BlackOpsOne"'; // reset
+            this.ctx.fillStyle = '#ffffff';
+        }
+
+        this.ctx.restore();
+        return y + height;
     }
 
     /**

@@ -5,8 +5,7 @@
 // ═══════════════════════════════════════════════════════════════════════════
 
 class CarouselEngine {
-    constructor(templateEngine) {
-        this.templateEngine = templateEngine;
+    constructor() {
         this.packs = [];
     }
 

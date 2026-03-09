@@ -1,6 +1,7 @@
 const { app, BrowserWindow, ipcMain, dialog, Menu } = require('electron');
 const path = require('path');
 const fs = require('fs');
+const axios = require('axios'); // Added to fix fetch network issues
 
 let mainWindow;
 
@@ -617,31 +618,22 @@ ipcMain.handle('call-ai', async (event, { provider, apiKey, prompt }) => {
                 console.log(`[IPC] Intentando Gemini con modelo: ${model}...`);
 
                 try {
-                    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(apiKey)}`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
+                    const response = await axios.post(
+                        `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(apiKey)}`,
+                        {
                             contents: [{ parts: [{ text: prompt }] }],
                             generationConfig: {
                                 temperature: 0.7,
                                 maxOutputTokens: 65536
                             }
-                        })
-                    });
+                        },
+                        {
+                            headers: { 'Content-Type': 'application/json' },
+                            timeout: 120000 // 2 minutes timeout
+                        }
+                    );
 
-                    if (!response.ok) {
-                        const errText = await response.text();
-                        console.warn(`[IPC] Falló ${model}: ${response.status} - ${errText}`);
-                        lastError = `Error (${model}): ${response.status}`;
-                        continue;
-                    }
-
-                    const data = await response.json();
-
-                    if (data.error) {
-                        lastError = data.error.message || JSON.stringify(data.error);
-                        continue;
-                    }
+                    const data = response.data;
 
                     if (!data.candidates || data.candidates.length === 0) {
                         if (data.promptFeedback && data.promptFeedback.blockReason) {
@@ -678,29 +670,23 @@ ipcMain.handle('call-ai', async (event, { provider, apiKey, prompt }) => {
             // Si llegamos aquí, todo falló. Intentemos listar los modelos disponibles para ver qué pasa.
             console.log("[IPC] Todos los modelos fallaron. Intentando listar modelos disponibles...");
             try {
-                const listResp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${encodeURIComponent(apiKey)}`);
-                if (listResp.ok) {
-                    const listData = await listResp.json();
-                    if (listData.models) {
-                        const availableModels = listData.models.map(m => m.name.replace('models/', '')).join(', ');
-                        return { success: false, error: `No se pudo conectar con ningún modelo estándar. Modelos disponibles para tu Key: ${availableModels}. Error original: ${lastError}` };
-                    }
+                const listResp = await axios.get(`https://generativelanguage.googleapis.com/v1beta/models?key=${encodeURIComponent(apiKey)}`);
+                const listData = listResp.data;
+                if (listData.models) {
+                    const availableModels = listData.models.map(m => m.name.replace('models/', '')).join(', ');
+                    return { success: false, error: `No se pudo conectar con ningún modelo estándar. Modelos disponibles para tu Key: ${availableModels}. Error original: ${lastError}` };
                 }
             } catch (listErr) {
-                console.error("Error listing models:", listErr);
+                console.error("Error listing models:", listErr.message);
             }
 
             return { success: false, error: `Gemini Error: Ningún modelo compatible encontrado. Último error: ${lastError}` };
 
         } else {
             // ─── GROQ (Llama 3) ───
-            const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${apiKey}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
+            const response = await axios.post(
+                'https://api.groq.com/openai/v1/chat/completions',
+                {
                     model: 'llama-3.3-70b-versatile',
                     messages: [
                         { role: 'system', content: 'You are an expert content creator and code generator. Follow instructions precisely. When asked for JSON, return ONLY valid JSON without any markdown formatting or extra text.' },
@@ -708,14 +694,16 @@ ipcMain.handle('call-ai', async (event, { provider, apiKey, prompt }) => {
                     ],
                     temperature: 0.7,
                     max_tokens: 8000
-                })
-            });
+                },
+                {
+                    headers: {
+                        'Authorization': `Bearer ${apiKey}`,
+                        'Content-Type': 'application/json'
+                    }
+                }
+            );
 
-            const data = await response.json();
-
-            if (data.error) {
-                return { success: false, error: data.error.message };
-            }
+            const data = response.data;
 
             let code = data.choices[0].message.content.trim();
 

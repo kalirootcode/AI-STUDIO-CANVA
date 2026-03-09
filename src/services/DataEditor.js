@@ -135,9 +135,9 @@ export class DataEditor {
             <div class="ai-card">
                 <div class="ai-card-header">
                     <div class="ai-icon">
-                        <span class="material-icons">auto_fix_high</span>
+                        <span class="material-icons" style="line-height: 1;">auto_fix_high</span>
                     </div>
-                    <span>AI Design Assistant</span>
+                    <span style="display: inline-block; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">AI DESIGN ASSISTANT</span>
                 </div>
                 <div class="ai-input-row">
                     <input type="text" id="aiRefineInput" placeholder="Ej: 'Resumir texto', 'Corregir ortografía'...">
@@ -266,31 +266,131 @@ export class DataEditor {
         }
     }
 
+    convertToHex(colorValue) {
+        if (!colorValue || typeof colorValue !== 'string') return '#00D9FF';
+        const val = colorValue.trim();
+
+        if (val.startsWith('#')) {
+            if (val.length === 4 || val.length === 7) return val;
+            if (val.length === 9) return val.substring(0, 7);
+            return '#00D9FF';
+        }
+
+        if (val.startsWith('rgb')) {
+            const parts = val.match(/[\d.]+/g);
+            if (parts && parts.length >= 3) {
+                const r = Math.min(255, Math.max(0, Math.round(parseFloat(parts[0])))).toString(16).padStart(2, '0');
+                const g = Math.min(255, Math.max(0, Math.round(parseFloat(parts[1])))).toString(16).padStart(2, '0');
+                const b = Math.min(255, Math.max(0, Math.round(parseFloat(parts[2])))).toString(16).padStart(2, '0');
+                return `#${r}${g}${b}`;
+            }
+        }
+
+        if (val.startsWith('hsl')) {
+            const parts = val.match(/[\d.]+/g);
+            if (parts && parts.length >= 3) {
+                let h = parseFloat(parts[0]);
+                let s = parseFloat(parts[1]) / 100;
+                let l = parseFloat(parts[2]) / 100;
+
+                const k = n => (n + h / 30) % 12;
+                const a = s * Math.min(l, 1 - l);
+                const f = n => l - a * Math.max(-1, Math.min(k(n) - 3, Math.min(9 - k(n), 1)));
+
+                const r = Math.round(255 * f(0)).toString(16).padStart(2, '0');
+                const g = Math.round(255 * f(8)).toString(16).padStart(2, '0');
+                const b = Math.round(255 * f(4)).toString(16).padStart(2, '0');
+                return `#${r}${g}${b}`;
+            }
+        }
+
+        return '#00D9FF';
+    }
+
     createField(parent, key, value, path) {
+        // Hide internal rendering keys and IDs
+        if (key.startsWith('_') || key === 'id' || key === 'layerIndex') return;
+
         const wrapper = document.createElement('div');
         wrapper.className = 'control-group';
         wrapper.style.marginBottom = '10px';
 
         const label = document.createElement('label');
-        label.innerText = key.replace(/_/g, ' ');
+        label.innerText = key.replace(/_/g, ' ').toUpperCase();
         // If it's an array index, don't show label, the card has #ID
         if (isNaN(key)) wrapper.appendChild(label);
 
         let input;
 
-        // Input Type Logic
-        if (key.includes('ICON')) {
+        // Input Type Logic specifically tailored for Canvas JSON schema
+        if (key === 'color' || key.toLowerCase().includes('color')) {
+            const colorContainer = document.createElement('div');
+            colorContainer.style.display = 'flex';
+            colorContainer.style.gap = '8px';
+            colorContainer.style.alignItems = 'center';
+
+            const colorPicker = document.createElement('input');
+            colorPicker.type = 'color';
+            colorPicker.value = this.convertToHex(value);
+            colorPicker.style.height = '35px';
+            colorPicker.style.width = '40px';
+            colorPicker.style.cursor = 'pointer';
+            colorPicker.style.border = 'none';
+            colorPicker.style.padding = '0';
+            colorPicker.style.background = 'transparent';
+
+            const textInput = document.createElement('input');
+            textInput.type = 'text';
+            textInput.value = value || '';
+            textInput.className = 'editor-input';
+            textInput.style.flex = '1';
+            textInput.dataset.path = JSON.stringify(path);
+            textInput.dataset.key = key;
+
+            colorPicker.oninput = (e) => {
+                textInput.value = e.target.value;
+                this.updateDataByPath(path, e.target.value);
+            };
+
+            textInput.oninput = (e) => {
+                const hex = this.convertToHex(e.target.value);
+                try { colorPicker.value = hex; } catch (err) { }
+                this.updateDataByPath(path, e.target.value);
+            };
+
+            textInput.addEventListener('focus', () => {
+                // Dispatch event for visual sync if needed
+            });
+
+            colorContainer.appendChild(colorPicker);
+            colorContainer.appendChild(textInput);
+
+            wrapper.appendChild(colorContainer);
+            parent.appendChild(wrapper);
+            return; // Exit early since events and DOM logic are handled
+        }
+        else if (key === 'size' || key === 'x' || key === 'y' || key === 'width' || key === 'height') {
+            input = document.createElement('input');
+            input.type = 'number';
+            input.value = value || 0;
+            input.style.fontFamily = 'monospace';
+        }
+        else if (key === 'type' || key === 'theme' || key === 'align') {
+            // Read-only or simplified string fields
             input = document.createElement('input');
             input.type = 'text';
-            input.placeholder = 'Icon name...';
+            input.value = value || '';
+            if (key === 'type') input.readOnly = true;
         }
-        else if (String(value).length > 40 || key.includes('DESCRIPTION') || key.includes('CONTENT')) {
+        else if (typeof value === 'string' && (value.length > 40 || key === 'content' || key === 'text')) {
             input = document.createElement('textarea');
             input.rows = 3;
-            input.className = 'textarea-input'; // Use existing class
+            input.className = 'textarea-input';
+            input.value = value || '';
         } else {
             input = document.createElement('input');
             input.type = 'text';
+            input.value = value || '';
         }
 
         input.className = input.tagName === 'TEXTAREA' ? 'textarea-input' : 'editor-input';

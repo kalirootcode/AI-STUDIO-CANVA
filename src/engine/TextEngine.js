@@ -105,7 +105,7 @@ class TextEngine {
             const newWidth = currentLine.width + token.width;
 
             if (newWidth <= maxWidth || currentLine.tokens.length === 0) {
-                // Fits, or line is empty (must put at least one word)
+                // Fits, or line is empty (must put at least one word, even if it exceeds maxWidth)
                 currentLine.tokens.push(token);
                 currentLine.width = newWidth;
             } else {
@@ -136,6 +136,11 @@ class TextEngine {
             }
             currentLine.isLast = true;
             lines.push(currentLine);
+        }
+
+        // Failsafe: if somehow we generated zero lines but had tokens, just dump it
+        if (lines.length === 0 && tokens.length > 0) {
+            lines.push({ tokens, width: maxWidth, isLast: true });
         }
 
         return lines;

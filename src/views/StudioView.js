@@ -1,5 +1,6 @@
 import { BaseView } from './BaseView.js';
 import { DataEditor } from '../services/DataEditor.js';
+import { CanvasToPDF } from '../utils/CanvasToPDF.js';
 
 export class StudioView extends BaseView {
     constructor() {
@@ -53,10 +54,8 @@ export class StudioView extends BaseView {
                                     <option value="MYTHBUSTER">💥 Destructor de Mitos</option>
                                     <option value="NEWS">📰 Noticia / Actualidad</option>
                                     <option value="THEORY">🧠 Concepto Teórico</option>
-                                    <option value="EBOOK_CREATOR" style="color:#A855F7; font-weight:bold;">📖 E-BOOK VIRAL (8 Páginas)</option>
-                                    <option value="TIKTOK_TREND" style="color:#00D9FF; font-weight:bold;">🔥 TIKTOK TREND (AUTO)</option>
-                                    <option value="VIRAL_HOOK_TEST">🧪 A/B Hook Test</option>
-                                    <option value="CANVAS_MODE" style="color:#FFD700; font-weight:bold;">🎨 CANVAS ENGINE (AI Libre)</option>
+                                    <option value="EBOOK_CREATOR" style="color:#A855F7; font-weight:bold;">📖 Libro PDF Educativo</option>
+                                    <option value="TIKTOK_TREND" style="color:#00D9FF; font-weight:bold;">🔥 TikTok Viral</option>
                                 </select>
                             </div>
                         </div>
@@ -151,7 +150,7 @@ export class StudioView extends BaseView {
                                 </select>
                             </div>
                         </div>
-                        <iframe id="previewFrame" class="preview-frame"></iframe>
+                        <div id="mainCanvas" class="preview-frame" style="width: 100%; height: 100%; overflow: hidden; display: flex; align-items: center; justify-content: center; background: #000; border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.5);"></div>
                     </div>
 
 
@@ -183,8 +182,12 @@ export class StudioView extends BaseView {
                             <span class="material-icons">image</span> Exportar
                         </button>
                         <div class="vl"></div>
-                        <button id="exportBatchBtn" class="footer-btn accent" title="Exportar Todo el Pack">
-                            <span class="material-icons">collections</span> Exportar Todo
+                        <button id="exportBatchBtn" class="footer-btn accent" title="Exportar PNGs">
+                            <span class="material-icons">collections</span> Multi PNG
+                        </button>
+                        <div class="vl"></div>
+                        <button id="exportPdfBtn" class="footer-btn accent" style="background: linear-gradient(135deg, #00D9FF22, #A855F744); border-color: #A855F7;" title="Exportar PDF Vectorial con Links">
+                            <span class="material-icons">picture_as_pdf</span> PDF Book
                         </button>
                     </div>
 
@@ -418,41 +421,42 @@ export class StudioView extends BaseView {
                 exportSingleBtn.disabled = true;
 
                 try {
-                    if (currentSlide.isCanvas && window.app.canvasRenderer) {
-                        // Canvas mode: render scene graph to PNG and download directly
-                        await window.app.canvasRenderer.render(currentSlide.data);
-                        const dataURL = window.app.canvasRenderer.exportDataURL('image/png', 1.0);
+                    if (window.app.canvasRenderer) {
+                        // Use a dedicated offscreen renderer to avoid disturbing the live editor
+                        const ratioW = width || 1080;
+                        const ratioH = height || 1920;
+                        const exportRenderer = window.createRenderer(ratioW, ratioH, window.app.canvasRenderer._activeThemeName || 'cyber');
+                        exportRenderer._imageCache = new Map(window.app.canvasRenderer._imageCache);
+                        const exportData = JSON.parse(JSON.stringify(currentSlide.data));
+                        // Pre-load images referenced in layers
+                        for (const layer of (exportData.layers || [])) {
+                            if (layer.src) await exportRenderer.loadImage(layer.src).catch(() => null);
+                            if (layer.imageSrc) await exportRenderer.loadImage(layer.imageSrc).catch(() => null);
+                        }
+                        // Render with skipLayout=true to preserve ALL user modifications
+                        await exportRenderer.render(exportData, { skipLayout: true });
+                        await new Promise(r => setTimeout(r, 80));
+                        const dataURL = exportRenderer.exportDataURL('image/png', 1.0);
 
                         // Convert data URL to blob and trigger download
                         const response = await fetch(dataURL);
                         const blob = await response.blob();
                         const url = URL.createObjectURL(blob);
                         const link = document.createElement('a');
-                        link.download = 'canvas-slide-' + (window.app.currentSlideIndex + 1) + '.png';
+                        link.download = `cyber_canvas_slide_${window.app.currentSlideIndex + 1}.png`;
                         link.href = url;
                         document.body.appendChild(link);
                         link.click();
                         document.body.removeChild(link);
                         URL.revokeObjectURL(url);
+                        // Clean up offscreen renderer
+                        exportRenderer.canvas.remove();
+                        exportRenderer._imageCache.clear();
                         window.app.setStatus('✅ Slide exportada como PNG');
-                    } else if (currentSlide.html) {
-                        const exportHtml = window.app.getExportHTML(currentSlide);
-                        const result = await window.cyberCanvas.exportImage({
-                            html: exportHtml,
-                            width,
-                            height,
-                            format: 'png'
-                        });
-                        if (result.success) {
-                            window.app.setStatus('✅ Exportado: ' + result.path);
-                        } else {
-                            alert('❌ Error: ' + result.error);
-                        }
-                    } else {
-                        alert('⚠️ No hay contenido exportable en esta slide.');
                     }
-                } catch (err) {
-                    alert('❌ Error exportando: ' + err.message);
+                } catch (error) {
+                    console.error('Error durante exportación individual:', error);
+                    alert('❌ Ocurrió un error: ' + error.message);
                 } finally {
                     exportSingleBtn.innerHTML = originalText;
                     exportSingleBtn.disabled = false;
@@ -543,30 +547,60 @@ export class StudioView extends BaseView {
                         window.app.setStatus('✅ ' + exported + ' slides guardadas en ~/Pictures/' + folderName);
                         alert('✅ Exportación completada!\n' + exported + ' imágenes guardadas en:\n' + savePath);
                     } else {
-                        // HTML-only mode: use Puppeteer batch export
-                        const slidesHtml = slides.map(s => window.app.getExportHTML(s));
-                        window.app.setStatus('🚀 Exportando ' + slidesHtml.length + ' slides...', true);
-
-                        const result = await window.cyberCanvas.exportBatch({
-                            slides: slidesHtml,
-                            width,
-                            height,
-                            format: 'png',
-                            title
-                        });
-
-                        if (result.success) {
-                            window.app.setStatus('✅ ' + result.count + ' slides exportadas en: ' + result.path);
-                            alert('✅ Exportación completada!\n' + result.count + ' imágenes guardadas en:\n' + result.path);
-                        } else {
-                            alert('❌ Error: ' + result.error);
-                        }
+                        alert('❌ Error: El modo antiguo de plantillas HTML ya no está soportado. Regenera el contenido usando el nuevo Motor Canvas.');
                     }
                 } catch (err) {
                     alert('❌ Error exportando batch: ' + err.message);
                 } finally {
                     exportBatchBtn.innerHTML = originalText;
                     exportBatchBtn.disabled = false;
+                    window.app.setStatus('SISTEMA LISTO');
+                }
+            };
+        }
+        // Export PDF
+        const exportPdfBtn = this.element.querySelector('#exportPdfBtn');
+        if (exportPdfBtn) {
+            exportPdfBtn.onclick = async () => {
+                if (!window.app || !window.app.slides || window.app.slides.length === 0) {
+                    alert('⚠️ No hay slides para exportar.');
+                    return;
+                }
+
+                const title = document.getElementById('themeInput')?.value || 'Libro_PDF';
+                const originalText = exportPdfBtn.innerHTML;
+                exportPdfBtn.innerHTML = '<span class="material-icons spin">autorenew</span> Generando PDF...';
+                exportPdfBtn.disabled = true;
+
+                const slides = window.app.slides;
+                const ratioSelect = this.element.querySelector('#aspectRatio');
+                const parts = ratioSelect ? ratioSelect.value.split('x') : ['1080', '1920'];
+                const width = parseInt(parts[0]);
+                const height = parseInt(parts[1]);
+
+                try {
+                    window.app.setStatus('🚀 Procesando vectores para PDF PDF...', true);
+
+                    // Extraer los scene graphs limpios
+                    const sceneGraphs = slides.map(s => s.data);
+
+                    const doc = await CanvasToPDF.generate(sceneGraphs, {
+                        title: title,
+                        format: [width, height],
+                        orientation: width > height ? 'landscape' : 'portrait'
+                    });
+
+                    // Descargar en navegador (o podríamos mandar al main process de Electron)
+                    const fileName = title.replace(/[^a-zA-Z0-9_\- ]/g, '_').substring(0, 80) + '.pdf';
+                    doc.save(fileName);
+
+                    window.app.setStatus('✅ PDF Exportado Exitosamente: ' + fileName);
+                } catch (err) {
+                    console.error(err);
+                    alert('❌ Error generando PDF: ' + err.message);
+                } finally {
+                    exportPdfBtn.innerHTML = originalText;
+                    exportPdfBtn.disabled = false;
                     window.app.setStatus('SISTEMA LISTO');
                 }
             };
@@ -589,135 +623,32 @@ export class StudioView extends BaseView {
         }
     }
 
-    updatePreview(html) {
-        const frame = this.element.querySelector('#previewFrame');
-        if (!frame) return;
+    updatePreview() {
+        if (!window.app || !window.app.slides || window.app.slides.length === 0) return;
 
-        // 1. Get Aspect Ratio
-        const ratioSelect = this.element.querySelector('#aspectRatio');
-        const ratioParts = ratioSelect ? ratioSelect.value.split('x') : ['1080', '1920'];
-        const targetWidth = parseInt(ratioParts[0]);
-        const targetHeight = parseInt(ratioParts[1]);
+        const currentSlide = window.app.slides[window.app.currentSlideIndex];
+        if (!currentSlide || !currentSlide.data) return;
 
-        // 2. Get Container Metrics
-        const container = this.element.querySelector('#previewContainer');
-        if (!container) return; // Should exist
+        // Ensure canvas element exists
+        const canvas = this.element.querySelector('#mainCanvas');
+        if (!canvas) return;
 
-        const containerRect = container.getBoundingClientRect();
-        // Adjust for padding to make preview smaller and avoid UI overlap
-        const availWidth = containerRect.width - 100;
-        const availHeight = containerRect.height - 100;
-
-        // 3. Calculate Iframe Size (Fit in Container)
-        const aspectRatio = targetWidth / targetHeight;
-        let displayWidth, displayHeight;
-
-        if (availWidth / availHeight > aspectRatio) {
-            // Limited by height
-            displayHeight = availHeight;
-            displayWidth = displayHeight * aspectRatio;
+        // Initialize CanvasEditor if missing or if it lost its instance methods
+        if (!window.app.canvasEditor || typeof window.app.canvasEditor.attachCanvas !== 'function') {
+            window.app.canvasEditor = new window.CanvasEditor(canvas, window.app.canvasRenderer);
+            // Wire up onChange to persist visual edits (drag, resize, text) back to slide.data
+            window.app.canvasEditor.onChange = (modifiedGraph) => {
+                if (window.app && window.app.slides && window.app.slides[window.app.currentSlideIndex]) {
+                    window.app.slides[window.app.currentSlideIndex].data = modifiedGraph;
+                }
+            };
         } else {
-            // Limited by width
-            displayWidth = availWidth;
-            displayHeight = displayWidth / aspectRatio;
+            // Update canvas reference in case of re-render
+            window.app.canvasEditor.attachCanvas(canvas);
         }
 
-        // Apply Iframe Size
-        frame.style.width = `${displayWidth}px`;
-        frame.style.height = `${displayHeight}px`;
-        frame.style.border = 'none'; // Ensure no border mess up sizing
-
-        // 4. Calculate Content Scaling (Zoom)
-        // Assume content is designed for targetWidth/Height (e.g., 1080x1920)
-        // If HTML content defines its own size, we rely on the CSS Zoom to Handle it.
-        // We match display size to content size.
-
-        let contentWidth = targetWidth;
-        let contentHeight = targetHeight;
-
-        // Optional: Parse HTML for explicit width/height? 
-        // Legacy code checked for matches. Let's incorporate that safety.
-        if (html) {
-            const widthMatch = html.match(/(?:max-width|width):\s*(\d+)px/);
-            const heightMatch = html.match(/(?:max-height|height):\s*(\d+)px/);
-            if (widthMatch && parseInt(widthMatch[1]) > 500) contentWidth = parseInt(widthMatch[1]);
-            // If explicit width is found and it's large, use it.
-        }
-
-        const zoomFactor = displayWidth / contentWidth;
-
-        console.log(`Preview: Display=${displayWidth}x${displayHeight}, Content=${contentWidth}x${contentHeight}, Zoom=${zoomFactor}`);
-
-        // 5. Inject Scaling CSS
-        const scalingStyle = `
-            <style>
-                html {
-                    width: 100%;
-                    height: 100%;
-                    overflow: hidden;
-                }
-                body {
-                    margin: 0;
-                    padding: 0;
-                    width: ${contentWidth}px;
-                    height: ${contentHeight}px;
-                    transform: scale(${zoomFactor});
-                    transform-origin: top left;
-                    overflow: hidden;
-                    background: #000;
-                }
-                /* Optional: Center body if using transform */
-                /* Actually with transform-origin top-left and correct iframe size, it fits perfectly. */
-                
-                /* Legacy uses zoom property which is easier in Chrome */
-                /* Let's use zoom for legacy compatibility if previous code used it */
-                @media screen and (-webkit-min-device-pixel-ratio:0) { 
-                    body {
-                        transform: none;
-                        zoom: ${zoomFactor};
-                    }
-                }
-            </style>
-        `;
-
-        // 6. Set Content
-        // Inject styles before closing head, or at start if no head
-        let finalHtml = html || "";
-
-        // INJECT INTERACTIVITY SCRIPT
-        const interactivity = (window.TemplateUtils && window.TemplateUtils.getInteractivityScript)
-            ? window.TemplateUtils.getInteractivityScript()
-            : '';
-
-        // INJECT AUTO-DRAG POSITION OVERRIDES (for persisted auto-drag positions)
-        let autoDragOverrides = '';
-        if (window.app && window.app.slides && window.app.slides[window.app.currentSlideIndex]) {
-            const overrides = window.app.slides[window.app.currentSlideIndex].data._overrides || {};
-            const autoRules = Object.entries(overrides)
-                .filter(([id]) => id.startsWith('auto_'))
-                .map(([id, pos]) => `[data-drag-id="${id}"] { transform: translate(${pos.x}px, ${pos.y}px) !important; }`)
-                .join('\n');
-            if (autoRules) {
-                autoDragOverrides = `<style>/* Auto-Drag Overrides */\n${autoRules}\n</style>`;
-            }
-        }
-
-        if (finalHtml.includes('</head>')) {
-            finalHtml = finalHtml.replace('</head>', `${scalingStyle}${interactivity}${autoDragOverrides}</head>`);
-        } else {
-            finalHtml = `${scalingStyle}${interactivity}${autoDragOverrides}${finalHtml}`;
-        }
-
-        frame.srcdoc = finalHtml;
-
-        // Persist Safe Zone State
-        frame.onload = () => {
-            const toggleSafeBtn = this.element.querySelector('#toggleSafeZone');
-            if (toggleSafeBtn && toggleSafeBtn.classList.contains('active')) {
-                const safeZone = frame.contentDocument.querySelector('.safe-zone');
-                if (safeZone) safeZone.classList.add('debug');
-            }
-        };
+        // Render the scene graph onto the preview canvas
+        window.app.canvasEditor.load(currentSlide.data);
     }
 
     updateSlideCounter(current, total) {

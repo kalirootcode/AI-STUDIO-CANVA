@@ -50,6 +50,16 @@ class CanvasEditor {
     }
 
     /**
+     * Reattach the editor to a new container element.
+     * Useful when the preview UI regenerates the DOM node.
+     */
+    attachCanvas(container) {
+        if (!container) return;
+        this.container = container;
+        this._setup();
+    }
+
+    /**
      * Setup the editor DOM and event listeners.
      */
     _setup() {
@@ -59,7 +69,8 @@ class CanvasEditor {
         // Wrapper for canvas stacking — will be CSS-scaled to fit container
         this.wrapper = document.createElement('div');
         this.wrapper.className = 'canvas-editor-wrapper';
-        this.wrapper.style.cssText = 'position:relative;transform-origin:top left;';
+        // Use absolute positioning so the scaled un-transformed DOM size doesn't push Flexbox out
+        this.wrapper.style.cssText = 'position:absolute;transform-origin:top left;';
 
         // Render canvas (from renderer) — always at native resolution
         const renderCanvas = this.renderer.getCanvas();
@@ -134,11 +145,16 @@ class CanvasEditor {
         this.wrapper.style.width = canvasW + 'px';
         this.wrapper.style.height = canvasH + 'px';
 
-        // Center the wrapper in the container
+        // Center the wrapper in the container using absolute offsets
+        this.container.style.position = 'relative'; // Ensure parent anchors absolute child
         const offsetX = Math.max(0, (containerRect.width - displayW) / 2);
         const offsetY = Math.max(0, (containerRect.height - displayH) / 2);
-        this.wrapper.style.marginLeft = offsetX + 'px';
-        this.wrapper.style.marginTop = offsetY + 'px';
+        this.wrapper.style.left = offsetX + 'px';
+        this.wrapper.style.top = offsetY + 'px';
+
+        // Clear any old margins
+        this.wrapper.style.marginLeft = '0px';
+        this.wrapper.style.marginTop = '0px';
 
         // Update scale for mouse coordinate mapping
         this.scale = 1 / this.displayScale;
@@ -486,28 +502,101 @@ class CanvasEditor {
                 layer.items = layer.items.map(() => '');
             }
 
-            // ─── NODEGRAPH (Network Topology) — Extract Node Labels ───
-            if (t === 'nodegraph' && layer.nodes) {
-                const h = layer.height || 500;
-                for (let j = 0; j < layer.nodes.length; j++) {
-                    const n = layer.nodes[j];
-                    if (n.label) {
-                        const nodeRadius = 45; // Match new renderer hexagon size
-                        newLayers.push({
-                            type: 'text', content: n.label,
-                            x: x + (n.x || 0.5) * w,
-                            y: y + (n.y || 0.5) * h + nodeRadius + 36, // Compensate for TextEngine baseline differences
-                            align: 'center',
-                            font: { size: 24, weight: 700, family: 'MPLUS Code Latin' },
-                            color: '#ffffff'
-                        });
-                        delete layer.nodes[j].label;
+            // ─── NODEGRAPH (Network Topology) — EXPLOSION ───
+            if (t === 'nodegraph' && layer.nodes && !layer._exploded) {
+                layer._exploded = true; // Guard against re-explosion on subsequent render passes
+                const nodeRadius = 45;
+                const groupId = '_ng_' + Date.now() + '_' + i; // Unique group ID for this graph
+
+                // 1. Calculate the exact same radial/grid layout as CanvasRenderer
+                const cx = x + w / 2;
+                const cy = y + h / 2;
+                const nodeMap = {};
+                const unpositionedNodes = layer.nodes.filter(n => typeof n.x === 'undefined' || typeof n.y === 'undefined');
+                const totalUnpositioned = unpositionedNodes.length;
+                let autoIdx = 0;
+
+                layer.nodes.forEach((n, idx) => {
+                    let px, py;
+                    if (n.x === undefined || n.y === undefined) {
+                        if (totalUnpositioned === 1) {
+                            px = cx; py = cy;
+                        } else {
+                            const angle = (Math.PI * 2 * autoIdx) / totalUnpositioned - Math.PI / 2;
+                            const r = Math.min(w, h) * 0.35;
+                            px = cx + r * Math.cos(angle);
+                            py = cy + r * Math.sin(angle);
+                        }
+                        autoIdx++;
+                    } else {
+                        px = x + n.x * w;
+                        py = y + n.y * h;
                     }
+                    const safeIcon = (n.icon && n.icon !== '???') ? n.icon : 'dns';
+                    nodeMap[n.id] = { px, py, label: n.label, icon: safeIcon, hexId: 'hex_' + n.id + '_' + Date.now() + idx };
+                });
+
+                // 2. Explode Connections into independent primitive lines
+                if (layer.connections) {
+                    layer.connections.forEach(conn => {
+                        const numA = nodeMap[conn.from];
+                        const numB = nodeMap[conn.to];
+                        if (numA && numB) {
+                            newLayers.push({
+                                type: 'connection_line',
+                                startX: numA.px, startY: numA.py,
+                                endX: numB.px, endY: numB.py,
+                                label: conn.label && conn.label !== '???' ? conn.label : '',
+                                color: conn.color || layer.color || undefined,
+                                _freeMove: true,
+                                _fromNode: numA.hexId,
+                                _toNode: numB.hexId,
+                                _groupId: groupId
+                            });
+                        }
+                    });
                 }
+
+                // 3. Explode Nodes into independent primitive hexagons and text
+                layer.nodes.forEach(n => {
+                    const coords = nodeMap[n.id];
+
+                    newLayers.push({
+                        id: coords.hexId,
+                        type: 'hexagon_node',
+                        x: coords.px - nodeRadius,
+                        y: coords.py - nodeRadius,
+                        size: nodeRadius,
+                        icon: coords.icon,
+                        color: layer.color || undefined,
+                        _freeMove: true,
+                        _groupId: groupId
+                    });
+
+                    if (coords.label) {
+                        const labelWidth = Math.max(180, coords.label.length * 14);
+                        newLayers.push({
+                            type: 'text', content: coords.label,
+                            x: coords.px - labelWidth / 2,
+                            y: coords.py + nodeRadius + 8,
+                            width: labelWidth,
+                            align: 'center',
+                            font: { size: 20, weight: 700, family: 'MPLUS Code Latin' },
+                            color: '#ffffff',
+                            lineHeight: 1.2,
+                            _freeMove: true,
+                            _parentId: coords.hexId,
+                            _groupId: groupId
+                        });
+                    }
+                });
+
+                layer._toDelete = true;
             }
 
             for (let k = startLen + 1; k < newLayers.length; k++) {
-                if (newLayers[k].type === 'text') newLayers[k]._parentId = parentId;
+                // Only assign generic parentId to text layers that don't already have a specific parent
+                if (newLayers[k].type === 'text' && !newLayers[k]._parentId) newLayers[k]._parentId = parentId;
             }
         }
         for (let j = 0; j < newLayers.length; j++) {
@@ -518,7 +607,8 @@ class CanvasEditor {
             }
         }
 
-        graph.layers = newLayers;
+        // Finalize scene graph, purging any monolithic objects that were exploded
+        graph.layers = newLayers.filter(l => !l._toDelete);
         return flattened;
     }
 
@@ -527,9 +617,11 @@ class CanvasEditor {
      */
     async load(sceneGraph) {
         try {
-            const fs = require('fs');
-            // Write incoming graph purely for terminal debugging
-            fs.writeFileSync('/home/rk13/RK13CODE/POWERPOST/CYBER-CANVAS-ELECTRON/last_scenegraph.json', JSON.stringify(sceneGraph, null, 2));
+            const fs = window.require ? window.require('fs') : null;
+            if (fs) {
+                // Write incoming graph purely for terminal debugging
+                fs.writeFileSync('/home/rk13/RK13CODE/POWERPOST/CYBER-CANVAS-ELECTRON/last_scenegraph.json', JSON.stringify(sceneGraph, null, 2));
+            }
         } catch (e) { console.log("FS error", e); }
 
         this.sceneGraph = JSON.parse(JSON.stringify(sceneGraph)); // Deep clone
@@ -619,7 +711,14 @@ class CanvasEditor {
                 else if (t === 'toolgrid') { const cols = (layer.tools?.length || 4) > 4 ? 3 : 2; box.height = Math.ceil((layer.tools?.length || 4) / cols) * 174; }
                 else if (t === 'attackflow') box.height = (layer.stages?.length || 3) * 180;
                 else if (t === 'architecturediag') box.height = (layer.layers?.length || 3) * 190;
-                else if (t === 'nodegraph') box.height = layer.height || 500;
+                else if (t === 'codeblock') box.height = layer.height || Math.max(250, 60 + (Math.max(10, Math.min(30, (layer.code || '').split('\n').length)) * 30));
+                else if (t === 'hexdump') box.height = (layer.lines || 10) * 35;
+                else if (t === 'timeline') box.height = (layer.events?.length || 3) * 120; // Approx
+                else if (t === 'vs_table') box.height = 160 + (layer.rows?.length || 3) * 90;
+                else if (t === 'radarchart') box.height = bound ? bound.height : (layer.height || 500);
+                else if (t === 'nodegraph') box.height = bound ? bound.height : (layer.height || 500);
+                else if (t === 'hexagon_node') box.height = (layer.size || 45) * 2;
+                else if (t === 'connection_line') box.height = Math.abs((layer.endY || 200) - (layer.startY || 0)) + 80;
                 else if (t === 'statbar') box.height = 60;
                 else if (t === 'bulletlist') box.height = (layer.items?.length || 3) * 80;
                 else if (t === 'image') box.height = box.width;
@@ -650,7 +749,30 @@ class CanvasEditor {
         // Reverse order — topmost layer first
         for (let i = this.editableLayers.length - 1; i >= 0; i--) {
             const box = this.editableLayers[i];
-            if (mx >= box.x && mx <= box.x + box.width &&
+            if (box.type === 'connection_line') {
+                const sx = box.layer.startX;
+                const sy = box.layer.startY;
+                const ex = box.layer.endX;
+                const ey = box.layer.endY;
+
+                // Point-to-line segment distance
+                const l2 = Math.pow(sx - ex, 2) + Math.pow(sy - ey, 2);
+                let dist = 1000;
+
+                if (l2 === 0) {
+                    dist = Math.sqrt(Math.pow(mx - sx, 2) + Math.pow(my - sy, 2));
+                } else {
+                    let t = ((mx - sx) * (ex - sx) + (my - sy) * (ey - sy)) / l2;
+                    t = Math.max(0, Math.min(1, t));
+                    const projX = sx + t * (ex - sx);
+                    const projY = sy + t * (ey - sy);
+                    dist = Math.sqrt(Math.pow(mx - projX, 2) + Math.pow(my - projY, 2));
+                }
+
+                if (dist <= 15) {
+                    return i;
+                }
+            } else if (mx >= box.x && mx <= box.x + box.width &&
                 my >= box.y && my <= box.y + box.height) {
                 return i;
             }
@@ -682,6 +804,13 @@ class CanvasEditor {
      * Get pixel positions of the 8 resize handles for a box.
      */
     _getHandlePositions(box) {
+        if (box.type === 'connection_line') {
+            return {
+                'start': { x: box.layer.startX, y: box.layer.startY },
+                'end': { x: box.layer.endX, y: box.layer.endY }
+            };
+        }
+
         const cx = box.x + box.width / 2;
         const cy = box.y + box.height / 2;
         return {
@@ -703,7 +832,8 @@ class CanvasEditor {
         const cursors = {
             'nw': 'nw-resize', 'n': 'n-resize', 'ne': 'ne-resize',
             'e': 'e-resize', 'se': 'se-resize', 's': 's-resize',
-            'sw': 'sw-resize', 'w': 'w-resize'
+            'sw': 'sw-resize', 'w': 'w-resize',
+            'start': 'crosshair', 'end': 'crosshair'
         };
         return cursors[handle] || 'default';
     }
@@ -748,8 +878,36 @@ class CanvasEditor {
             this.dragStartLayerY = box.layer.y || box.y;
             this.dragStartLayerW = box.width;
             this.dragStartLayerH = box.height;
+
+            if (box.layer.type === 'connection_line') {
+                this.dragStartLineStartX = box.layer.startX;
+                this.dragStartLineStartY = box.layer.startY;
+                this.dragStartLineEndX = box.layer.endX;
+                this.dragStartLineEndY = box.layer.endY;
+            }
+
             this.overlayCanvas.style.cursor = 'grabbing';
             this._drawOverlay();
+
+            // Snapshot ALL group siblings for coordinated group-drag
+            if (box.layer._groupId && this.sceneGraph && this.sceneGraph.layers) {
+                this._dragGroupSnapshots = [];
+                this.sceneGraph.layers.forEach(l => {
+                    if (l._groupId === box.layer._groupId) {
+                        this._dragGroupSnapshots.push({
+                            layer: l,
+                            startX: l.x || 0,
+                            startY: l.y || 0,
+                            startSX: l.startX,
+                            startSY: l.startY,
+                            startEX: l.endX,
+                            startEY: l.endY
+                        });
+                    }
+                });
+            } else {
+                this._dragGroupSnapshots = null;
+            }
 
             if (box.layer.id) {
                 this.editableLayers.forEach(childBox => {
@@ -777,25 +935,56 @@ class CanvasEditor {
             const dx = x - this.dragStartX;
             const dy = y - this.dragStartY;
             const layer = this.editableLayers[this.selectedIdx].layer;
-            layer.x = Math.round(this.dragStartLayerX + dx);
-            layer.y = Math.round(this.dragStartLayerY + dy);
+
+            // ═══ GROUP DRAG: Move ALL siblings together ═══
+            if (layer._groupId && this._dragGroupSnapshots) {
+                this._dragGroupSnapshots.forEach(snap => {
+                    const l = snap.layer;
+                    if (l.type === 'connection_line') {
+                        l.startX = Math.round(snap.startSX + dx);
+                        l.startY = Math.round(snap.startSY + dy);
+                        l.endX = Math.round(snap.startEX + dx);
+                        l.endY = Math.round(snap.startEY + dy);
+                        l.x = Math.min(l.startX, l.endX) - 20;
+                        l.y = Math.min(l.startY, l.endY) - 20;
+                    } else {
+                        l.x = Math.round(snap.startX + dx);
+                        l.y = Math.round(snap.startY + dy);
+                    }
+                    l._freeMove = true;
+                });
+            } else if (layer.type === 'connection_line') {
+                // Solo line drag (ungrouped)
+                layer.startX = Math.round(this.dragStartLineStartX + dx);
+                layer.startY = Math.round(this.dragStartLineStartY + dy);
+                layer.endX = Math.round(this.dragStartLineEndX + dx);
+                layer.endY = Math.round(this.dragStartLineEndY + dy);
+                layer.x = Math.min(layer.startX, layer.endX) - 20;
+                layer.y = Math.min(layer.startY, layer.endY) - 20;
+            } else {
+                layer.x = Math.round(this.dragStartLayerX + dx);
+                layer.y = Math.round(this.dragStartLayerY + dy);
+            }
+
             layer._freeMove = true; // Flag immediately so layout pass knows it's manual
 
             // Center-snap: if element center is near canvas center, snap to it
-            const elCX = layer.x + (this.editableLayers[this.selectedIdx].width || 0) / 2;
-            const elCY = layer.y + (this.editableLayers[this.selectedIdx].height || 0) / 2;
-            const canvasCX = this.renderer.width / 2;
-            const canvasCY = this.renderer.height / 2;
-            const snapThreshold = 8;
-            this._snappedX = false;
-            this._snappedY = false;
-            if (Math.abs(elCX - canvasCX) < snapThreshold) {
-                layer.x = canvasCX - (this.editableLayers[this.selectedIdx].width || 0) / 2;
-                this._snappedX = true;
-            }
-            if (Math.abs(elCY - canvasCY) < snapThreshold) {
-                layer.y = canvasCY - (this.editableLayers[this.selectedIdx].height || 0) / 2;
-                this._snappedY = true;
+            if (layer.type !== 'connection_line') {
+                const elCX = layer.x + (this.editableLayers[this.selectedIdx].width || 0) / 2;
+                const elCY = layer.y + (this.editableLayers[this.selectedIdx].height || 0) / 2;
+                const canvasCX = this.renderer.width / 2;
+                const canvasCY = this.renderer.height / 2;
+                const snapThreshold = 8;
+                this._snappedX = false;
+                this._snappedY = false;
+                if (Math.abs(elCX - canvasCX) < snapThreshold) {
+                    layer.x = canvasCX - (this.editableLayers[this.selectedIdx].width || 0) / 2;
+                    this._snappedX = true;
+                }
+                if (Math.abs(elCY - canvasCY) < snapThreshold) {
+                    layer.y = canvasCY - (this.editableLayers[this.selectedIdx].height || 0) / 2;
+                    this._snappedY = true;
+                }
             }
 
             if (layer.id) {
@@ -822,8 +1011,29 @@ class CanvasEditor {
             let newW = this.dragStartLayerW;
             let newH = this.dragStartLayerH;
 
+            // Connection Line special two-point resize
+            if (layer.type === 'connection_line') {
+                if (h === 'start') {
+                    layer.startX = Math.round(this.dragStartLineStartX + dx);
+                    layer.startY = Math.round(this.dragStartLineStartY + dy);
+                    layer._fromNode = null;
+                } else if (h === 'end') {
+                    layer.endX = Math.round(this.dragStartLineEndX + dx);
+                    layer.endY = Math.round(this.dragStartLineEndY + dy);
+                    layer._toNode = null;
+                }
+                layer.x = Math.min(layer.startX, layer.endX) - 20;
+                layer.y = Math.min(layer.startY, layer.endY) - 20;
+                layer.width = Math.abs(layer.endX - layer.startX) + 40;
+                layer.height = Math.abs(layer.endY - layer.startY) + 40;
+                layer._userResized = true;
+                layer._freeMove = true;
+                this._reRender();
+                return;
+            }
+
             // Maintain Aspect Ratio for Images or if Shift is held (can implement shift key tracking later)
-            const keepRatio = layer.type === 'image' || layer.type === 'icon';
+            const keepRatio = layer.type === 'image' || layer.type === 'icon' || layer.type === 'hexagon_node';
             const ratio = this.dragStartLayerW / this.dragStartLayerH;
 
             if (keepRatio) {
@@ -875,8 +1085,12 @@ class CanvasEditor {
             layer.x = Math.round(newX);
             layer.y = Math.round(newY);
             layer.width = Math.round(newW);
-            // Special case: some layers don't naturally store height, but we should start tracking it if user resized
             layer.height = Math.round(newH);
+
+            // Special Case: Update Hexagon Node native radius property
+            if (layer.type === 'hexagon_node') {
+                layer.size = Math.max(20, Math.round(newW / 2));
+            }
 
             // Update the cached box so the overlay redraws cleanly
             this.editableLayers[this.selectedIdx].width = layer.width;
@@ -957,10 +1171,31 @@ class CanvasEditor {
             const layer = this.editableLayers[this.selectedIdx].layer;
             layer._freeMove = true;
             const step = e.shiftKey ? 10 : 2;
-            if (e.key === 'ArrowUp') layer.y -= step;
-            if (e.key === 'ArrowDown') layer.y += step;
-            if (e.key === 'ArrowLeft') layer.x -= step;
-            if (e.key === 'ArrowRight') layer.x += step;
+            const dx = e.key === 'ArrowLeft' ? -step : (e.key === 'ArrowRight' ? step : 0);
+            const dy = e.key === 'ArrowUp' ? -step : (e.key === 'ArrowDown' ? step : 0);
+
+            if (layer.type === 'connection_line') {
+                layer.startX += dx; layer.startY += dy;
+                layer.endX += dx; layer.endY += dy;
+                layer.x = Math.min(layer.startX, layer.endX) - 20;
+                layer.y = Math.min(layer.startY, layer.endY) - 20;
+            } else {
+                layer.x = (layer.x || 0) + dx;
+                layer.y = (layer.y || 0) + dy;
+            }
+
+            // Update attached lines if nudging a hexagon
+            if (layer.type === 'hexagon_node' && this.sceneGraph && this.sceneGraph.layers) {
+                const cx = layer.x + (layer.size || 45);
+                const cy = layer.y + (layer.size || 45);
+                this.sceneGraph.layers.forEach(l => {
+                    if (l.type === 'connection_line') {
+                        if (l._fromNode === layer.id) { l.startX = cx; l.startY = cy; }
+                        if (l._toNode === layer.id) { l.endX = cx; l.endY = cy; }
+                    }
+                });
+            }
+
             this._reRender();
             if (this.onChange) this.onChange(this.sceneGraph);
             e.preventDefault();
