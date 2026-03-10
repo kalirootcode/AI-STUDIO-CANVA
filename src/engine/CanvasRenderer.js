@@ -1132,30 +1132,46 @@ class CanvasRenderer {
             items = [],
             font = { family: 'MPLUS Code Latin', size: 40, weight: 400 },
             color = '#f0f0f0',
-            bulletColor = '#00D9FF',
             icon = 'double_arrow',
-            spacing = 20
+            spacing = 30
         } = layer;
 
         const fontSize = this.textEngine.setFont(font);
         const iconSize = fontSize * 0.9;
-        const indent = iconSize + 15;
+        const indent = iconSize + 25;
         let currentY = y;
+
+        const themeColor = this._getThemeColor();
+        const bulletColor = layer.bulletColor || themeColor;
 
         for (const item of items) {
             if (item) {
+                // Parseo robusto: Puede venir un primitivo 'string' o un Objeto { text: '...', icon: '...' }
+                const isObject = typeof item === 'object' && item !== null;
+                const contentText = isObject ? (item.text || item.content || '') : item;
+                const itemIcon = isObject && item.icon ? item.icon : icon;
+
+                if (!contentText.trim()) continue; // Skip strictly empty items dynamically defined
+
+                // Efecto "Glow" tipo Hacker/Neon en la viñeta
+                this.ctx.save();
+                this.ctx.shadowBlur = 12;
+                this.ctx.shadowColor = bulletColor;
+
                 // Align icon with the vertical center of the FIRST line of the paragraph
                 const iconY = currentY + (fontSize * 1.4) / 2;
-                this._renderSmartIcon(this.ctx, layer.icon || icon, x + iconSize / 2, iconY, iconSize, bulletColor, 'center');
+                this._renderSmartIcon(this.ctx, layer.icon || itemIcon, x + iconSize / 2, iconY, iconSize, bulletColor, 'center');
+                this.ctx.restore(); // Limpiar el shadow para que no ensucie el texto
 
-                // Item text (with word wrap within remaining width)
+                // Item text (with word wrap within remaining width and high contrast)
                 const textLayer = {
-                    content: item,
+                    content: contentText,
                     x: x + indent,
                     y: currentY,
                     width: width - indent,
-                    font, color,
-                    lineHeight: 1.4
+                    font,
+                    color: '#ffffff', // High contrast white overriding dull gray
+                    lineHeight: 1.5 // Más elegante
                 };
                 currentY = this.textEngine.renderTextBlock(textLayer);
             }
@@ -1812,30 +1828,46 @@ class CanvasRenderer {
                 this.ctx.fillText('▶', boxSize / 2 + 2, currentY + boxSize / 2 + 1);
             }
 
-            // Draw text
-            this.ctx.font = '700 38px "MPLUS Code Latin"';
-            this.ctx.textAlign = 'left';
-            this.ctx.textBaseline = 'top';
+            // Configuración Tipográfica
+            const fontConfig = { family: 'MPLUS Code Latin', size: 38, weight: 700 };
+            const textIndent = boxSize + gap;
+            const availableWidth = w - textIndent;
 
+            let textColor = '#cccccc';
+            if (status === 'done') textColor = '#888';
+            else if (status === 'active') textColor = '#ffffff';
+
+            const textLayer = {
+                content: item.text || '',
+                x: textIndent,
+                y: currentY - 4, // Ligeramente arriba para alinear con checkbox
+                width: availableWidth,
+                font: fontConfig,
+                color: textColor,
+                lineHeight: 1.3
+            };
+
+            // Renderizar el bloque de texto y obtener hasta dónde llegó (Y)
+            const nextY = this.textEngine.renderTextBlock(textLayer);
+
+            // Strikethrough visual simplificado para el elemento completado
             if (status === 'done') {
-                this.ctx.fillStyle = '#888';
-                // Strikethrough
-                const metrics = this.ctx.measureText(item.text);
+                this.ctx.save();
+                this.ctx.font = '700 38px "MPLUS Code Latin"';
+                // Calculamos solo una aproximación o la primera línea cortada para el tachado
+                const metrics = this.ctx.measureText((item.text || '').substring(0, 30));
                 this.ctx.beginPath();
-                this.ctx.moveTo(boxSize + gap, currentY + boxSize / 2);
-                this.ctx.lineTo(boxSize + gap + metrics.width, currentY + boxSize / 2);
+                this.ctx.moveTo(textIndent, currentY + boxSize / 2);
+                this.ctx.lineTo(textIndent + Math.min(metrics.width, availableWidth), currentY + boxSize / 2);
                 this.ctx.lineWidth = 2;
                 this.ctx.strokeStyle = '#888';
                 this.ctx.stroke();
-            } else if (status === 'active') {
-                this.ctx.fillStyle = '#ffffff';
-            } else {
-                this.ctx.fillStyle = '#cccccc';
+                this.ctx.restore();
             }
 
-            this.ctx.fillText(item.text || '', boxSize + gap, currentY - 4);
-
-            currentY += boxSize + 30; // Spacing between items
+            // El siguiente item empieza después del texto renderizado, asegurando un mínimo del boxSize
+            const itemTotalHeight = Math.max(nextY - currentY, boxSize);
+            currentY += itemTotalHeight + 30; // Spacing between items
         });
 
         this.ctx.restore();
@@ -2427,69 +2459,103 @@ class CanvasRenderer {
         const items = layer.items || [];
         const themeColor = this._getThemeColor();
 
+        // Convert hex themeColor to rgba
+        const hexToRgba = (hex, alpha) => {
+            let r = 0, g = 0, b = 0;
+            if (hex.length === 4) {
+                r = parseInt(hex[1] + hex[1], 16);
+                g = parseInt(hex[2] + hex[2], 16);
+                b = parseInt(hex[3] + hex[3], 16);
+            } else if (hex.length === 7) {
+                r = parseInt(hex.substring(1, 3), 16);
+                g = parseInt(hex.substring(3, 5), 16);
+                b = parseInt(hex.substring(5, 7), 16);
+            }
+            return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+        };
+
         this.ctx.save();
         this.ctx.translate(x, y);
 
-        // Root background
-        this.ctx.fillStyle = '#0a0a0c';
-        this.effectsEngine.roundRect(0, 0, w, 60, 8);
+        // --- Root Header (Neumorphic Glass) ---
+        // Dark Base
+        this.ctx.fillStyle = '#0f1115';
+        this.effectsEngine.roundRect(0, 0, w, 66, 12);
         this.ctx.fill();
 
-        // Root border
-        this.ctx.strokeStyle = '#222';
-        this.ctx.lineWidth = 1;
-        this.effectsEngine.roundRect(0, 0, w, 60, 8);
+        // Overlay with translucent theme color
+        this.ctx.fillStyle = hexToRgba(themeColor, 0.15);
+        this.ctx.fill();
+
+        // Glowing top/bottom border
+        this.ctx.strokeStyle = hexToRgba(themeColor, 0.4);
+        this.ctx.lineWidth = 1.5;
         this.ctx.stroke();
 
-        this._renderSmartIcon(this.ctx, 'folder', 30, 30, 30, themeColor);
+        // Root Folder Icon (Centered in Y=33)
+        this._renderSmartIcon(this.ctx, 'folder', 34, 33, 30, themeColor);
+
+        // Root Text (Aligned properly with icon)
         this.ctx.font = '800 32px "MPLUS Code Latin"';
         this.ctx.fillStyle = themeColor;
         this.ctx.textAlign = 'left';
-        this.ctx.fillText(root, 60, 32);
+        this.ctx.textBaseline = 'middle';
+        this.ctx.fillText(root, 65, 35);
 
-        let curY = 90;
-        const indentX = 40;
+        // Reset TextBaseline for children
+        this.ctx.textBaseline = 'top';
+
+        // --- Tree Items ---
+        let curY = 96;
+        const indentX = 45;
 
         items.forEach((item, index) => {
             const isLast = index === items.length - 1;
             const depth = item.depth || 1;
-            const icon = item.isDir ? 'folder' : 'description';
-            const color = item.isDir ? themeColor : '#aaaaaa';
+            const isFolder = item.isDir;
+            const icon = isFolder ? 'folder' : 'description';
+
+            const iconColor = isFolder ? themeColor : '#aaaaaa';
+            const titleColor = isFolder ? '#ffffff' : '#d1d5db';
+            const fontWeight = isFolder ? '700' : '500';
+
             const px = depth * indentX;
 
-            // Draw line from parent
-            this.ctx.strokeStyle = '#444';
-            this.ctx.lineWidth = 2;
+            // Draw Connection Line (Refined shape and color)
+            this.ctx.strokeStyle = hexToRgba(themeColor, 0.35); // Soft guides matching theme
+            this.ctx.lineWidth = 2.5;
+            this.ctx.lineJoin = 'round';
             this.ctx.beginPath();
 
             // Vertical line piece
             if (isLast) {
-                this.ctx.moveTo(px - 15, curY - 30);
-                this.ctx.lineTo(px - 15, curY);
+                this.ctx.moveTo(px - 18, curY - 30);
+                this.ctx.lineTo(px - 18, curY);
                 this.ctx.lineTo(px + 10, curY);
             } else {
-                this.ctx.moveTo(px - 15, curY - 30);
-                this.ctx.lineTo(px - 15, curY + 40); // continue down
-                this.ctx.moveTo(px - 15, curY);
+                this.ctx.moveTo(px - 18, curY - 30);
+                this.ctx.lineTo(px - 18, curY + 45); // continue down
+                this.ctx.moveTo(px - 18, curY);
                 this.ctx.lineTo(px + 10, curY);
             }
             this.ctx.stroke();
 
             // Item Icon
-            this._renderSmartIcon(this.ctx, icon, px + 30, curY, 26, color);
+            this._renderSmartIcon(this.ctx, icon, px + 30, curY, 26, iconColor);
 
             // Item Name
-            this.ctx.font = item.isDir ? '700 28px "MPLUS Code Latin"' : '500 28px "MPLUS Code Latin"';
-            this.ctx.fillStyle = '#ffffff';
+            this.ctx.font = `${fontWeight} 28px "MPLUS Code Latin"`;
+            this.ctx.fillStyle = titleColor;
             this.ctx.textAlign = 'left';
-            this.ctx.fillText(item.path || '', px + 55, curY + 2);
+            this.ctx.textBaseline = 'middle';
+            this.ctx.fillText(item.path || '', px + 58, curY + 2);
 
             // Item Description
             if (item.desc) {
                 this.ctx.font = 'italic 400 24px "MPLUS Code Latin"';
-                this.ctx.fillStyle = '#777777';
-                const pathWidth = this.ctx.measureText(item.path).width;
-                this.ctx.fillText('// ' + item.desc, px + 55 + pathWidth + 15, curY + 2);
+                this.ctx.fillStyle = '#6b7280';
+                const pathWidth = this.ctx.measureText(item.path || '').width;
+                this.ctx.fillText('// ' + item.desc, px + 58 + pathWidth + 20, curY + 2);
             }
 
             curY += 50;

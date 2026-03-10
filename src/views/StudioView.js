@@ -716,11 +716,32 @@ export class StudioView extends BaseView {
                     }
                 }
             };
+
+            // Inicializar toolbar
+            const previewContainer = this.element.querySelector('.panel-center');
+            if (window.app._editorToolbar) {
+                window.app._editorToolbar.destroy();
+            }
+            window.app._editorToolbar = new CanvasEditorToolbar(
+                previewContainer,
+                window.app.canvasEditor,
+                {
+                    mode: 'studio',
+                    onSceneChange: (graph) => {
+                        window.app.canvasEditor.onChange(graph);
+                    }
+                }
+            );
+
         } else {
             window.app.canvasEditor.attachCanvas(canvas);
         }
 
-        window.app.canvasEditor.load(currentSlide.data);
+        window.app.canvasEditor.load(currentSlide.data).then(() => {
+            if (window.app._editorToolbar) {
+                window.app._editorToolbar.pushHistory(currentSlide.data);
+            }
+        });
     }
 
     updateSlideCounter(current, total) {

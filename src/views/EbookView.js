@@ -344,6 +344,11 @@ export class EbookView {
             window.app.canvasEditor = this._studioSnapshot.canvasEditor;
             window.app.canvasRenderer = this._studioSnapshot.canvasRenderer;
         }
+
+        if (this._ebToolbar) {
+            this._ebToolbar.destroy();
+            this._ebToolbar = null;
+        }
     }
 
     // ─── LISTENERS ──────────────────────────────────────────────────
@@ -700,6 +705,26 @@ export class EbookView {
             }
 
             await this._ebCanvasEditor.load(themedPage);
+
+            if (!this._ebToolbar) {
+                // Selecciona el contenedor padre del canvas, o usa el ID esperado
+                const previewContainer = this.element.querySelector('#eb-previewContainer') || canvas.parentElement;
+
+                this._ebToolbar = new CanvasEditorToolbar(
+                    previewContainer,
+                    this._ebCanvasEditor,
+                    {
+                        mode: 'ebook',
+                        onSceneChange: (graph) => {
+                            if (this.pages && this.pages[this.currentPage]) {
+                                this.pages[this.currentPage] = graph;
+                            }
+                        }
+                    }
+                );
+            }
+            this._ebToolbar.pushHistory(themedPage);
+
             if (statusDot) statusDot.classList.remove('active');
 
         } catch (err) {

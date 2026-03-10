@@ -1168,6 +1168,10 @@ class CanvasEditor {
         // Arrow keys to nudge
         if (this.selectedIdx >= 0 && this.editingIdx < 0 &&
             ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
+
+            // PREVENT DEFAULT SCROLLING BEHAVIOR WHICH CAUSES FOCUS LOSS
+            e.preventDefault();
+
             const layer = this.editableLayers[this.selectedIdx].layer;
             layer._freeMove = true;
             const step = e.shiftKey ? 10 : 2;
@@ -1198,7 +1202,6 @@ class CanvasEditor {
 
             this._reRender();
             if (this.onChange) this.onChange(this.sceneGraph);
-            e.preventDefault();
         }
 
         // Layer ordering: ] = bring forward, [ = send backward
