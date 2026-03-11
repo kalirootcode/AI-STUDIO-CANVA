@@ -144,44 +144,7 @@ export class StudioView extends BaseView {
                 <div class="panel-center">
                     <div id="previewContainer" class="preview-container" style="position:relative;">
 
-                        <!-- FLOATING TOOLBAR -->
-                        <div class="canvas-header" style="position:absolute;top:10px;right:10px;z-index:50;display:flex;flex-direction:row;align-items:center;gap:6px;background:rgba(4,4,4,0.96);border:1px solid #1a1a1a;border-radius:10px;padding:5px 12px;backdrop-filter:blur(12px);box-shadow:0 0 20px rgba(0,217,255,0.05),0 4px 16px rgba(0,0,0,0.5);">
-
-                            <!-- NAV CONTROLS -->
-                            <div class="nav-controls" style="display:flex;align-items:center;gap:4px;">
-                                <button id="prevSlide" class="nav-btn" style="padding:2px 6px;font-size:12px;">❮</button>
-                                <span id="slideCounter" class="nav-counter" style="font-size:11px;min-width:52px;text-align:center;font-family:monospace;color:#555;">-- / --</span>
-                                <button id="nextSlide" class="nav-btn" style="padding:2px 6px;font-size:12px;">❯</button>
-                            </div>
-
-                            <div style="width:1px;height:16px;background:#1e1e1e;"></div>
-
-                            <!-- THEME DOTS -->
-                            <div class="theme-controls" style="display:flex;gap:5px;align-items:center;">
-                                <button class="theme-btn active" data-theme="CYBER"     style="background:#00D9FF;width:13px;height:13px;box-shadow:0 0 5px #00D9FF;" title="Cyber"></button>
-                                <button class="theme-btn"        data-theme="RED_TEAM"  style="background:#FF0000;width:13px;height:13px;" title="Red Team"></button>
-                                <button class="theme-btn"        data-theme="BLUE_TEAM" style="background:#0088FF;width:13px;height:13px;" title="Blue Team"></button>
-                                <button class="theme-btn"        data-theme="OSINT"     style="background:#d946ef;width:13px;height:13px;" title="OSINT"></button>
-                                <div style="position:relative;width:13px;height:13px;overflow:hidden;border-radius:50%;border:1px solid #333;cursor:pointer;" title="Color Personalizado">
-                                    <input type="color" id="customColorPicker" style="position:absolute;top:-50%;left:-50%;width:200%;height:200%;padding:0;margin:0;cursor:pointer;border:none;" value="#00D9FF">
-                                </div>
-                            </div>
-
-                            <div style="width:1px;height:16px;background:#1e1e1e;"></div>
-
-                            <!-- SAFE ZONE + RATIO -->
-                            <div style="display:flex;gap:6px;align-items:center;">
-                                <button id="toggleSafeZone" class="icon-btn active" title="Zona Segura" style="color:#555;border:1px solid #1e1e1e;padding:2px;border-radius:4px;font-size:14px;transition:all 0.2s;">
-                                    <span class="material-icons" style="font-size:15px;">crop_free</span>
-                                </button>
-                                <select id="aspectRatio" class="ratio-select" style="font-size:11px;padding:2px 4px;color:#666 !important;border-color:#1e1e1e !important;background:transparent !important;">
-                                    <option value="1080x1920">9:16</option>
-                                    <option value="1080x1080">1:1</option>
-                                    <option value="1080x1350">4:5</option>
-                                </select>
-                            </div>
-
-                        </div>
+                        <!-- FLOATING TOOLBAR WILL BE INJECTED HERE DYNAMICALLY BY CanvasEditorToolbar -->
 
                         <!-- CANVAS -->
                         <div id="mainCanvas" class="preview-frame" style="width:100%;height:100%;overflow:hidden;display:flex;align-items:center;justify-content:center;background:#000;border-radius:8px;box-shadow:0 4px 20px rgba(0,0,0,0.5);"></div>
@@ -268,7 +231,10 @@ export class StudioView extends BaseView {
             );
         }
 
-        this.attachListeners();
+            if (!this._listenersAttached) {
+            this.attachListeners();
+            this._listenersAttached = true;
+        }
     }
 
     updateInspector(data) {
@@ -415,28 +381,18 @@ export class StudioView extends BaseView {
         }
 
         // Navigation
-        this.element.querySelector('#prevSlide').onclick = () => window.app.handlePrevSlide();
-        this.element.querySelector('#nextSlide').onclick = () => window.app.handleNextSlide();
+        const prev = this.element.querySelector('#prevSlide');
+        const next = this.element.querySelector('#nextSlide');
+        if (prev) prev.onclick = () => window.app.handlePrevSlide();
+        if (next) next.onclick = () => window.app.handleNextSlide();
 
         // Aspect Ratio
-        this.element.querySelector('#aspectRatio').onchange = (e) => {
-            console.log("Ratio changed:", e.target.value);
-            this.updatePreview();
-        };
-
-        // Safe Zone Toggle
-        const toggleSafeBtn = this.element.querySelector('#toggleSafeZone');
-        if (toggleSafeBtn) {
-            toggleSafeBtn.onclick = () => {
-                const frame = this.element.querySelector('#previewFrame');
-                if (frame && frame.contentDocument) {
-                    const safeZone = frame.contentDocument.querySelector('.safe-zone');
-                    if (safeZone) {
-                        safeZone.classList.toggle('debug');
-                        toggleSafeBtn.classList.toggle('active');
-                    }
-                }
-            }
+        const ratio = this.element.querySelector('#aspectRatio');
+        if (ratio) {
+            ratio.onchange = (e) => {
+                console.log("Ratio changed:", e.target.value);
+                this.updatePreview();
+            };
         }
 
         // Bridge Listener
@@ -707,13 +663,9 @@ export class StudioView extends BaseView {
         if (!window.app.canvasEditor || typeof window.app.canvasEditor.attachCanvas !== 'function') {
             window.app.canvasEditor = new window.CanvasEditor(canvas, window.app.canvasRenderer);
             window.app.canvasEditor.onChange = (modifiedGraph) => {
-                if (window.app && window.app.slides && window.app.slides[window.app.currentSlideIndex]) {
+                if (window.app?.slides?.[window.app.currentSlideIndex]) {
                     window.app.slides[window.app.currentSlideIndex].data = modifiedGraph;
-
-                    // Cuando edito texto directamente en la imagen (Canvas), actualizar la caja SCRIPT interactivamente
-                    if (this._externalDataSync) {
-                        this._externalDataSync(JSON.stringify(modifiedGraph, null, 2));
-                    }
+                    // Note: externalDataSync is handled by toolbar's onSceneChange to avoid double-fire
                 }
             };
 
@@ -727,8 +679,16 @@ export class StudioView extends BaseView {
                 window.app.canvasEditor,
                 {
                     mode: 'studio',
+                    onPrev: () => window.app.handlePrevSlide?.(),
+                    onNext: () => window.app.handleNextSlide?.(),
                     onSceneChange: (graph) => {
-                        window.app.canvasEditor.onChange(graph);
+                        // NEVER call editor.onChange here — causes infinite loop
+                        if (window.app?.slides?.[window.app.currentSlideIndex]) {
+                            window.app.slides[window.app.currentSlideIndex].data = graph;
+                            if (this._externalDataSync) {
+                                this._externalDataSync(JSON.stringify(graph, null, 2));
+                            }
+                        }
                     }
                 }
             );

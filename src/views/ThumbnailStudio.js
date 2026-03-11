@@ -949,7 +949,8 @@ export class ThumbnailStudio {
   }
 
   _getConfig() {
-    const $ = id => document.getElementById(id);
+    const root = this.container.querySelector('#ts-root') || this.container;
+    const $ = id => root.querySelector(`#${id}`);
     return {
       template: this.currentTemplate || 'impact',
       primary: $('ts-primary-color')?.value || '#00D9FF',
@@ -1587,10 +1588,15 @@ export class ThumbnailStudio {
   // EVENT BINDING
   // ─────────────────────────────────────────────────────────────
   _bindEvents() {
+    // Use container-scoped queries to avoid conflicts with other DOM elements
+    const root = this.container.querySelector('#ts-root') || this.container;
+    const $ = id => root.querySelector(`#${id}`);
+    const $$ = sel => root.querySelectorAll(sel);
+
     // Format switcher
-    document.querySelectorAll('.ts-format-btn').forEach(btn => {
+    $$(`.ts-format-btn`).forEach(btn => {
       btn.addEventListener('click', () => {
-        document.querySelectorAll('.ts-format-btn').forEach(b => b.classList.remove('active'));
+        $$('.ts-format-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
         this.format = btn.dataset.format;
         this._updateDimsDisplay();
@@ -1599,7 +1605,7 @@ export class ThumbnailStudio {
     });
 
     // BG tabs
-    document.querySelectorAll('#ts-root .ts-tab').forEach(tab => {
+    $$('#ts-root .ts-tab, .ts-bg-tabs .ts-tab').forEach(tab => {
       tab.addEventListener('click', () => {
         const group = tab.parentElement;
         group.querySelectorAll('.ts-tab').forEach(t => t.classList.remove('active'));
@@ -1608,34 +1614,34 @@ export class ThumbnailStudio {
         this._activeBgTab = tabId;
         const parent = group.nextElementSibling?.parentElement || group.parentElement;
         parent.querySelectorAll('.ts-tab-content').forEach(c => c.classList.remove('active'));
-        document.getElementById(`ts-tab-${tabId}`)?.classList.add('active');
+        $(`ts-tab-${tabId}`)?.classList.add('active');
         this._scheduleRender();
       });
     });
 
     // BG swatches
-    document.querySelectorAll('#ts-bg-swatches .ts-swatch').forEach(sw => {
+    $$('#ts-bg-swatches .ts-swatch').forEach(sw => {
       sw.addEventListener('click', () => {
-        document.getElementById('ts-bg-custom-color').value = sw.dataset.color;
-        document.getElementById('ts-bg-hex').textContent = sw.dataset.color;
+        $('ts-bg-custom-color').value = sw.dataset.color;
+        $('ts-bg-hex').textContent = sw.dataset.color;
         this._activeBgTab = 'color';
         this._scheduleRender();
       });
     });
 
     // BG custom color
-    document.getElementById('ts-bg-custom-color')?.addEventListener('input', e => {
-      document.getElementById('ts-bg-hex').textContent = e.target.value;
+    $('ts-bg-custom-color')?.addEventListener('input', e => {
+      $('ts-bg-hex').textContent = e.target.value;
       this._activeBgTab = 'color';
       this._scheduleRender();
     });
 
     // Gradient presets
-    document.querySelectorAll('.ts-grad-btn').forEach(btn => {
+    $$('.ts-grad-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         const stops = JSON.parse(btn.dataset.stops);
-        document.getElementById('ts-grad-c1').value = stops[0];
-        document.getElementById('ts-grad-c2').value = stops[1];
+        $('ts-grad-c1').value = stops[0];
+        $('ts-grad-c2').value = stops[1];
         this._activeBgTab = 'gradient';
         this._scheduleRender();
       });
@@ -1643,16 +1649,16 @@ export class ThumbnailStudio {
 
     // Gradient controls
     ['ts-grad-angle', 'ts-grad-c1', 'ts-grad-c2'].forEach(id => {
-      document.getElementById(id)?.addEventListener('input', e => {
-        if (id === 'ts-grad-angle') document.getElementById('ts-angle-val').textContent = e.target.value + '°';
+      $(id)?.addEventListener('input', e => {
+        if (id === 'ts-grad-angle') $('ts-angle-val').textContent = e.target.value + '°';
         this._activeBgTab = 'gradient';
         this._scheduleRender();
       });
     });
 
     // Image upload — BG
-    const uploadZone = document.getElementById('ts-upload-zone');
-    const bgFile = document.getElementById('ts-bg-file');
+    const uploadZone = $('ts-upload-zone');
+    const bgFile = $('ts-bg-file');
     uploadZone?.addEventListener('click', () => bgFile.click());
     uploadZone?.addEventListener('dragover', e => { e.preventDefault(); uploadZone.classList.add('drag-over'); });
     uploadZone?.addEventListener('dragleave', () => uploadZone.classList.remove('drag-over'));
@@ -1662,42 +1668,42 @@ export class ThumbnailStudio {
       if (file) this._loadBgImage(file);
     });
     bgFile?.addEventListener('change', e => { if (e.target.files[0]) this._loadBgImage(e.target.files[0]); });
-    document.getElementById('ts-remove-bg-img')?.addEventListener('click', () => {
+    $('ts-remove-bg-img')?.addEventListener('click', () => {
       this.uploadedBg = null;
-      document.getElementById('ts-image-controls').style.display = 'none';
-      document.getElementById('ts-upload-zone').style.display = '';
+      $('ts-image-controls').style.display = 'none';
+      $('ts-upload-zone').style.display = '';
       this._scheduleRender();
     });
 
     // Image controls
     ['ts-img-opacity', 'ts-img-blur', 'ts-overlay-opacity'].forEach(id => {
-      document.getElementById(id)?.addEventListener('input', e => {
+      $(id)?.addEventListener('input', e => {
         const label = { 'ts-img-opacity': 'ts-img-opacity-val', 'ts-img-blur': 'ts-img-blur-val' }[id];
-        if (label) document.getElementById(label).textContent = id.includes('blur') ? e.target.value + 'px' : e.target.value + '%';
+        if (label) $(label).textContent = id.includes('blur') ? e.target.value + 'px' : e.target.value + '%';
         this._activeBgTab = 'image';
         this._scheduleRender();
       });
     });
-    document.getElementById('ts-overlay-color')?.addEventListener('input', () => { this._activeBgTab = 'image'; this._scheduleRender(); });
+    $('ts-overlay-color')?.addEventListener('input', () => { this._activeBgTab = 'image'; this._scheduleRender(); });
 
     // Person upload
-    const personZone = document.getElementById('ts-person-zone');
-    const personFile = document.getElementById('ts-person-file');
+    const personZone = $('ts-person-zone');
+    const personFile = $('ts-person-file');
     personZone?.addEventListener('click', () => personFile.click());
     personFile?.addEventListener('change', e => { if (e.target.files[0]) this._loadPersonImage(e.target.files[0]); });
-    document.getElementById('ts-remove-person')?.addEventListener('click', () => {
+    $('ts-remove-person')?.addEventListener('click', () => {
       this.uploadedPerson = null;
-      document.getElementById('ts-person-controls').style.display = 'none';
+      $('ts-person-controls').style.display = 'none';
       this._scheduleRender();
     });
     ['ts-person-x', 'ts-person-scale'].forEach(id => {
-      document.getElementById(id)?.addEventListener('input', () => this._scheduleRender());
+      $(id)?.addEventListener('input', () => this._scheduleRender());
     });
 
     // Primary color swatches
-    document.querySelectorAll('#ts-primary-swatches .ts-swatch').forEach(sw => {
+    $$('#ts-primary-swatches .ts-swatch').forEach(sw => {
       sw.addEventListener('click', () => {
-        document.getElementById('ts-primary-color').value = sw.dataset.primary;
+        $('ts-primary-color').value = sw.dataset.primary;
         this._scheduleRender();
       });
     });
@@ -1715,19 +1721,19 @@ export class ThumbnailStudio {
       'ts-guide-thirds', 'ts-guide-center', 'ts-guide-safe',
     ];
     inputIds.forEach(id => {
-      document.getElementById(id)?.addEventListener('input', () => this._scheduleRender());
-      document.getElementById(id)?.addEventListener('change', () => this._scheduleRender());
+      $(id)?.addEventListener('input', () => this._scheduleRender());
+      $(id)?.addEventListener('change', () => this._scheduleRender());
     });
 
     // Export buttons
-    document.getElementById('ts-btn-export-png')?.addEventListener('click', () => this._export('png'));
-    document.getElementById('ts-btn-export-jpg')?.addEventListener('click', () => this._export('jpg'));
-    document.getElementById('ts-btn-copy')?.addEventListener('click', () => this._copyToClipboard());
-    document.getElementById('ts-btn-randomize')?.addEventListener('click', () => this._randomize());
-    document.getElementById('ts-export-all-formats')?.addEventListener('click', () => this._exportAllFormats());
-    document.getElementById('ts-foot-export-png')?.addEventListener('click', () => this._exportAllFormats());
-    document.getElementById('ts-export-yt-pack')?.addEventListener('click', () => this._exportYTPack());
-    document.getElementById('ts-export-social-pack')?.addEventListener('click', () => this._exportSocialPack());
+    $('ts-btn-export-png')?.addEventListener('click', () => this._export('png'));
+    $('ts-btn-export-jpg')?.addEventListener('click', () => this._export('jpg'));
+    $('ts-btn-copy')?.addEventListener('click', () => this._copyToClipboard());
+    $('ts-btn-randomize')?.addEventListener('click', () => this._randomize());
+    $('ts-export-all-formats')?.addEventListener('click', () => this._exportAllFormats());
+    $('ts-foot-export-png')?.addEventListener('click', () => this._exportAllFormats());
+    $('ts-export-yt-pack')?.addEventListener('click', () => this._exportYTPack());
+    $('ts-export-social-pack')?.addEventListener('click', () => this._exportSocialPack());
   }
 
   // ─────────────────────────────────────────────────────────────
@@ -1739,9 +1745,12 @@ export class ThumbnailStudio {
       const img = new Image();
       img.onload = () => {
         this.uploadedBg = img;
-        document.getElementById('ts-upload-zone').style.display = 'none';
-        document.getElementById('ts-image-controls').style.display = '';
-        document.getElementById('ts-img-thumb').src = e.target.result;
+        const uploadZone = this.container.querySelector('#ts-upload-zone');
+        const imageControls = this.container.querySelector('#ts-image-controls');
+        const imgThumb = this.container.querySelector('#ts-img-thumb');
+        if (uploadZone) uploadZone.style.display = 'none';
+        if (imageControls) imageControls.style.display = '';
+        if (imgThumb) imgThumb.src = e.target.result;
         this._activeBgTab = 'image';
         // Extract palette
         this._extractPalette(img);
@@ -1758,7 +1767,8 @@ export class ThumbnailStudio {
       const img = new Image();
       img.onload = () => {
         this.uploadedPerson = img;
-        document.getElementById('ts-person-controls').style.display = '';
+        const controls = this.container.querySelector('#ts-person-controls');
+        if (controls) controls.style.display = '';
         this._scheduleRender();
       };
       img.src = e.target.result;
@@ -1777,12 +1787,18 @@ export class ThumbnailStudio {
       colors.add(`#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`);
     }
     const palette = [...colors].slice(0, 8);
-    const row = document.getElementById('ts-palette-row');
+    const row = this.container.querySelector('#ts-palette-row');
     if (row) {
       row.innerHTML = palette.map(color => `
-                <div class="ts-palette-swatch" style="background:${color}" title="${color}"
-                     onclick="document.getElementById('ts-primary-color').value='${color}';this.closest('[id=ts-root]').__studio__._scheduleRender()">
+                <div class="ts-palette-swatch" style="background:${color}" title="${color}" data-color="${color}">
                 </div>`).join('');
+      row.querySelectorAll('.ts-palette-swatch').forEach(sw => {
+        sw.addEventListener('click', () => {
+          const primaryInput = this.container.querySelector('#ts-primary-color');
+          if (primaryInput) primaryInput.value = sw.dataset.color;
+          this._scheduleRender();
+        });
+      });
     }
   }
 
@@ -1795,7 +1811,7 @@ export class ThumbnailStudio {
   }
 
   async _renderPreview() {
-    const canvas = document.getElementById('ts-main-canvas');
+    const canvas = this.container.querySelector('#ts-main-canvas');
     if (!canvas) return;
     await this._renderToCanvas(canvas);
     this._fitCanvasToStage(canvas);
@@ -1804,7 +1820,7 @@ export class ThumbnailStudio {
   }
 
   _fitCanvasToStage(canvas) {
-    const stage = document.getElementById('ts-canvas-stage');
+    const stage = this.container.querySelector('#ts-canvas-stage');
     if (!stage) return;
     const sw = stage.clientWidth - 40, sh = stage.clientHeight - 40;
     const scale = Math.min(sw / canvas.width, sh / canvas.height, 1);
@@ -1814,18 +1830,20 @@ export class ThumbnailStudio {
 
   _updateDimsDisplay() {
     const { w, h, label } = this.FORMATS[this.format];
-    const el = document.getElementById('ts-preview-dims');
+    const el = this.container.querySelector('#ts-preview-dims');
     if (el) el.textContent = `${w} × ${h} · ${label}`;
   }
 
   _updateStats() {
+    const root = this.container.querySelector('#ts-root') || this.container;
+    const $ = id => root.querySelector(`#${id}`);
     const { w, h } = this.FORMATS[this.format];
-    document.getElementById('ts-stat-template').textContent = this.currentTemplate || 'impact';
-    document.getElementById('ts-stat-format').textContent = this.format;
-    document.getElementById('ts-stat-res').textContent = `${w}×${h}`;
+    $('ts-stat-template').textContent = this.currentTemplate || 'impact';
+    $('ts-stat-format').textContent = this.format;
+    $('ts-stat-res').textContent = `${w}×${h}`;
     const fxCount = ['ts-fx-nodegraph', 'ts-fx-grain', 'ts-fx-orbs', 'ts-fx-scanlines', 'ts-fx-circuit', 'ts-fx-glitch', 'ts-fx-frame', 'ts-fx-led']
-      .filter(id => document.getElementById(id)?.checked).length;
-    document.getElementById('ts-stat-fx').textContent = String(fxCount);
+      .filter(id => $(id)?.checked).length;
+    $('ts-stat-fx').textContent = String(fxCount);
   }
 
   // ─────────────────────────────────────────────────────────────
@@ -1833,8 +1851,8 @@ export class ThumbnailStudio {
   // ─────────────────────────────────────────────────────────────
   _buildTemplateGrid() {
     const templates = this._getTemplates();
-    const grid = document.getElementById('ts-template-grid');
-    const bar = document.getElementById('ts-template-bar');
+    const grid = this.container.querySelector('#ts-template-grid');
+    const bar = this.container.querySelector('#ts-template-bar');
     if (!grid || !bar) return;
 
     templates.forEach((tpl, i) => {
@@ -1869,16 +1887,17 @@ export class ThumbnailStudio {
 
   _selectTemplate(id) {
     this.currentTemplate = id;
-    document.querySelectorAll('.ts-tpl-thumb, .ts-bar-thumb').forEach(el => {
+    this.container.querySelectorAll('.ts-tpl-thumb, .ts-bar-thumb').forEach(el => {
       el.classList.toggle('active', el.dataset.tpl === id);
     });
-    document.getElementById('ts-stat-template').textContent = id;
+    const statTpl = this.container.querySelector('#ts-stat-template');
+    if (statTpl) statTpl.textContent = id;
     this._scheduleRender();
     setTimeout(() => this._renderAllThumbs(), 100);
   }
 
   async _renderAllThumbs() {
-    const thumbs = document.querySelectorAll('.ts-tpl-thumb canvas, .ts-bar-thumb canvas');
+    const thumbs = this.container.querySelectorAll('.ts-tpl-thumb canvas, .ts-bar-thumb canvas');
     for (const canvas of thumbs) {
       const tplId = canvas.parentElement.dataset.tpl;
       await this._renderToCanvas(canvas, { template: tplId });
@@ -1937,7 +1956,7 @@ export class ThumbnailStudio {
     await this._renderToCanvas(canvas);
     canvas.toBlob(blob => {
       navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]).then(() => {
-        const btn = document.getElementById('ts-btn-copy');
+        const btn = this.container.querySelector('#ts-btn-copy');
         if (btn) { const orig = btn.textContent; btn.textContent = '✓ Copiado!'; setTimeout(() => btn.textContent = orig, 2000); }
       });
     });
@@ -1955,25 +1974,27 @@ export class ThumbnailStudio {
     ];
     const subStyles = ['badge', 'line', 'pill', 'ghost', 'none'];
     const rnd = arr => arr[Math.floor(Math.random() * arr.length)];
+    const root = this.container.querySelector('#ts-root') || this.container;
+    const $ = id => root.querySelector(`#${id}`);
 
     this._selectTemplate(rnd(templates));
     const primary = rnd(colors);
-    document.getElementById('ts-primary-color').value = primary;
-    document.getElementById('ts-title-glow').value = primary;
+    $('ts-primary-color').value = primary;
+    $('ts-title-glow').value = primary;
     const grad = rnd(gradients);
-    document.getElementById('ts-grad-c1').value = grad[0];
-    document.getElementById('ts-grad-c2').value = grad[1];
-    document.getElementById('ts-grad-angle').value = Math.floor(Math.random() * 360);
-    document.getElementById('ts-sub-bg').value = primary;
-    document.getElementById('ts-sub-color').value = primary;
-    document.getElementById('ts-eyebrow-color').value = rnd(colors);
-    document.getElementById('ts-sub-style').value = rnd(subStyles);
+    $('ts-grad-c1').value = grad[0];
+    $('ts-grad-c2').value = grad[1];
+    $('ts-grad-angle').value = Math.floor(Math.random() * 360);
+    $('ts-sub-bg').value = primary;
+    $('ts-sub-color').value = primary;
+    $('ts-eyebrow-color').value = rnd(colors);
+    $('ts-sub-style').value = rnd(subStyles);
     this._activeBgTab = 'gradient';
-    document.querySelectorAll('#ts-root .ts-tab').forEach(t => t.classList.toggle('active', t.dataset.tab === 'gradient'));
-    document.querySelectorAll('#ts-root .ts-tab-content').forEach(c => c.classList.toggle('active', c.id === 'ts-tab-gradient'));
+    root.querySelectorAll('.ts-tab').forEach(t => t.classList.toggle('active', t.dataset.tab === 'gradient'));
+    root.querySelectorAll('.ts-tab-content').forEach(c => c.classList.toggle('active', c.id === 'ts-tab-gradient'));
     // Toggle random effects
     ['ts-fx-nodegraph', 'ts-fx-grain', 'ts-fx-orbs', 'ts-fx-scanlines', 'ts-fx-circuit', 'ts-fx-glitch', 'ts-fx-frame', 'ts-fx-led']
-      .forEach(id => { const el = document.getElementById(id); if (el) el.checked = Math.random() > 0.4; });
+      .forEach(id => { const el = $(id); if (el) el.checked = Math.random() > 0.4; });
     this._scheduleRender();
     setTimeout(() => this._renderAllThumbs(), 200);
   }
@@ -1982,10 +2003,10 @@ export class ThumbnailStudio {
   // HISTORY
   // ─────────────────────────────────────────────────────────────
   _addToHistory() {
-    const canvas = document.getElementById('ts-main-canvas');
+    const canvas = this.container.querySelector('#ts-main-canvas');
     if (!canvas) return;
     const url = canvas.toDataURL('image/jpeg', 0.4);
-    const list = document.getElementById('ts-history-list');
+    const list = this.container.querySelector('#ts-history-list');
     if (!list) return;
     if (list.querySelector('.ts-history-empty')) list.innerHTML = '';
     const item = document.createElement('div');
@@ -2008,14 +2029,12 @@ export class ThumbnailStudio {
     this._activeBgTab = 'gradient';
     this._buildTemplateGrid();
     this._updateDimsDisplay();
-    // Store ref for palette extraction callbacks
-    const root = document.getElementById('ts-root');
-    if (root) root.__studio__ = this;
     // First render
     setTimeout(() => {
       this._activeBgTab = 'gradient';
-      document.querySelectorAll('#ts-root .ts-tab').forEach(t => t.classList.toggle('active', t.dataset.tab === 'gradient'));
-      document.querySelectorAll('#ts-root .ts-tab-content').forEach(c => c.classList.toggle('active', c.id === 'ts-tab-gradient'));
+      const root = this.container.querySelector('#ts-root') || this.container;
+      root.querySelectorAll('.ts-tab').forEach(t => t.classList.toggle('active', t.dataset.tab === 'gradient'));
+      root.querySelectorAll('.ts-tab-content').forEach(c => c.classList.toggle('active', c.id === 'ts-tab-gradient'));
       this._scheduleRender();
     }, 100);
   }
@@ -2037,6 +2056,8 @@ export class ThumbnailView {
 
   async onInit() {
     await new Promise(r => setTimeout(r, 50));
+    const container = document.getElementById('ts-studio-container');
+    if (!container) { console.warn('[ThumbnailView] Container #ts-studio-container not found'); return; }
     this.studio = new ThumbnailStudio(window.app?.canvasRenderer, 'ts-studio-container');
   }
 

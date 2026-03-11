@@ -328,7 +328,10 @@ export class EbookView {
             this._ebRenderer = window.createRenderer(794, 1123, this.activeTheme);
         }
 
-        this._attachListeners();
+        if (!this._listenersAttached) {
+            this._attachListeners();
+            this._listenersAttached = true;
+        }
 
         if (this.pages.length > 0) {
             this._renderPageList();
@@ -348,6 +351,11 @@ export class EbookView {
         if (this._ebToolbar) {
             this._ebToolbar.destroy();
             this._ebToolbar = null;
+        }
+
+        if (this._ebCanvasEditor?.destroy) {
+            this._ebCanvasEditor.destroy();
+            this._ebCanvasEditor = null;
         }
     }
 
@@ -681,12 +689,12 @@ export class EbookView {
             if (!this._ebRenderer) {
                 this._ebRenderer = window.createRenderer(794, 1123, page.theme || this.activeTheme);
             }
-
             // ── CanvasEditor aislado — propio del Ebook ──────────────────
             if (!this._ebCanvasEditor || typeof this._ebCanvasEditor.attachCanvas !== 'function') {
+                if (this._ebCanvasEditor?.destroy) this._ebCanvasEditor.destroy();
                 this._ebCanvasEditor = new window.CanvasEditor(canvas, this._ebRenderer);
                 this._ebCanvasEditor.onChange = (modifiedGraph) => {
-                    if (this.pages && this.pages[this.currentPage]) {
+                    if (this.pages?.[this.currentPage]) {
                         this.pages[this.currentPage] = modifiedGraph;
                     }
                 };
@@ -716,7 +724,8 @@ export class EbookView {
                     {
                         mode: 'ebook',
                         onSceneChange: (graph) => {
-                            if (this.pages && this.pages[this.currentPage]) {
+                            // NEVER call _ebCanvasEditor.onChange here — causes infinite loop
+                            if (this.pages?.[this.currentPage]) {
                                 this.pages[this.currentPage] = graph;
                             }
                         }
