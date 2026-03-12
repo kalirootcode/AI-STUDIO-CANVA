@@ -37,18 +37,24 @@ class ContentEngine {
             'TIKTOK_TREND': 'CYBER', 'VIRAL_HOOK_TEST': 'RED_TEAM',
             'EBOOK_CREATOR': 'CYBER'
         };
-        const theme = themeMap[mode] || 'cyber';
+        const theme = themeMap[mode] || 'CYBER';
 
-        const themeColors = {
-            cyber: { primary: '#00D9FF', accent: '#A855F7', warning: '#FF9500', success: '#00FF88', danger: '#FF3366', text: '#f0f0f0', muted: '#94a3b8' },
-            hacker: { primary: '#00FF41', accent: '#FF00FF', warning: '#FFD700', success: '#00FF41', danger: '#FF0040', text: '#e0ffe0', muted: '#5a8a5a' },
-            minimal: { primary: '#3B82F6', accent: '#8B5CF6', warning: '#F59E0B', success: '#10B981', danger: '#EF4444', text: '#ffffff', muted: '#9ca3af' },
-            RED_TEAM: { primary: '#FF0000', accent: '#FF6600', warning: '#FFD700', success: '#FF4444', danger: '#FF0040', text: '#f0f0f0', muted: '#a38888' },
-            BLUE_TEAM: { primary: '#0088FF', accent: '#00CCFF', warning: '#FF9500', success: '#00FF88', danger: '#FF3366', text: '#f0f0f0', muted: '#8888a3' },
-            OSINT: { primary: '#D946EF', accent: '#A855F7', warning: '#F59E0B', success: '#10B981', danger: '#EF4444', text: '#f0f0f0', muted: '#a388a3' }
-        };
-
-        const colors = themeColors[theme] || themeColors.cyber;
+        // Prefer BrandingSystem if available (single source of truth)
+        let colors;
+        if (typeof window !== 'undefined' && window.brandingInstance?.getThemeColors) {
+            colors = window.brandingInstance.getThemeColors(theme);
+        } else {
+            const themeColors = {
+                CYBER:     { primary: '#00D9FF', accent: '#A855F7', warning: '#FF9500', success: '#00FF88', danger: '#FF3366', text: '#f0f0f0', muted: '#94a3b8' },
+                cyber:     { primary: '#00D9FF', accent: '#A855F7', warning: '#FF9500', success: '#00FF88', danger: '#FF3366', text: '#f0f0f0', muted: '#94a3b8' },
+                hacker:    { primary: '#00FF41', accent: '#FF00FF', warning: '#FFD700', success: '#00FF41', danger: '#FF0040', text: '#e0ffe0', muted: '#5a8a5a' },
+                minimal:   { primary: '#3B82F6', accent: '#8B5CF6', warning: '#F59E0B', success: '#10B981', danger: '#EF4444', text: '#ffffff', muted: '#9ca3af' },
+                RED_TEAM:  { primary: '#FF0000', accent: '#FF6600', warning: '#FFD700', success: '#FF4444', danger: '#FF0040', text: '#f0f0f0', muted: '#a38888' },
+                BLUE_TEAM: { primary: '#0088FF', accent: '#00CCFF', warning: '#FF9500', success: '#00FF88', danger: '#FF3366', text: '#f0f0f0', muted: '#8888a3' },
+                OSINT:     { primary: '#D946EF', accent: '#A855F7', warning: '#F59E0B', success: '#10B981', danger: '#EF4444', text: '#f0f0f0', muted: '#a388a3' },
+            };
+            colors = themeColors[theme] || themeColors.CYBER;
+        }
 
         // Mode specific golden rules
         const modeRules = {

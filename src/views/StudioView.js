@@ -231,7 +231,7 @@ export class StudioView extends BaseView {
             );
         }
 
-            if (!this._listenersAttached) {
+        if (!this._listenersAttached) {
             this.attachListeners();
             this._listenersAttached = true;
         }
@@ -669,16 +669,18 @@ export class StudioView extends BaseView {
                 }
             };
 
-            // Inicializar toolbar
-            const previewContainer = this.element.querySelector('.panel-center');
+            // Inicializar toolbar flotante
+            // Se usa document.body como contenedor para que el widget siempre esté visible
+            // y no sea recortado por overflow:hidden de ningún panel.
             if (window.app._editorToolbar) {
                 window.app._editorToolbar.destroy();
             }
             window.app._editorToolbar = new CanvasEditorToolbar(
-                previewContainer,
+                document.body,
                 window.app.canvasEditor,
                 {
                     mode: 'studio',
+                    initialTheme: window.app.canvasRenderer?._activeThemeName || 'cyber',
                     onPrev: () => window.app.handlePrevSlide?.(),
                     onNext: () => window.app.handleNextSlide?.(),
                     onSceneChange: (graph) => {
@@ -689,9 +691,25 @@ export class StudioView extends BaseView {
                                 this._externalDataSync(JSON.stringify(graph, null, 2));
                             }
                         }
+                    },
+                    onThemeChange: (themeId) => {
+                        // Delegate to app.handleThemeChange which applies
+                        // brandingSystem.applyTheme() to ALL slides and re-renders
+                        if (window.app?.handleThemeChange) {
+                            window.app.handleThemeChange(themeId);
+                        }
+                        // Sync external data editor if present
+                        if (this._externalDataSync && window.app?.slides?.[window.app.currentSlideIndex]?.data) {
+                            this._externalDataSync(JSON.stringify(window.app.slides[window.app.currentSlideIndex].data, null, 2));
+                        }
+                    },
+                    onStatusChange: (text, active) => {
+                        if (window.app?.setStatus) window.app.setStatus(text, active);
                     }
                 }
             );
+            // Expose toolbar via this.toolbar so app.js setStatus can reach it
+            this.toolbar = window.app._editorToolbar;
 
         } else {
             window.app.canvasEditor.attachCanvas(canvas);
@@ -705,7 +723,12 @@ export class StudioView extends BaseView {
     }
 
     updateSlideCounter(current, total) {
-        const el = this.element.querySelector('#slideCounter');
+        // Delegate to floating toolbar if available
+        if (window.app?._editorToolbar?.updateSlideCounter) {
+            window.app._editorToolbar.updateSlideCounter(current, total);
+        }
+        // Legacy fallback for any leftover DOM element
+        const el = this.element?.querySelector('#slideCounter');
         if (el) el.innerText = `${current} / ${total}`;
     }
 

@@ -12,6 +12,34 @@ class BrandingSystem {
     }
 
     /**
+     * Get color palette for a theme by name.
+     * Used by ContentEngine and CanvasRenderer.
+     */
+    getThemeColors(name) {
+        const theme = this.getTheme(name);
+        return theme ? theme.colors : this.themes['cyber'].colors;
+    }
+
+    /**
+     * Get all registered theme IDs.
+     */
+    getThemeIds() {
+        return Object.keys(this.themes);
+    }
+
+    /**
+     * Get a display-friendly list of all themes.
+     */
+    getThemeList() {
+        return Object.entries(this.themes).map(([id, theme]) => ({
+            id,
+            name: theme.name,
+            primary: theme.colors.primary,
+            accent: theme.colors.accent,
+        }));
+    }
+
+    /**
      * Register a theme.
      */
     registerTheme(name, theme) {
@@ -244,8 +272,17 @@ brandingInstance.registerTheme('RED_TEAM', THEME_RED_TEAM);
 brandingInstance.registerTheme('BLUE_TEAM', THEME_BLUE_TEAM);
 brandingInstance.registerTheme('OSINT', THEME_OSINT);
 
-if (typeof module !== 'undefined') module.exports = { BrandingSystem, brandingInstance, THEME_CYBER, THEME_HACKER, THEME_MINIMAL };
+if (typeof module !== 'undefined') module.exports = {
+    BrandingSystem,
+    brandingInstance,
+    THEME_CYBER,
+    THEME_HACKER,
+    THEME_MINIMAL,
+    THEME_RED_TEAM,
+    THEME_BLUE_TEAM,
+    THEME_OSINT,
+};
 else {
-    window.BrandingSystem = BrandingSystem;
-    window.brandingInstance = brandingInstance;
+    window.BrandingSystem    = BrandingSystem;
+    window.brandingInstance  = brandingInstance;
 }

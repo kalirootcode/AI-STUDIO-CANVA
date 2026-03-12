@@ -715,24 +715,52 @@ export class EbookView {
             await this._ebCanvasEditor.load(themedPage);
 
             if (!this._ebToolbar) {
-                // Selecciona el contenedor padre del canvas, o usa el ID esperado
-                const previewContainer = this.element.querySelector('#eb-previewContainer') || canvas.parentElement;
-
+                // Use document.body so the widget is never clipped by overflow:hidden
                 this._ebToolbar = new CanvasEditorToolbar(
-                    previewContainer,
+                    document.body,
                     this._ebCanvasEditor,
                     {
                         mode: 'ebook',
+                        initialTheme: page.theme || this.activeTheme || 'cyber',
+                        onPrev: () => {
+                            if (this.currentPage > 0) {
+                                this.currentPage--;
+                                this._renderPageList?.();
+                                this._renderCurrentPage?.();
+                            }
+                        },
+                        onNext: () => {
+                            if (this.pages && this.currentPage < this.pages.length - 1) {
+                                this.currentPage++;
+                                this._renderPageList?.();
+                                this._renderCurrentPage?.();
+                            }
+                        },
                         onSceneChange: (graph) => {
-                            // NEVER call _ebCanvasEditor.onChange here — causes infinite loop
                             if (this.pages?.[this.currentPage]) {
                                 this.pages[this.currentPage] = graph;
                             }
+                        },
+                        onThemeChange: (themeId) => {
+                            this.activeTheme = themeId;
+                            // Apply to current page
+                            if (this.pages?.[this.currentPage]) {
+                                this.pages[this.currentPage].theme = themeId;
+                                if (this._ebRenderer) {
+                                    this._ebRenderer._activeThemeName = themeId;
+                                }
+                                this._renderCurrentPage?.();
+                            }
+                        },
+                        onStatusChange: (text, active) => {
+                            const dot = this.element?.querySelector('.eb-status-dot');
+                            if (dot) dot.classList.toggle('active', active);
                         }
                     }
                 );
             }
             this._ebToolbar.pushHistory(themedPage);
+            this._ebToolbar.updateSlideCounter(this.currentPage + 1, this.pages.length);
 
             if (statusDot) statusDot.classList.remove('active');
 

@@ -45,3 +45,57 @@
     overflow: hidden;
     position: relative;
 }
+/* ── CONTEXT MENU (legacy + v3 compat) ──────────────────────────────── */
+.cet-ctx-menu {
+    position: fixed;
+    z-index: 12000;
+    background: rgba(10, 10, 16, 0.99);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 10px;
+    padding: 6px;
+    min-width: 180px;
+    display: none;
+    flex-direction: column;
+    gap: 2px;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.9);
+}
+.cet-ctx-menu.visible { display: flex; }
+.cet-ctx-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    color: #888;
+    font-size: 12px;
+    font-family: 'JetBrains Mono', monospace;
+    transition: all 0.15s;
+}
+.cet-ctx-item:hover           { background: rgba(0,217,255,0.08); color: #00D9FF; }
+.cet-ctx-item.danger:hover    { background: rgba(255,51,102,0.08); color: #FF3366; }
+.cet-ctx-item .material-icons { font-size: 16px; }
+.cet-ctx-sep {
+    height: 1px;
+    background: rgba(255,255,255,0.05);
+    margin: 3px 0;
+}
+
+/* ── SPIN UTILITY ────────────────────────────────────────────────────── */
+@keyframes cet-spin { to { transform: rotate(360deg); } }
+.cet-spin { animation: cet-spin 0.8s linear infinite; display: inline-block; }
+
+/* ── VIEW ERROR BANNER (BaseView) ────────────────────────────────────── */
+.view-error-banner {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    background: rgba(255,51,102,0.15);
+    border-top: 1px solid #FF3366;
+    color: #FF3366;
+    font-family: monospace;
+    font-size: 10px;
+    padding: 6px 12px;
+    z-index: 9999;
+    pointer-events: none;
+}

@@ -142,6 +142,7 @@ class App {
     // --- FOOTER HELPERS ---
 
     setStatus(text, animate = false) {
+        // Legacy DOM status (footer removed, hidden elements)
         const el = document.getElementById('statusText');
         const dot = document.querySelector('.status-dot');
         if (el) el.innerText = text;
@@ -149,6 +150,11 @@ class App {
             if (animate) dot.classList.add('active');
             else dot.classList.remove('active');
         }
+        // Forward to floating toolbar
+        try {
+            const studio = this.viewManager?.views?.['studio'];
+            if (studio?.toolbar?.setStatus) studio.toolbar.setStatus(text, animate);
+        } catch (_) { }
     }
 
     setProgress(percent) {
@@ -584,6 +590,9 @@ class App {
     handleThemeChange(newTheme) {
         if (!this.slides || this.slides.length === 0) return;
 
+        const bs = this.canvasRenderer?.brandingSystem;
+        if (!bs) return;
+
         // Support custom hex color — create dynamic theme on the fly
         if (newTheme && newTheme.startsWith('#') && newTheme.length >= 7) {
             const customTheme = {
@@ -603,32 +612,91 @@ class App {
                 background: { fill: '#030303', pattern: null, opacity: 1.0 },
                 brand: { name: 'KR-CLIDN', logo: './assets/kr-clidn-logo.png', badge: 'CUSTOM' }
             };
-            if (this.canvasRenderer && this.canvasRenderer.brandingSystem) {
-                this.canvasRenderer.brandingSystem.registerTheme('custom', customTheme);
-            }
+            bs.registerTheme('custom', customTheme);
             newTheme = 'custom';
         }
 
         console.log('🎨 Theme Switch (Global): ' + newTheme + ' → Applying to ' + this.slides.length + ' slides');
 
+        // ── Get OLD and NEW theme color palettes ──
+        // Collect ALL known theme colors (from all registered themes) as the "old" colors to replace
+        const allThemeColors = new Set();
+        for (const tid of bs.getThemeIds()) {
+            const t = bs.getTheme(tid);
+            if (t?.colors) {
+                Object.values(t.colors).forEach(c => { if (c && c.startsWith('#')) allThemeColors.add(c.toUpperCase()); });
+            }
+        }
+
+        const newColors = bs.getThemeColors(newTheme);
+        if (!newColors) return;
+
+        // Build a map: old color → new color (only for theme-level colors, not user text)
+        const oldThemeName = bs.activeTheme || 'cyber';
+        const oldColors = bs.getThemeColors(oldThemeName);
+
+        // Direct mapping for the color roles
+        const colorMap = {};
+        if (oldColors) {
+            const roles = ['primary', 'accent', 'warning', 'success', 'danger', 'bg', 'cardBg', 'text', 'textMuted'];
+            for (const role of roles) {
+                if (oldColors[role] && newColors[role]) {
+                    colorMap[oldColors[role].toUpperCase()] = newColors[role];
+                    // Also map with alpha suffixes (e.g. #00D9FF40 → #00FF4140)
+                    colorMap[oldColors[role].toLowerCase()] = newColors[role];
+                }
+            }
+        }
+
+        /**
+         * Replace theme colors in a scene graph via JSON string replacement.
+         * Replaces both exact hex matches and hex+alpha variants.
+         */
+        const replaceThemeColors = (sceneGraph) => {
+            let json = JSON.stringify(sceneGraph);
+
+            // First: resolve any remaining var() tokens
+            json = json
+                .replace(/var\(--primary\)/g, newColors.primary)
+                .replace(/var\(--accent\)/g, newColors.accent)
+                .replace(/var\(--warning\)/g, newColors.warning)
+                .replace(/var\(--success\)/g, newColors.success)
+                .replace(/var\(--danger\)/g, newColors.danger)
+                .replace(/var\(--bg\)/g, newColors.bg)
+                .replace(/var\(--text\)/g, newColors.text)
+                .replace(/var\(--text-muted\)/g, newColors.textMuted);
+
+            // Second: replace old theme hex colors with new ones (case-insensitive)
+            for (const [oldHex, newHex] of Object.entries(colorMap)) {
+                if (oldHex.toUpperCase() === newHex.toUpperCase()) continue; // Skip if same
+                // Replace exact hex (e.g., "#00D9FF") — case-insensitive
+                const escaped = oldHex.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                const regex = new RegExp(escaped, 'gi');
+                json = json.replace(regex, newHex);
+            }
+
+            const result = JSON.parse(json);
+            result.theme = newTheme;
+            return result;
+        };
+
         for (const slide of this.slides) {
             if (slide.isCanvas) {
-                // Apply theme to Canvas slides — set theme name and re-apply tokens
-                slide.data.theme = newTheme;
-                if (this.canvasRenderer && this.canvasRenderer.brandingSystem) {
-                    slide.data = this.canvasRenderer.brandingSystem.applyTheme(slide.data, newTheme);
-                }
+                slide.data = replaceThemeColors(slide.data);
             } else {
                 slide.data.THEME = newTheme;
                 slide.html = this.templateEngine.renderTemplate(slide.templateId, slide.data);
             }
         }
 
+        // Update BrandingSystem active theme
+        bs.setTheme(newTheme);
+
         // Re-render canvas editor with new theme in real-time
         if (this.canvasEditor && this.canvasRenderer) {
+            this.canvasRenderer._activeThemeName = newTheme;
             const currentSlide = this.slides[this.currentSlideIndex];
             if (currentSlide && currentSlide.isCanvas) {
-                this.canvasRenderer.brandingSystem.setTheme(newTheme);
                 this.canvasEditor.load(currentSlide.data);
             }
         }

@@ -213,50 +213,81 @@ class ContentValidator {
         const warnings = [];
         if (!page || !page.layers) return { page, warnings };
 
+        const CANVAS_H  = (page.canvas && page.canvas.height) || 1920;
+        const CANVAS_W  = (page.canvas && page.canvas.width)  || 1080;
+        const MAX_Y     = Math.floor(CANVAS_H * 0.88);
+        const MIN_X     = 20;
+        const MAX_WIDTH = CANVAS_W - MIN_X * 2;
+
         const LayoutConstraints = this._getLayoutConstraints();
-        const TextFitter = this._getTextFitter();
-        if (!LayoutConstraints || !TextFitter) return { page, warnings };
+        const TextFitter        = this._getTextFitter();
+        const SKIP = ['background','brand','swipe','page_number'];
 
         const layers = page.layers.map((layer, layerIdx) => {
-            if (layer.type === 'text' && layer.content) {
-                // Determine field type by font size and position
-                const role = this._inferTextRole(layer);
-                const constraints = LayoutConstraints.FIELD_DEFAULTS[role] ||
-                    { maxChars: 200, maxWords: 35, maxLines: 5, minFontSize: 28 };
+            if (!layer || SKIP.indexOf(layer.type) !== -1) return layer;
 
+            if (typeof layer.y === 'number' && layer.y > MAX_Y) {
+                warnings.push(`Page ${pageIndex+1}, Layer ${layerIdx} (${layer.type}): y=${layer.y} clamped to ${MAX_Y}`);
+                layer = Object.assign({}, layer, { y: MAX_Y });
+            }
+            if (typeof layer.x === 'number' && layer.x < MIN_X) {
+                layer = Object.assign({}, layer, { x: MIN_X });
+            }
+            if (typeof layer.width === 'number' && layer.width > MAX_WIDTH) {
+                layer = Object.assign({}, layer, { width: MAX_WIDTH });
+            }
+            if (typeof layer.x === 'number' && typeof layer.width === 'number') {
+                if (layer.x + layer.width > CANVAS_W - MIN_X) {
+                    layer = Object.assign({}, layer, { width: CANVAS_W - MIN_X - layer.x });
+                }
+            }
+
+            if (layer.type === 'text' && layer.content) {
+                const role = this._inferTextRole(layer);
+                const fallback = { maxChars: 200, maxWords: 35, maxLines: 5, minFontSize: 28 };
+                const constraints = (LayoutConstraints.FIELD_DEFAULTS && LayoutConstraints.FIELD_DEFAULTS[role])
+                    || (LayoutConstraints.forField && LayoutConstraints.forField('', role)) || fallback;
                 const result = TextFitter.smartTruncate(layer.content, constraints);
                 if (result.wasTruncated) {
-                    warnings.push(`Page ${pageIndex + 1}, Layer ${layerIdx}: text truncated (role: ${role})`);
-                    layer = { ...layer, content: result.text };
+                    warnings.push(`Page ${pageIndex+1}, Layer ${layerIdx}: text truncated (${role})`);
+                    layer = Object.assign({}, layer, { content: result.text });
                 }
             }
 
-            // Validate terminal output
             if (layer.type === 'terminal') {
                 if (layer.command && layer.command.length > 60) {
-                    warnings.push(`Page ${pageIndex + 1}, Layer ${layerIdx}: command truncated`);
-                    layer = { ...layer, command: layer.command.substring(0, 57) + '…' };
+                    layer = Object.assign({}, layer, { command: layer.command.substring(0,57) + '\u2026' });
+                }
+                if (typeof layer.output === 'string') {
+                    const lines = layer.output.split('\\n');
+                    if (lines.length > 12) {
+                        layer = Object.assign({}, layer, { output: lines.slice(0,12).join('\\n') });
+                    }
                 }
             }
 
-            // Validate bullet list items
             if (layer.type === 'bulletlist' && Array.isArray(layer.items)) {
-                layer = {
-                    ...layer,
-                    items: layer.items.map(item => {
-                        if (typeof item === 'string' && item.length > 60) {
-                            return item.substring(0, 57).trim() + '…';
-                        }
-                        return item;
+                layer = Object.assign({}, layer, {
+                    items: layer.items.slice(0,8).map(function(item) {
+                        return (typeof item === 'string' && item.length > 80)
+                            ? item.substring(0,77).trim() + '\u2026' : item;
                     })
-                };
+                });
+            }
+
+            if (layer.type === 'barchart' && Array.isArray(layer.data) && layer.data.length > 8) {
+                layer = Object.assign({}, layer, { data: layer.data.slice(0,8) });
+            }
+            if (layer.type === 'timeline' && Array.isArray(layer.events) && layer.events.length > 6) {
+                layer = Object.assign({}, layer, { events: layer.events.slice(0,6) });
             }
 
             return layer;
         });
 
-        return { page: { ...page, layers }, warnings };
+        return { page: Object.assign({}, page, { layers }), warnings };
     }
+
 
     /**
      * Infer the text role from layer properties (for Canvas pipeline).

@@ -169,19 +169,15 @@ class EffectsEngine {
         this.ctx.save();
 
         const orbs = [
-            { x: w * 0.15, y: h * 0.2, r: w * 0.5, color: primaryColor, opacity: 0.04 },
-            { x: w * 0.85, y: h * 0.75, r: w * 0.45, color: accentColor, opacity: 0.035 },
-            { x: w * 0.5, y: h * 0.5, r: w * 0.35, color: primaryColor, opacity: 0.02 },
+            { x: w * 0.15, y: h * 0.2,  r: w * 0.5,  color: primaryColor, opacity: 0.04  },
+            { x: w * 0.85, y: h * 0.75, r: w * 0.45, color: accentColor,  opacity: 0.035 },
+            { x: w * 0.5,  y: h * 0.5,  r: w * 0.35, color: primaryColor, opacity: 0.02  },
         ];
 
         for (const orb of orbs) {
+            const rgba = this._colorToRgba(orb.color, orb.opacity);
             const grad = this.ctx.createRadialGradient(orb.x, orb.y, 0, orb.x, orb.y, orb.r);
-            grad.addColorStop(0, orb.color.replace(')', `, ${orb.opacity})`).replace('rgb', 'rgba').replace(/#([0-9a-f]{6})/i, (m, hex) => {
-                const r = parseInt(hex.slice(0, 2), 16);
-                const g = parseInt(hex.slice(2, 4), 16);
-                const b = parseInt(hex.slice(4, 6), 16);
-                return `rgba(${r},${g},${b},${orb.opacity})`;
-            }));
+            grad.addColorStop(0, rgba);
             grad.addColorStop(1, 'rgba(0,0,0,0)');
             this.ctx.fillStyle = grad;
             this.ctx.beginPath();
@@ -190,6 +186,49 @@ class EffectsEngine {
         }
 
         this.ctx.restore();
+    }
+
+    /**
+     * Convert any CSS color string to rgba(r,g,b,a).
+     * Handles #rrggbb, #rgb, rgba(...), rgb(...).
+     * @private
+     */
+    _colorToRgba(color, alpha = 1) {
+        if (!color || typeof color !== 'string') return `rgba(0,0,0,${alpha})`;
+        const s = color.trim();
+        // rgba/rgb
+        const rgbaMatch = s.match(/rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/);
+        if (rgbaMatch) return `rgba(${rgbaMatch[1]},${rgbaMatch[2]},${rgbaMatch[3]},${alpha})`;
+        // #rrggbb or #rrggbbaa
+        const hexMatch = s.match(/^#([0-9a-fA-F]{6})([0-9a-fA-F]{2})?$/);
+        if (hexMatch) {
+            const r = parseInt(hexMatch[1].slice(0,2), 16);
+            const g = parseInt(hexMatch[1].slice(2,4), 16);
+            const b = parseInt(hexMatch[1].slice(4,6), 16);
+            return `rgba(${r},${g},${b},${alpha})`;
+        }
+        // #rgb shorthand
+        const shortMatch = s.match(/^#([0-9a-fA-F]{3})$/);
+        if (shortMatch) {
+            const r = parseInt(shortMatch[1][0] + shortMatch[1][0], 16);
+            const g = parseInt(shortMatch[1][1] + shortMatch[1][1], 16);
+            const b = parseInt(shortMatch[1][2] + shortMatch[1][2], 16);
+            return `rgba(${r},${g},${b},${alpha})`;
+        }
+        // Fallback: use canvas to resolve named colors
+        try {
+            const tmpCtx = document.createElement('canvas').getContext('2d');
+            tmpCtx.fillStyle = s;
+            const computed = tmpCtx.fillStyle;
+            const m = computed.match(/^#([0-9a-fA-F]{6})$/);
+            if (m) {
+                const r = parseInt(m[1].slice(0,2), 16);
+                const g = parseInt(m[1].slice(2,4), 16);
+                const b = parseInt(m[1].slice(4,6), 16);
+                return `rgba(${r},${g},${b},${alpha})`;
+            }
+        } catch (_) {}
+        return `rgba(0,217,255,${alpha})`;
     }
 
     /**
@@ -228,8 +267,7 @@ class EffectsEngine {
         grad.addColorStop(1, 'rgba(0,0,0,0)');
         this.ctx.fillStyle = grad;
         this.applyGlow(color, 8);
-        this.ctx.beginPath();
-        this.ctx.roundRect(x, y, width, height, height / 2);
+        this.roundRect(x, y, width, height, height / 2);
         this.ctx.fill();
         this.ctx.restore();
         return y + height;
@@ -378,17 +416,19 @@ class EffectsEngine {
      * Draw a progress bar / stat bar.
      */
     drawStatBar(x, y, width, value, maxValue, color, height = 16) {
-        const percentage = Math.min(value / maxValue, 1);
+        const percentage = Math.min(Math.max(value / maxValue, 0), 1);
 
         // Background track
         this.fillRoundRect(x, y, width, height, 'rgba(255,255,255,0.08)', null, height / 2);
 
-        // Filled portion
+        // Filled portion — minimum visible width = height so the cap is always round
         const filledWidth = Math.max(height, width * percentage);
         this.ctx.save();
         this.applyGlow(color, 12);
         this.fillRoundRect(x, y, filledWidth, height, color, null, height / 2);
         this.ctx.restore();
+        // Explicit reset to prevent glow bleeding on subsequent draws
+        this.reset();
     }
 
     /**

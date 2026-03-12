@@ -1,97 +1,161 @@
+/**
+ * CodeEffects.js — DOM-level visual effects (Matrix Rain, CSS animations).
+ * These run directly on HTML elements, separate from the canvas pipeline.
+ */
 
 export const CodeEffects = {
-    // Matrix Rain Effect adapted for specific containers
-    // containerId: DOM ID to attach canvas to
-    // color: Hex color (default primary)
-    // direction: 'down' or 'up'
+
+    /**
+     * Mount a Matrix Rain canvas effect inside a container element.
+     * Returns a cleanup function — call it to stop the animation and remove the canvas.
+     *
+     * @param {string} containerId  - DOM ID of the target container.
+     * @param {string} color        - Hex or CSS color for the characters.
+     * @param {'down'|'up'} direction - Flow direction.
+     * @returns {Function} cleanup  - Call to stop and remove the effect.
+     */
     mountMatrixRain(containerId, color = '#00D9FF', direction = 'down') {
         const container = document.getElementById(containerId);
-        if (!container) return;
+        if (!container) {
+            console.warn(`[CodeEffects] Container #${containerId} not found.`);
+            return () => {};
+        }
 
-        // Create Canvas
         const canvas = document.createElement('canvas');
-        canvas.style.position = 'absolute';
-        canvas.style.top = '0';
-        canvas.style.left = '0';
-        canvas.style.width = '100%';
-        canvas.style.height = '100%';
-        canvas.style.opacity = '0.3'; // Subtle
-        canvas.style.zIndex = '-1';
+        Object.assign(canvas.style, {
+            position: 'absolute',
+            top: '0',
+            left: '0',
+            width: '100%',
+            height: '100%',
+            opacity: '0.25',
+            zIndex: '-1',
+            pointerEvents: 'none',
+        });
         container.appendChild(canvas);
 
         const ctx = canvas.getContext('2d');
-        let width, height;
-        let columns;
-        let drops = [];
+        const FONT_SIZE  = 14;
+        const CHARS = '0123456789ABCDEF<>/{}[]*&^%$#@!';
+        let width, height, columns, drops;
+        let animFrameId = null;
+        let alive = true;
 
-        function resize() {
-            width = canvas.width = container.offsetWidth;
-            height = canvas.height = container.offsetHeight;
-            const fontSize = 14;
-            columns = Math.floor(width / fontSize);
-            drops = [];
-            for (let i = 0; i < columns; i++) {
-                drops[i] = Math.random() * -100; // Start above
-            }
-        }
+        const resize = () => {
+            width   = canvas.width  = container.offsetWidth;
+            height  = canvas.height = container.offsetHeight;
+            columns = Math.max(1, Math.floor(width / FONT_SIZE));
+            drops   = Array.from({ length: columns }, () => Math.random() * -50);
+        };
 
-        window.addEventListener('resize', resize);
-        resize();
+        const draw = () => {
+            if (!alive) return;
+            animFrameId = requestAnimationFrame(draw);
 
-        const chars = "0123456789ABCDEF<>/{}[]*&^%$#@!qwertyuiopasdfghjklzxcvbnm";
-        const fontSize = 14;
-
-        function draw() {
-            ctx.fillStyle = 'rgba(0, 0, 0, 0.05)'; // Fade effect
+            ctx.fillStyle = 'rgba(0,0,0,0.05)';
             ctx.fillRect(0, 0, width, height);
-
             ctx.fillStyle = color;
-            ctx.font = `${fontSize}px monospace`;
+            ctx.font = `${FONT_SIZE}px monospace`;
 
             for (let i = 0; i < drops.length; i++) {
-                const text = chars.charAt(Math.floor(Math.random() * chars.length));
-                const x = i * fontSize;
-                const y = drops[i] * fontSize;
+                const text = CHARS[Math.floor(Math.random() * CHARS.length)];
+                const x = i * FONT_SIZE;
 
-                ctx.fillText(text, x, y);
-
-                if (direction === 'down') {
-                    if (y > height && Math.random() > 0.975) drops[i] = 0;
+                if (direction === 'up') {
+                    const y = height - drops[i] * FONT_SIZE;
+                    ctx.fillText(text, x, y);
+                    if (drops[i] * FONT_SIZE > height && Math.random() > 0.975) drops[i] = 0;
                     drops[i]++;
                 } else {
-                    // Upward flow is tricky with this loop structure, simpler to visually invert or just stick to down
-                    // Let's just do down for now, it's classic
+                    const y = drops[i] * FONT_SIZE;
+                    ctx.fillText(text, x, y);
                     if (y > height && Math.random() > 0.975) drops[i] = 0;
                     drops[i]++;
                 }
             }
-            requestAnimationFrame(draw);
+        };
+
+        // Use ResizeObserver when available for more reliable resize detection
+        let resizeObserver = null;
+        if (typeof ResizeObserver !== 'undefined') {
+            resizeObserver = new ResizeObserver(() => resize());
+            resizeObserver.observe(container);
+        } else {
+            window.addEventListener('resize', resize);
         }
 
+        resize();
         draw();
+
+        // Return cleanup function
+        return () => {
+            alive = false;
+            if (animFrameId) cancelAnimationFrame(animFrameId);
+            if (resizeObserver) resizeObserver.disconnect();
+            else window.removeEventListener('resize', resize);
+            canvas.remove();
+        };
     },
 
-    // Inject styles for glowing pulse
+    /**
+     * Mount a Pulse scanline effect on a container element.
+     * Adds a slow horizontal sweep overlay.
+     * Returns a cleanup function.
+     *
+     * @param {string} containerId
+     * @param {string} color
+     * @returns {Function} cleanup
+     */
+    mountScanline(containerId, color = '#00D9FF') {
+        const container = document.getElementById(containerId);
+        if (!container) return () => {};
+
+        const line = document.createElement('div');
+        Object.assign(line.style, {
+            position: 'absolute',
+            top: '0',
+            left: '0',
+            right: '0',
+            height: '2px',
+            background: `linear-gradient(90deg, transparent, ${color}, transparent)`,
+            opacity: '0.4',
+            zIndex: '1',
+            pointerEvents: 'none',
+            animation: 'cet-scanline 4s linear infinite',
+        });
+        container.style.position = container.style.position || 'relative';
+        container.style.overflow = container.style.overflow || 'hidden';
+        container.appendChild(line);
+
+        return () => line.remove();
+    },
+
+    /**
+     * Inject global CSS animations used by CodeEffects.
+     * Safe to call multiple times — uses a guard ID.
+     */
     injectGlobalStyles() {
-        return `
-        <style>
+        if (document.getElementById('code-effects-styles')) return;
+        const style = document.createElement('style');
+        style.id = 'code-effects-styles';
+        style.textContent = `
             @keyframes cyber-pulse {
-                0% { box-shadow: 0 0 5px var(--primary-color); }
-                50% { box-shadow: 0 0 20px var(--primary-color), 0 0 10px var(--accent-color); }
-                100% { box-shadow: 0 0 5px var(--primary-color); }
+                0%   { box-shadow: 0 0 5px var(--primary-color, #00D9FF); }
+                50%  { box-shadow: 0 0 20px var(--primary-color, #00D9FF), 0 0 10px var(--accent-color, #A855F7); }
+                100% { box-shadow: 0 0 5px var(--primary-color, #00D9FF); }
             }
             @keyframes icon-float {
-                0% { transform: translateY(0); }
-                50% { transform: translateY(-10px); }
+                0%   { transform: translateY(0); }
+                50%  { transform: translateY(-10px); }
                 100% { transform: translateY(0); }
             }
-            .cyber-effect-pulse {
-                animation: cyber-pulse 3s infinite;
+            @keyframes cet-scanline {
+                0%   { top: -2px; }
+                100% { top: 100%; }
             }
-            .cyber-effect-float {
-                animation: icon-float 6s ease-in-out infinite;
-            }
-        </style>
+            .cyber-effect-pulse  { animation: cyber-pulse 3s ease-in-out infinite; }
+            .cyber-effect-float  { animation: icon-float  6s ease-in-out infinite; }
         `;
-    }
+        document.head.appendChild(style);
+    },
 };
